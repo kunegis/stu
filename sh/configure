@@ -8,10 +8,10 @@
 # ENVIRONMENT
 #	$CXX                   (optional)
 #	$CXXFLAGS              (optional)
-#	$verbose               (optional)
+#	$CONFIGURE_VERBOSE     (optional)
 #
 
-[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
+[ "$CONFIGURE_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
 check()
 # $1...   Options to test
@@ -21,21 +21,21 @@ check()
 	printf "Checking $(echo $CXX $CXXFLAGS ${*})..."
 	$CXX $CXXFLAGS "$@" "$source" -o "$target" 2>"$compiler_stderr" || {
 		echo no
-		echo >&6 "*** Compiler failed:"
-		cat  >&6 "$compiler_stderr"
+		echo >&3 "*** Compiler failed:"
+		cat  >&3 "$compiler_stderr"
 		return 1
 	}
-	cat >&6 "$compiler_stderr"
+	cat >&3 "$compiler_stderr"
 	grep -q -E -i -e '(error|warning)' "$compiler_stderr" && {
 		echo no
-		echo >&6 "*** Compiler printed an error or warning:"
-		cat  >&6 "$compiler_stderr"
+		echo >&3 "*** Compiler printed an error or warning:"
+		cat  >&3 "$compiler_stderr"
 		return 1
 	}
 
 	"$target" || {
 		echo no
-		echo >&6 "*** Test program failed"
+		echo >&3 "*** Test program failed"
 		return 1
 	}
 	echo ok
@@ -51,18 +51,18 @@ check_code()
 	printf "Checking $1..."
 	$CXX $CXXFLAGS "$source2" -o "$target" 2>"$compiler_stderr" || {
 		echo no
-		echo >&6 "compiler failed"
+		echo >&3 "compiler failed"
 		return 1
 	}
 	grep -q -E -i -e '(error|warning)' "$compiler_stderr" && {
 		echo no
-		echo >&6 "*** Compiler printed an error or warning:"
-		cat  >&6 "$compiler_stderr"
+		echo >&3 "*** Compiler printed an error or warning:"
+		cat  >&3 "$compiler_stderr"
 		return 1
 	}
 	"$target" || {
 		echo no
-		echo >&6 "*** Test program failed"
+		echo >&3 "*** Test program failed"
 		return 1
 	}
 	echo "ok"
@@ -81,10 +81,10 @@ source2=$filename.2.cc
 target=$filename.out
 compiler_stderr=$filename.stderr
 
-echo >&6 source="$filename".cc
-echo >&6 source2="$filename".2.cc
-echo >&6 target="$filename".out
-echo >&6 compiler_stderr="$filename".stderr
+echo >&3 source="$filename".cc
+echo >&3 source2="$filename".2.cc
+echo >&3 target="$filename".out
+echo >&3 compiler_stderr="$filename".stderr
 
 cat >"$source" <<EOF || exit 1
 struct Alpha { int x; Alpha(int a):  x(2 - a) { } };

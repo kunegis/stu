@@ -1,11 +1,10 @@
 #!/bin/sh
-
 set -e
 
-[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
+[ "$INSTALL_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
 prefix=${prefix:-/usr/local}
-echo >&6 "Installing in $prefix"
+echo >&3 "Installing in $prefix"
 
 mkdir -p "$prefix"/bin
 mkdir -p "$prefix"/man/man1

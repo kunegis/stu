@@ -19,14 +19,14 @@
 #    // May be last call to __gcov_dump
 #
 
-[ "$COV_EVAL_VERBOSE" ] && exec 6>&2 || exec 6>/dev/null
+[ "$COV_EVAL_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
 ret_file=${TMPDIR:-/tmp}/cov_eval.ret.$$
-echo >&6 "ret_file=$ret_file"
+echo >&3 "ret_file=$ret_file"
 
 clean()
 {
-	echo >&6 clean
+	echo >&3 clean
 	rm -f -- "$ret_file"
 }
 trap clean EXIT
@@ -37,23 +37,23 @@ touch "$ret_file" || exit 2
 exclude()
 {
 	if printf '%s\n' "$text" | grep -q -E -e '\b(unreachable|uncovered_due_to_bug_in_gcov|uncovered)\s*(\(\)|\*/)' ; then
-		printf >&6 "\tException line\n"
+		printf >&3 "\tException line\n"
 		return 0
 	fi
 	if printf '%s\n' "$text" | grep -q -E -e '\bvirtual\s+~.*=\s*default' ; then
-		printf >&6 "\tDefault virtual destructor\n"
+		printf >&3 "\tDefault virtual destructor\n"
 		return 0
 	fi
 	if printf '%s\n' "$text" | grep -q -E -e '^\s*default\s*:\s*$' ; then
-		printf >&6 "\tDefault\n"
+		printf >&3 "\tDefault\n"
 		return 0
 	fi
 	if printf '%s\n' "$text" | grep -q -E -e '^\s*[A-Za-z0-9_]+::~[A-Za-z0-9_]+\(\)\s*$' ; then
-		printf >&6 "\tDestructor definition\n"
+		printf >&3 "\tDestructor definition\n"
 		return 0
 	fi
 	if printf '%s\n' "$text" | grep -q -E -e '^\}\s*$' ; then
-		printf >&6 "\tTop-level closing brace\n"
+		printf >&3 "\tTop-level closing brace\n"
 		return 0
 	fi
 	return 1
@@ -65,28 +65,28 @@ eval_file()
 	file=$1
 	prefix=
 	src_file=$(echo "$file" | sed -e 's,^cov/\([a-z_./]*\)\.gcov,src/\1,')
-	echo >&6 "file=$file src_file=$src_file"
+	echo >&3 "file=$file src_file=$src_file"
 
 	cat -- "$1" | while IFS= read -r full_line ; do
-		printf >&6 "full_line='%s'\n" "$full_line"
+		printf >&3 "full_line='%s'\n" "$full_line"
 		count=$(printf '%s\n' "$full_line" | sed -e 's,^[[:space:]]*\([0-9-]*\):.*$,\1,')
 		line=$(printf '%s\n' "$full_line" | sed -e 's,^[^:]*:[[:space:]]*\([0-9]*\):.*$,\1,')
 		text=$(printf '%s\n' "$full_line" | sed -e 's,^[^:]*:[^:]*:\(.*\)$,\1,')
 		[ "$line" = 0 ] && continue
-		printf >&6 "count='%s' line=%s text='%s'\n" "$count" "$line" "$text"
+		printf >&3 "count='%s' line=%s text='%s'\n" "$count" "$line" "$text"
 		if [ "$prefix" ] && echo "$text" | grep -q -E -e '^'"$prefix" ; then
-			printf >&6 "\tStarts with prefix\n"
+			printf >&3 "\tStarts with prefix\n"
 			continue
 		fi
-		printf >&6 "\tReset prefix\n"
+		printf >&3 "\tReset prefix\n"
 		prefix=
 		if echo "$text" | grep -q -E -e '^\s*(should_not_happen|happens_only_on_certain_platforms|__gcov_dump)\b' ; then
 			prefix=$(echo "$text" | sed -e 's,^\([[:space:]]*\).*$,\1,')
-			printf >&6 "\tShould not happen / coverage impossible; prefix='$prefix'\n"
+			printf >&3 "\tShould not happen / coverage impossible; prefix='$prefix'\n"
 			continue
 		fi
 		if ! echo "$count" | grep -q -E -e '#''#''#' ; then
-			printf >&6 "\tNot uncovered\n"
+			printf >&3 "\tNot uncovered\n"
 			continue
 		fi
 		if exclude ; then

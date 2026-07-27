@@ -12,6 +12,7 @@
 #	codes.  Can for instance be piped into less -R to see all.
 #
 
+[ "$COLOR_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 preload_tty_so=$PWD/bin/preload-tty.so
 CMDPREFIX_TTY="TERM=xterm"
 LD_PRELOAD_VALUE_TTY="$preload_tty_so"
@@ -39,7 +40,7 @@ do
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
 		error=1
-		echo "$file" >&6
+		echo "$file" >&3
 		errors=1
 		continue
 	fi

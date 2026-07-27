@@ -1,8 +1,4 @@
 #
-# All shell scripts should use >&3 for verbose output.  (e.g., sh/configure uses >&6).
-#
-
-#
 # Environment variables in child processes:  set them using putenv()/setenv().  No need to
 # construct a custom environ array to pass to execve().
 #

@@ -150,8 +150,8 @@ del="$esc[2K"
 
 output_next()
 {
-	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-	echo >&7 cd "$file"
+	echo >&3 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	echo >&3 cd "$file"
 	if [ "$count_failed" = 0 ] ; then
 		count_failed_text=0
 	else
@@ -169,7 +169,7 @@ output_next()
 
 output_end()
 {
-	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	echo >&3 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 }
 
 output_success()
@@ -259,7 +259,7 @@ printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 	echo >&2 "$0: *** Invalid verbosity level '$TEST_VERBOSE'"
 	exit 2
 }
-[ "$TEST_VERBOSE" -ge 1 ] && exec 7>&1 || exec 7>/dev/null
+[ "$TEST_VERBOSE" -ge 1 ] && exec 3>&1 || exec 3>/dev/null
 
 rm -f bin/stu.test || exit 2
 [ "$VARIANT" ] || VARIANT=debug
@@ -268,7 +268,7 @@ if [ "$VARIANT" != ndebug ] ; then
 else
 	ln -s stu bin/stu.test || exit 2
 fi
-echo >&7 "VARIANT=$VARIANT"
+echo >&3 "VARIANT=$VARIANT"
 
 if [ "$VARIANT" = cdebug -o "$VARIANT" = sani ] ; then
 	nopreload=1
@@ -346,15 +346,15 @@ do
 	# The following will save:  list.def.out and list.def.err
 
 	if [ -e EXEC ] ; then
-		echo >&7 ./EXEC
-		./EXEC >&7
+		echo >&3 ./EXEC
+		./EXEC >&3
 		if [ "$?" != 0 ]; then
 			test_fail "EXEC failed"
 		fi
 	else
 		if [ -e SETUP ] ; then
-			echo >&7 ./SETUP
-			./SETUP >&7
+			echo >&3 ./SETUP
+			./SETUP >&3
 		fi
 
 		CMD=
@@ -367,13 +367,13 @@ do
 			CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 		fi
 		if [ -z "$nopreload" ] && [ -e PRELOAD.cc ]; then
-			echo >&7 "PRELOAD.cc found; so=$preload_so"
+			echo >&3 "PRELOAD.cc found; so=$preload_so"
 			(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) || exit 2
 			LD_PRELOAD_VALUE="$LD_PRELOAD_VALUE:$preload_so"
 		fi
 
 		# Execute command
-		echo >&7 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
+		echo >&3 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
 		eval $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 		exitstatus_actual=$?
 
@@ -416,7 +416,7 @@ do
 			>&2 cat list.def.err
 			>&2 printf '\\---------\n'
 		else
-			echo >&7 "EXITSTATUS...$exitstatus_correct correct"
+			echo >&3 "EXITSTATUS...$exitstatus_correct correct"
 		fi
 
 		if [ "$exitstatus_correct" = 0 ]; then
@@ -432,7 +432,7 @@ do
 					# Check exact content of the target file
 					if [ -e CONTENT ] ; then
 						if cmp -s -- "$target" CONTENT ; then
-							echo >&7 "CONTENT...correct"
+							echo >&3 "CONTENT...correct"
 						else
 							test_fail "CONTENT invalid"
 							diff >&2 -- "$target" CONTENT
@@ -475,7 +475,7 @@ do
 		# Check that standard output is correct
 		if [ -e STDOUT ] ; then
 			if cmp -s list.def.out STDOUT ; then
-				echo >&7 "STDOUT...correct"
+				echo >&3 "STDOUT...correct"
 			else
 				test_fail "Output does not match 'STDOUT'"
 				diff >&2 list.def.out STDOUT
@@ -486,7 +486,7 @@ do
 		if [ -e INSTDOUT ]; then
 			# TODO should use grep -f
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
-				echo >&7 "INSTDOUT...correct"
+				echo >&3 "INSTDOUT...correct"
 			else
 				test_fail "'$(cat INSTDOUT)' was not found in stdout"
 				>&2 echo stdout:
@@ -506,7 +506,7 @@ do
 		# Check that STDERR matches the error output exactly
 		if [ -e STDERR ]; then
 			if cmp -s list.def.err STDERR ; then
-				echo >&7 "STDERR...correct"
+				echo >&3 "STDERR...correct"
 			else
 				test_fail "Error output does not match 'STDERR'"
 				diff >&2 list.def.err STDERR
@@ -545,7 +545,7 @@ do
 		if [ -z "$nopreload" ] && { [ -e TTYSTDOUTERR ] || [ -e EXITSTATUS ]; } && ! [ -e NOTTY ]; then
 			../../sh/rm_tmps || exit 1
 			LD_PRELOAD_VALUE_TTY="$LD_PRELOAD_VALUE:$preload_tty_so"
-			echo >&7 $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
+			echo >&3 $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
 				../../bin/stu.test "$CMD"
 			eval $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
 				../../bin/stu.test $CMD \>list.def.out 2\>\&1
@@ -554,12 +554,12 @@ do
 			if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
 				test_fail "Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
 			else
-				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
+				echo >&3 "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
 
 			if [ -e TTYSTDOUTERR ]; then
 				if cmp -s list.def.out TTYSTDOUTERR ; then
-					echo >&7 "TTYSTDOUTERR...correct"
+					echo >&3 "TTYSTDOUTERR...correct"
 				else
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
 					diff >&2 list.def.out TTYSTDOUTERR
@@ -570,7 +570,7 @@ do
 				cat INTTYSTDOUTERR | while IFS= read -r line ; do
 					if cat list.def.out list.def.out |
 							grep -q -F -e "$line" ; then
-						echo >&7 "INSTDTTYSTDOUTERR...correct"
+						echo >&3 "INSTDTTYSTDOUTERR...correct"
 					else
 						test_fail "'$line' was not found in stdout/stderr for TTY mode"
 						echo >&2 stdout:
@@ -590,7 +590,7 @@ do
 					>&2 printf '\\---------\n'
 
 				else
-					echo >&7 "TTY:COLOR...correct"
+					echo >&3 "TTY:COLOR...correct"
 				fi
 			fi
 
@@ -601,19 +601,19 @@ do
 				>&2 cat list.def.out
 				>&2 printf '\\---------\n'
 			else
-				echo >&7 "TTY:BALANCED...correct"
+				echo >&3 "TTY:BALANCED...correct"
 			fi
 		fi
 
 		# Second invocation does nothing
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
-			echo >&7 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
+			echo >&3 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
 			eval $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 			exitstatus_actual=$?
 			if [ "$exitstatus_actual" = 0 ] &&
 				   grep -q -F 'Targets are up to date' list.def.out
 			then
-				echo >&7 "Second invocation...correct"
+				echo >&3 "Second invocation...correct"
 			else
 				test_fail "Second invocation did no result in 'Targets are up to date'"
 				>&2 echo STDOUT:

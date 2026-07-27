@@ -8,6 +8,8 @@
 # directory, so we can safely call this to remove junk files created while debugging.  In
 # particular, all one-letter and two-letter files are deleted except 'sh'.
 #
+# Kept in sync with .gitignore.
+#
 
 rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
 

@@ -10,5 +10,7 @@ A.*
 x.*
 *.data
 *SCHTROUMPF*
+.+-~_
+*abcdef
 ??
 !sh

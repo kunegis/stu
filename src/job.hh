@@ -79,7 +79,7 @@ private:
 	/* The job that is in the foreground, or -1 when none is */
 
 	static void ask_continue(pid_t pid);
-	static const char **create_child_env(const std::map <string, string> &mapping);
+	static void create_child_env(const std::map <string, string> &mapping);
 	static const char **create_child_argv(
 		const Place &place_command,
 		const char *shell_shortname,

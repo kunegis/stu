@@ -3,12 +3,12 @@
 #include <string.h>
 
 extern "C"
-int execve(const char *pathname, char *const argv[], char *const envp[])
+int execv(const char *pathname, char *const argv[])
 {
 	if (!strcmp(pathname, "/bin/sh")) {
 		errno= EPERM;
 		return -1;
 	}
-	return ((int (*)(const char *, char *const[], char *const[]))dlsym
-		(RTLD_NEXT, "execve"))(pathname, argv, envp);
+	return ((int (*)(const char *, char *const[]))dlsym
+		(RTLD_NEXT, "execv"))(pathname, argv);
 }

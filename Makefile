@@ -17,7 +17,6 @@ test: \
     cov \
     log/test_clean \
     log/test_unit.ndebug \
-    log/test_clean_last \
     sani
 .PHONY: all clean install check test cov sani prof analyzer
 
@@ -83,9 +82,6 @@ log/test_todo:  src/*.cc src/*.hh sh/test_todo sh sh/* tests tests/*/*
 log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@
-log/test_clean_last:  NEWS src/*.cc src/*.hh sh/test_clean_last sh sh/* tests tests/*/*
-	@echo sh/test_clean_last
-	@     sh/test_clean_last && mkdir -p log && touch $@
 
 log/test_unit.debug:           bin/stu.debug     sh/test tests tests/*/*
 	@echo                                    sh/test

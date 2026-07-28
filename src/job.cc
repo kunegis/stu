@@ -68,7 +68,7 @@ pid_t Job::start(
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL);
 
-		const char **envp= create_child_env(mapping);
+		create_child_env(mapping);
 		string argv0;
 		const char **argv= create_child_argv(
 			place_command, shell_shortname, command, argv0);
@@ -76,9 +76,9 @@ pid_t Job::start(
 		create_child_input_redirection(filename_input, place_input);
 
 		__gcov_pre_dump();
-		int r= execve(shell, (char *const *) argv, (char *const *) envp);
+		int r= execv(shell, (char *const *) argv);
 		assert(r == -1);
-		print_errno("execve", shell);
+		print_errno("execv", shell);
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
@@ -401,74 +401,43 @@ void Job::ask_continue(pid_t pid)
 	free(lineptr);
 }
 
-const char **Job::create_child_env(
+void Job::create_child_env(
 	const std::map <string, string> &mapping)
 {
 	TRACE_FUNCTION();
 	TRACE("mapping.size()= %s", frmt("%zu", mapping.size()));
-	const char **envp;
+	int r;
 
-	/* Set variables */
-	size_t v_old= 0;
-	std::map <string, size_t> old;
-	/* Index of old variables */
-
-	while (environ[v_old]) {
-		const char *p= environ[v_old];
-		const char *q= p;
-		while (*q && *q != '=')  ++q;
-		string key_old(p, q-p);
-		old[key_old]= v_old;
-		++v_old;
-	}
-
-	const size_t v_new= mapping.size() + 1;
-	/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
-
-	cov_tag("Job::create_child_env::0");
-	envp= (const char **) malloc(sizeof(char *) * (v_old + v_new + 1));
-	if (!envp) {
-		print_errno("malloc");
+	static char status_env[]= ENV_STU_STATUS "=1";
+	r= putenv(status_env);
+	if (r) {
+		print_errno("putenv");
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
-	memcpy(envp, environ, v_old * sizeof(char **));
-	size_t i= v_old;
 
-	for (auto j= mapping.begin(); j != mapping.end(); ++j) {
-		string key= j->first;
-		string value= j->second;
-		TRACE("key= '%s'; value= '%s'", key, value);
-		assert(key.find('=') == string::npos);
-		size_t len_combined= key.size() + 1 + value.size() + 1;
-		cov_tag("Job::create_child_env::1");
-		char *combined= (char *)malloc(len_combined);
-		if (! combined) {
+	for (auto &i: mapping) {
+		cov_tag("Job_List::create_child_env");
+		char *v= (char *)malloc(i.first.size() + i.second.size() + 2);
+		if (!v) {
 			print_errno("malloc");
 			__gcov_dump();
 			_Exit(ERR_FORK_CHILD);
 		}
-		if ((ssize_t)(len_combined - 1) !=
-			snprintf(combined, len_combined, "%s=%s",
-				key.c_str(), value.c_str())) {
-			should_not_happen();
-			print_error("snprintf: Error");
+		cov_tag("Job_List::create_child_env::2");
+		r= sprintf(v, "%s=%s", i.first.c_str(), i.second.c_str());
+		if (r < 0) {
+			print_errno("sprintf");
+			__gcov_dump();
 			_Exit(ERR_FORK_CHILD);
 		}
-		auto found_index= old.find(key);
-		if (found_index == old.end()) {
-			assert(i < v_old + v_new);
-			(envp)[i++]= combined;
-		} else {
-			size_t v_index= found_index->second;
-			(envp)[v_index]= combined;
+		r= putenv(v);
+		if (r) {
+			print_errno("putenv");
+			__gcov_dump();
+			_Exit(ERR_FORK_CHILD);
 		}
 	}
-
-	envp[i++]= ENV_STU_STATUS "=1";
-	assert(i <= v_old + v_new);
-	envp[i]= nullptr;
-	return envp;
 }
 
 const char **Job::create_child_argv(

@@ -1,9 +1,4 @@
 #
-# Environment variables in child processes:  set them using putenv()/setenv().  No need to
-# construct a custom environ array to pass to execve().
-#
-
-#
 # Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
 #
 

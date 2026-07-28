@@ -113,6 +113,34 @@ Check_Test_bin_name()
 	return 0
 }
 
+Check_Cov_Tag()
+{
+	list_src=$dir/cov-src
+	list_tests=$dir/cov-tests
+
+	find src -name '*.cc' | xargs cat -- |
+		sed -E -e 's,^.*cov_tag\("([^"]+)"\).*$,\1,
+t
+d' | LC_ALL= sort >"$list_src"
+
+	find tests -name 'PRELOAD.cc' | xargs cat -- |
+		sed -E -e 's,^.*cov_hash\("([^"]+)"\).*$,\1,
+t
+d' | LC_ALL= sort >"$list_tests"
+
+	if ! cmp -s -- "$list_src" "$list_tests" ; then
+		grep -v -F -x -f "$list_tests" -- "$list_src" | while IFS= read -r tag ; do
+			grep -n -r -F -e "$tag" -- src |
+				sed -E -e 's,(^[^:]+:[^:]+:),\1 Cov tag appears in src/ but not in tests/:,' >&2
+		done
+		grep -v -F -x -f "$list_src" -- "$list_tests" | while IFS= read -r tag ; do
+			grep -n -r -F -e "$tag" -- tests |
+				sed -E -e 's,(^[^:]+:[^:]+:),\1 Cov tag appears in tests/ but not in src/:,' >&2
+		done
+		ret=1
+	fi
+}
+
 Check_Newline_EOF()
 {
 	Find_Source_Files | {
@@ -334,6 +362,7 @@ Check_Test()
 	Check_Test_Own_Name || ret=1
 	Check_Test_EXEC || ret=1
 	Check_Test_bin_name || ret=1
+	Check_Cov_Tag || ret=1
 }
 
 Check_Characters()

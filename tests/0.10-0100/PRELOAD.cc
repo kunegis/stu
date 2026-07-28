@@ -13,7 +13,7 @@
  *    encrypt to.
  *  * Mock all functions used by Stu that receive/return PIDs.  For instance, tcgetpgrp()
  *    is not mocked.
- *  * Also mock execve() in order to remove LD_PRELOAD from the environment.
+ *  * Also mock execv() in order to remove LD_PRELOAD from the environment.
  *  * The returned mock PIDs do not take into account the maximum PID setting of the
  *    operating system.  But that is not used by Stu.
  */
@@ -106,21 +106,11 @@ pid_t fork()
 }
 
 extern "C"
-int execve(const char *pathname, char *const argv[], char *const envp[])
+int execv(const char *pathname, char *const argv[])
 {
-	size_t n= 0;
-	for (const char *const *p= envp; *envp; ++envp) ++n;
-	const char **envp_new= (const char **)malloc(sizeof(const char *) * (n+1));
-	if (!envp_new) exit(1);
-	const char **p= envp_new;
-	constexpr const char *prefix= "LD_PRELOAD=";
-	for (const char *const *q= envp; *envp; ++envp) {
-		if (!strncmp(prefix, *q, strlen(prefix))) continue;
-		*(p++)= *q;
-	}
-	*p= nullptr;
-	int ret= ((int (*)(const char *, char *const[], char *const[]))
-		dlsym(RTLD_NEXT, "execve"))(pathname, argv, (char *const *)envp_new);
+	unsetenv("LD_PRELOAD");
+	int ret= ((int (*)(const char *, char *const[]))
+		dlsym(RTLD_NEXT, "execv"))(pathname, argv);
 	return ret;
 }
 

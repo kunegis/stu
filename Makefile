@@ -17,6 +17,7 @@ test: \
     cov \
     log/test_clean \
     log/test_unit.ndebug \
+    topic \
     sani
 .PHONY: all clean install check test cov sani prof analyzer
 
@@ -76,10 +77,10 @@ bin/stu.analyzer: conf/CXX src/*.cc src/*.hh src/version.hh
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
 	@mkdir -p log && sh/test_options && touch $@
-log/test_todo:  src/*.cc src/*.hh sh/test_todo sh sh/* tests tests/*/*
+log/test_todo:  doc/TODO.stu
 	@echo sh/test_todo
 	@     sh/test_todo && mkdir -p log && touch $@
-log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
+log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/* doc/* NEWS
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@
 
@@ -102,6 +103,10 @@ log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	@echo VARIANT=cov                        sh/test
 	@     VARIANT=cov                        sh/test && mkdir -p log && touch $@
+
+topic: log/topic
+log/topic: sh/topic tests/*/*
+	sh/topic
 
 sani: log/test_unit.sani
 

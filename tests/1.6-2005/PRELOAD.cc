@@ -10,7 +10,7 @@ int open(const char *pathname, int flags, mode_t mode)
 {
 	int ret= ((int (*)(const char *, int, mode_t))dlsym(
 			RTLD_NEXT, "open"))(pathname, flags, mode);
-	if (!strcmp(pathname, "ddd"))
+	if (!strcmp(pathname, "ddd.data"))
 		fd_ddd= ret;
 	return ret;
 }

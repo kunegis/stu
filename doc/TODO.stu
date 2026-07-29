@@ -1,8 +1,4 @@
 #
-# Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
-#
-
-#
 # %include -d
 #
 
@@ -455,3 +451,33 @@ calc:  @build-c':'calc':'calc.c;
 
 %set -<X> VARIABLE VALUE # Fails when variable already exists
 %unset -<X> VARIABLE # Fail when variable does not exist
+
+#
+# shellcheck
+# * Need to disable many tests, maybe too many to make sense
+#
+
+#
+# An option that makes Stu perform an extra check: After a command has been executed, check
+# that none of its (direct or undirect) dependencies have a newer mtime.
+# * Only makes sense in -j1 mode.
+# * Very slow, so it can't be the default.
+# * Useful to find Stu script bugs
+#
+# How to implement:
+# * Have global map from filename (unparametrized) to old timestamp.  (We already have
+#   something similar for phonies.)  After every command exdecuted (even if it fails),
+#   check that no previously built file has a different timestamp.
+# * No need to check only the direct/indirect dependencies of a rule.  Better to check ALL
+#   files that have been previously built (or dependend or without a rule.)
+#
+
+#
+# Allow comment between directive and parameters
+#
+
+%set
+# comment (not allowed at the moment)
+VARIABLE
+# comment (not allowed at the moment)
+VALUE

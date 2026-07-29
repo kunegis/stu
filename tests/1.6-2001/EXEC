@@ -1,0 +1,23 @@
+#!/bin/sh
+# TOPIC: When including a directory, check for the 'main.stu' file in it
+. ../../sh/test.sh
+
+mkdir dir.data
+echo aaaa >dir.data/file
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e 'main.stu:4:10: %include "dir.data/main.stu": ' list.err
+
+set +e
+../../bin/stu.test -Y >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+text=$(printf '\033[31m\033[1mmain.stu\033[22m:4:10\033[m: \033[1m%%include\033[22m \033[1mdir.data/main.stu\033[22m: ')
+grep -q -F -e "$text" list.err

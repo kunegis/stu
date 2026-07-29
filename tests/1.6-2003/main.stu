@@ -1,0 +1,4 @@
+
+# ddd.data/ exists but not ddd.data/main.stu
+
+%include ddd.data/

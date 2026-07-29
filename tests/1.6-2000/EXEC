@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir ddd.data
+printf '%%include ddd.data/eee\n' >ddd.data/main.stu
+mkdir ddd.data/eee
+printf '>A { echo aaa }\n' >ddd.data/eee/main.stu
+
+../../bin/stu.test -f ddd.data >list.out 2>list.err
+
+[ -e A ]
+grep -q -F -x -e 'aaa' A

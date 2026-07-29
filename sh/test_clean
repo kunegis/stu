@@ -83,6 +83,14 @@ Check_Test_Own_Name()
 	return 0
 }
 
+Check_Test_Dir()
+{
+	find tests -type d | grep -E -e '/.*/' |
+		sed -E -e 's,$,: Directories under tests/ must not have subdirectories,' |
+		grep -E -e '.' >&2 && touch -- "$error_file"
+	return 0
+}
+
 Check_Test_EXEC()
 {
 	line='. ../../sh/test.sh'
@@ -360,6 +368,7 @@ Check_Test()
 {
 	Check_Test_Names || ret=1
 	Check_Test_Own_Name || ret=1
+	Check_Test_Dir || ret=1
 	Check_Test_EXEC || ret=1
 	Check_Test_bin_name || ret=1
 	Check_Cov_Tag || ret=1

@@ -1,0 +1,18 @@
+#!/bin/sh
+# TOPIC: stu -f a ; PRELOAD: openat fails
+. ../../sh/test.sh
+file_so=../../bin/preload.so
+dir=$(pwd)
+
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so )
+
+mkdir ddd.data
+printf '>A {echo ERROR;}\n' >ddd.data/main.stu
+
+set +e
+LD_PRELOAD=$file_so ../../bin/stu.test -f ddd.data >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e 'Option -f: "ddd.data/main.stu": ' list.err

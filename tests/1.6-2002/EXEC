@@ -1,0 +1,12 @@
+#!/bin/sh
+# TOPIC: stu -f a/ ; a/main.stu: %include a/b/
+. ../../sh/test.sh
+
+mkdir ddd.data
+printf '%%include ddd.data/eee/\n' >ddd.data/main.stu
+mkdir ddd.data/eee
+printf '>A { echo CORRECT }\n' >ddd.data/eee/main.stu
+
+../../bin/stu.test -f ddd.data/ >list.out 2>list.err
+
+grep -q -F -x -e 'CORRECT' A

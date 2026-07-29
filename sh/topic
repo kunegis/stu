@@ -13,6 +13,9 @@
 
 set -e
 
+mkdir -p ../log
+exec 4>log/topic
+
 cd tests
 
 ls -1U | ../sh/sort_tests | while IFS= read -r test ; do
@@ -25,5 +28,5 @@ t
 d' $files /dev/null)
 	fi
 	[ "$topic" ] || topic='<missing>'
-	printf '%-15s %s\n' "$test" "$topic"
+	printf >&4 '%-16s %s\n' "$test" "$topic"
 done

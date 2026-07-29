@@ -57,9 +57,9 @@
 # TARGET       The name of the target that is built in the test, instead of the default
 #              'A'.  This does not change the invocation: Stu is invoked without arguments
 #              by default.  It only changes the check that the file was built, and its
-#              content.   May be an empty file to omit testing for an existing target.  If
-#              EXITSTATUS exists, the presence of this file means that the test should
-#              not fail when the target 'A' exists after execution (content of TARGET is
+#              content.  May be an empty file to omit testing for an existing target.  If
+#              EXITSTATUS exists, the presence of this file means that the test should not
+#              fail when the target 'A' exists after execution (content of TARGET is
 #              ignored).
 # CMD          Additional command arguments passed to Stu.  Content may use shell quoting
 #              and escaping.  For instance, the file may contain -C ' A ' to pass an
@@ -86,7 +86,8 @@
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
 #              the test from the 'ndebug' variant.
 # VARIANT      The variant(s) in which the test should be executed.  Can contain any
-#              number of variants.  Each can be preceded by '!' to exclude it.
+#              number of variants separated by space.  Each can be preceded by '!' to
+#              exclude it.
 # TOPIC        The topic of the test; see sh/topic
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
@@ -138,6 +139,19 @@
 
 ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG TOPIC VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
+VARIANT=${VARIANT:-debug}
+file_list_begin=log/test-file-list.$VARIANT.begin
+file_list_end=log/test-file-list.$VARIANT.end
+
+time_begin=$(sh/now)
+ret=0
+count_succeed=0
+count_failed=0
+preload_so=$PWD/bin/preload.so
+preload_tty_so=$PWD/bin/preload-tty.so
+CMDPREFIX_TTY="TERM=xterm"
+unset STU_OPTIONS
+TEST_VERBOSE=${TEST_VERBOSE:-0}
 
 esc=$(printf '\033')
 off="$esc[m"
@@ -245,16 +259,15 @@ preload_prefix()
 		printf 'LD_PRELOAD=%s\n' "$value"
 }
 
-time_begin=$(sh/now)
-ret=0
-count_succeed=0
-count_failed=0
-preload_so=$PWD/bin/preload.so
-preload_tty_so=$PWD/bin/preload-tty.so
-CMDPREFIX_TTY="TERM=xterm"
-unset STU_OPTIONS
+File_List()
+# List files that should not be changed by tests.
+{
+	ls -ld sh/test tests tests/*/* conf/CXX src/*.cc src/*.hh || {
+		echo >&2 "Error creating file list"
+		exit 1
+	}
+}
 
-TEST_VERBOSE=${TEST_VERBOSE:-0}
 printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 	echo >&2 "$0: *** Invalid verbosity level '$TEST_VERBOSE'"
 	exit 2
@@ -262,7 +275,6 @@ printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 [ "$TEST_VERBOSE" -ge 1 ] && exec 3>&1 || exec 3>/dev/null
 
 rm -f bin/stu.test || exit 2
-[ "$VARIANT" ] || VARIANT=debug
 if [ "$VARIANT" != ndebug ] ; then
 	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else
@@ -277,6 +289,8 @@ fi
 mkdir -p log
 exec 6>log/error.log
 exec 8>log/runtime.$VARIANT
+
+File_List >"$file_list_begin"
 
 [ -z "$nopreload" ] && {
 	sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
@@ -689,4 +703,11 @@ time_end=$(sh/now)
 time_diff=$(( time_end - time_begin ))
 runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
 output_success
+
+File_List >"$file_list_end"
+diff "$file_list_begin" "$file_list_end" || {
+	echo >&2 "Error tests changes files that should not be changed; see $file_list_begin $file_list_end"
+	exit 1
+}
+
 exit "$ret"

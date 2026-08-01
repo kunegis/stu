@@ -1,8 +1,4 @@
 #
-# sh/configure:  Don't output a single line for each flag.  Output everything on one line.
-#
-
-#
 # %include -d
 #
 

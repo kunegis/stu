@@ -7,8 +7,8 @@
 
 >B
 {
-	printf 'list.1 1%b' '\0'
-	printf 'list.2 2%b' '\0'
+	printf 'list.1 1\000'
+	printf 'list.2 2\000'
 }
 
 >list.$x

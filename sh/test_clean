@@ -21,10 +21,16 @@ Find_Source_Files()
 	     -o -name VARIANT -o -name TOPIC
 }
 
+Find_Shell_Scripts()
+{
+	find sh -type f
+	find tests -name EXEC
+}
+
 Check_Test_Names()
 {
 	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
-	grep -v -E -x -e '(|long-)[0-9]+(|\.[0-9]+(|\.[0-9]+))-[012][0-9][0-9][0-9]' |
+	grep -v -E -x -e '(long-)?[0-9]+(\.[0-9]+(\.[0-9]+)?)?-[012][0-9][0-9][0-9]' |
 	sed -E -e 's,^,tests/,;s,$,: Invalid test name: Must be of the form [long-]<version>-xxxx,' |
 	grep -E -e '.' >&2 && return 1
 
@@ -55,14 +61,14 @@ s,-.*$,,
 
 	patterns=$dir/patterns
 	sed -E -e '
-s,^.*\[([0-9]+(|\.[0-9]+(|\.[0-9]+)))\].*$,\1,
+s,^.*\[([0-9]+(\.[0-9]+(\.[0-9]+)?)?)\].*$,\1,
 tend
 s,^Version ([0-9.]+):$,\1,
 tend
 d
 :end
 s,\.,\\.,g
-s,^,(|long-),
+s,^,(long-)?,
 s,$,-....,
 ' NEWS >"$patterns"
 	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
@@ -351,6 +357,14 @@ Check_seq()
 	return 0
 }
 
+Check_Empty_RE()
+{
+	Find_Shell_Scripts | xargs grep -E -n -e '\(\||\|\)' -- |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Script must not use empty RE,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
 Check_Cpp()
 {
 	Check_TODO || ret=1
@@ -362,6 +376,7 @@ Check_Cpp()
 Check_Shell_Script()
 {
 	Check_seq || ret=1
+	Check_Empty_RE || ret=1
 }
 
 Check_Test()

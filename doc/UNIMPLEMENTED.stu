@@ -497,3 +497,8 @@ B = { C }
 
 A/B = C; # Does 'mkdir -p A' first
 A/B = {c} # Does 'mkdir -p A' first
+
+#
+# rm_tmps:  Maybe stop using ?? as temporary files in tests, then we can remove the
+# special case handling for 'sh' in sh/rm_tmps.
+#

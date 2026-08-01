@@ -5,7 +5,7 @@
 
 --null >B
 {
-	printf 'list.1 1%blist.2 2%b' '\0' '\0'
+	printf 'list.1 1\000list.2 2\000'
 }
 
 >list.$x

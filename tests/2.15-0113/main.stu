@@ -5,7 +5,7 @@
 
 -p --null >B
 {
-	printf 'a a.data%bb b.data' '\0'
+	printf 'a a.data\000b b.data'
 }
 
 >$x.data

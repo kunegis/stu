@@ -19,7 +19,7 @@ s,.,aaaaaaaaaaaaaaaa,g
 	printf '{}\n'
 } >list.stu
 
-n=$(<list.stu wc -c)
+n=$(echo $(<list.stu wc -c))
 [ "$n" = $((65536 + 6)) ]
 
 set +e

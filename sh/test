@@ -290,6 +290,10 @@ mkdir -p log
 exec 6>log/error.log
 exec 8>log/runtime.$VARIANT
 
+# Execute rm_tmps in all test dirs before calling File_List, otherwise an interrupted test
+# run will make the next one fail (due to remaining temp files).
+sh/rm_tmps tests/*
+
 File_List >"$file_list_begin"
 
 [ -z "$nopreload" ] && {
@@ -337,8 +341,6 @@ do
 		echo >&2 "*** Error changing directory to $file"
 		continue
 	}
-
-	../../sh/rm_tmps || exit 2
 
 	time_begin_test=$(../../sh/now)
 

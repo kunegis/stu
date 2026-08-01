@@ -10,10 +10,60 @@
 #
 # Kept in sync with .gitignore.
 #
+# INVOCATION
+#    $0 [--not-sh] [DIR]...
+#
+# OPTIONS
+#    --not-sh   Don't delete 'sh' (only used for main directory of Stu repo)
+#
 
-rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
+SCRIPT=$0
 
-for file in ?? ; do
-	if [ "$file" = sh ] ; then continue ; fi
-	rm -f -- "$file" || exit 1
-done
+# Due to use of rm unquoted $@ and xargs, patterns must not contain any of the characters
+# in the set { ' " \ }.  Characters * and ? can only be used as glob patterns.
+patterns='
+?
+??
+list.*
+A.*
+*.data
+x.*
+*SCHTROUMPF*
+.+-~_
+*abcdef
+'
+
+if [ "$1" = --not-sh ] ; then
+	shift
+	[ $# != 0 ] && { echo >&2 "Option --not-sh cannot be used with explicit directories" ; exit 1 ; }
+	rm -Rf -f ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
+	for file in ?? ; do
+		[ "$file" = sh ] && continue
+		rm -R -f -- "$file" || exit 1
+	done
+	exit
+fi
+
+if [ "$1" = --delete ] ; then
+	shift
+	rm -R -f -- $@
+	exit
+fi
+
+Remove_Files() # [DIR]...
+{
+	printf '%s\n' "$@" |
+	while IFS= read -r dir ; do
+		printf '%s' "$patterns" | while IFS= read -r pattern ; do
+			[ "$pattern" ] || continue
+			printf '%s/%s\0' "$dir" "$pattern"
+		done
+	done |
+	xargs -0 "$SCRIPT" --delete
+}
+
+if [ $# = 0 ] ; then
+	Remove_Files .
+else
+	Remove_Files "$@"
+fi

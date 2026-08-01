@@ -128,7 +128,7 @@ install:  sh/install bin/stu man/stu.1
 	sh/install
 clean:
 	rm -Rf bin/ conf/ log/ cov/ src/version.hh
-	sh/rm_tmps
+	sh/rm_tmps --not-sh
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

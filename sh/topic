@@ -13,7 +13,7 @@
 
 set -e
 
-mkdir -p ../log
+mkdir -p log
 exec 4>log/topic
 
 cd tests

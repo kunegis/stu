@@ -71,5 +71,5 @@ Transitive - A transitive target is a phony whose rule (a) contains no file targ
 	targets that have a command or whose rule also has file targets do not pass flags
 	through to their dependencies.
 
-Variant - Stu can be compiled in different variants, e.g. ndebug, debug.  See
+Variant - Stu can be compiled in different variants, e.g. release, debug.  See
 	doc/VARIANTS.

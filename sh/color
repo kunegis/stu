@@ -7,11 +7,15 @@
 # PARAMETERS
 #	(optional) Names of tests, like for sh/test
 #
+# ENVIRONMENT VARIABLES
+#	$VARIANT (optional)
+#
 # STDOUT
 #	The output and error output of the tests, including color
 #	codes.  Can for instance be piped into less -R to see all.
 #
 
+VARIANT=${VARIANT:-release}
 [ "$COLOR_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 preload_tty_so=$PWD/bin/preload-tty.so
 CMDPREFIX_TTY="TERM=xterm"
@@ -20,10 +24,10 @@ LD_PRELOAD_VALUE_TTY="$preload_tty_so"
 sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
 
 rm -f bin/stu.test || exit 2
-if [ "$NDEBUG" ] ; then
+if [ "$VARIANT" = release ] ; then
 	ln -s stu bin/stu.test || exit 2
 else
-	ln -s stu.debug bin/stu.test || exit 2
+	ln -s stu."$VARIANT" bin/stu.test || exit 2
 fi
 
 cd tests

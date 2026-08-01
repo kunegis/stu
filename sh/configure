@@ -3,7 +3,7 @@
 # OUTPUT FILES
 #	conf/CXX               Compiler
 #	conf/CXXFLAGS          Flags used for all compilations
-#	conf/CXXFLAGS_NDEBUG   Flags for bin/stu
+#	conf/CXXFLAGS_RELEASE  Flags for bin/stu
 #
 # ENVIRONMENT
 #	$CXX                   (optional)
@@ -120,14 +120,14 @@ void x() { struct timespec t; int r= clock_gettime(CLOCK_REALTIME_COARSE, &t); }
 '
 CXXFLAGS="$CXXFLAGS -DHAVE_CLOCK_REALTIME_COARSE=$(echo $? | tr 01 10)"
 
-CXXFLAGS_NDEBUG=-DNDEBUG
+CXXFLAGS_RELEASE=-DNDEBUG
 for option in -O2 -fwhole-program -s -w ; do
 	if check $option ; then
-		CXXFLAGS_NDEBUG="$CXXFLAGS_NDEBUG $option"
+		CXXFLAGS_RELEASE="$CXXFLAGS_RELEASE $option"
 	fi
 done
 
 mkdir -p conf || exit 1
-printf '%s\n' "$CXX"             >conf/CXX             || exit 1
-printf '%s\n' "$CXXFLAGS"        >conf/CXXFLAGS        || exit 1
-printf '%s\n' "$CXXFLAGS_NDEBUG" >conf/CXXFLAGS_NDEBUG || exit 1
+printf '%s\n' "$CXX"              >conf/CXX              || exit 1
+printf '%s\n' "$CXXFLAGS"         >conf/CXXFLAGS         || exit 1
+printf '%s\n' "$CXXFLAGS_RELEASE" >conf/CXXFLAGS_RELEASE || exit 1

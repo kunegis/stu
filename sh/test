@@ -84,7 +84,7 @@
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # INTTYSTDOUTERR Each line in the file must be present in stdout or stderr in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
-#              the test from the 'ndebug' variant.
+#              the test from the 'release' variant.
 # VARIANT      The variant(s) in which the test should be executed.  Can contain any
 #              number of variants separated by space.  Each can be preceded by '!' to
 #              exclude it.
@@ -234,7 +234,7 @@ filter_tests()
 		fi
 	} |
 	{
-		if [ "$VARIANT" != ndebug ] ; then
+		if [ "$VARIANT" != release ] ; then
 			cat
 		else
 			while IFS= read -r name ; do
@@ -275,7 +275,7 @@ printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 [ "$TEST_VERBOSE" -ge 1 ] && exec 3>&1 || exec 3>/dev/null
 
 rm -f bin/stu.test || exit 2
-if [ "$VARIANT" != ndebug ] ; then
+if [ "$VARIANT" != release ] ; then
 	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else
 	ln -s stu bin/stu.test || exit 2

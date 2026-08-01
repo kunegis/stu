@@ -6,7 +6,7 @@ check: \
     man/stu.1 MANPAGE src/version.hh \
     bin/stu \
     log/test_unit.cdebug \
-    log/test_unit.ndebug-nopreload
+    log/test_unit.release-nopreload
 test: \
     bin/stu.debug \
     man/stu.1 MANPAGE src/version.hh \
@@ -16,7 +16,7 @@ test: \
     log/test_todo \
     cov \
     log/test_clean \
-    log/test_unit.ndebug \
+    log/test_unit.release \
     topic \
     sani
 .PHONY: all clean install check test cov sani prof analyzer
@@ -47,32 +47,32 @@ CXXFLAGS_ANALYZER= -fanalyzer
 
 bin/stu.debug:    conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
-	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
+	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
+	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
 bin/stu.cdebug:   conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
-	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
+	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
 bin/stu:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_RELEASE) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_RELEASE) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
 bin/stu.cov:      conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
-	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
+	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)               $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
+	@     $$(cat conf/CXX) $(CXXFLAGS_COV)               $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
 bin/stu.sani:     conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
-	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
+	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
+	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
 bin/stu.prof:     conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
-	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
 bin/stu.analyzer: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
-	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
+	@echo $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
+	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
@@ -84,22 +84,22 @@ log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/* doc/* N
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@
 
-log/test_unit.debug:           bin/stu.debug     sh/test tests tests/*/*
+log/test_unit.debug:            bin/stu.debug    sh/test tests tests/*/*
 	@echo                                    sh/test
 	@                                        sh/test && mkdir -p log && touch $@
-log/test_unit.cdebug:          bin/stu.cdebug    sh/test tests tests/*/*
+log/test_unit.cdebug:           bin/stu.cdebug   sh/test tests tests/*/*
 	@echo VARIANT=cdebug                     sh/test
 	@     VARIANT=cdebug                     sh/test && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu           sh/test tests tests/*/*
-	@echo VARIANT=ndebug                     sh/test
-	@     VARIANT=ndebug                     sh/test && mkdir -p log && touch $@
-log/test_unit.ndebug-nopreload:bin/stu           sh/test tests tests/*/*
-	@echo VARIANT=ndebug         nopreload=1 sh/test
-	@     VARIANT=ndebug         nopreload=1 sh/test && mkdir -p log && touch $@
-log/test_unit.sani:            bin/stu.sani      sh/test tests tests/*/*
+log/test_unit.release:          bin/stu          sh/test tests tests/*/*
+	@echo VARIANT=release                    sh/test
+	@     VARIANT=release                    sh/test && mkdir -p log && touch $@
+log/test_unit.release-nopreload:bin/stu          sh/test tests tests/*/*
+	@echo VARIANT=release nopreload=1        sh/test
+	@     VARIANT=release nopreload=1        sh/test && mkdir -p log && touch $@
+log/test_unit.sani:             bin/stu.sani     sh/test tests tests/*/*
 	@echo VARIANT=sani                       sh/test
 	@     VARIANT=sani                       sh/test && mkdir -p log && touch $@
-log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*
+log/test_unit.cov:              bin/stu.cov      sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	@echo VARIANT=cov                        sh/test
 	@     VARIANT=cov                        sh/test && mkdir -p log && touch $@

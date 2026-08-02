@@ -1339,6 +1339,8 @@ void Tokenizer::parse_directive(
 		parse_version_directive(place_percent);
 	} else if (name == "set" || name == "unset") {
 		parse_set_directive(context, place_percent, name);
+	} else if (name == "cd") {
+		parse_cd_directive(context, place_percent);
 	} else {
 		/* Invalid directive */
 		place_percent << fmt("invalid directive %s",
@@ -1512,6 +1514,43 @@ void Tokenizer::parse_set_directive(
 	} else {
 		unsetenv(name_string.c_str());
 	}
+}
+
+void Tokenizer::parse_cd_directive(
+	Context context,
+	const Place &place_percent)
+{
+	TRACE_FUNCTION();
+	if (context == DYNAMIC) {
+		place_percent << fmt("%s cannot appear in dynamic dependencies",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	bool skipped_space;
+	skip_space(skipped_space);
+	Place place_name= current_place();
+	shared_ptr <Placed_Name> name= parse_name(true);
+
+	if (!name) {
+		current_place() <<
+			(p == p_end
+				? "expected a variable name"
+				: fmt("expected a variable name, not %s",
+					show(current_mbchar())));
+		place_percent << fmt("after %s",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	if (name->is_parametrized()) {
+		place_name << fmt("directory name %s cannot be parametrized",
+			show(*name));
+		place_percent << fmt("after %s",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	string name_string= name->unparametrized();
+
+	...; // TODO emit cd-push token
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

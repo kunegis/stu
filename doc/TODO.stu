@@ -1,4 +1,20 @@
-* Check the status of 'cd -'
+* 'cd -' (check what the shell does)
+%cd in dynamic dependency: error
+* Manpage
+%cd aaa ; % cd bbb # Same as %cd aaa/bbb
+%cd aaa/bbb
+% cd DIR # With space between % and cd
+%cd /bin # Directory starts with /
+%cd aaa ; %cd /bin # Same as %cd /bin
+%cd /bin ; %cd aaa # Same as $cd /bin/aaa
+%cd /
+%cd in the middle of a rule:  Only the next rule is affected.
+%cd <EOF> #Error
+%cd <EOL> aaa
+%cd "aaa"
+%cd 'bbb'
+%cd $(VAR)
+%cd aaa/ ; %cd bbb # Same as %cd aaa/bbb
 
 #
 # %include -d

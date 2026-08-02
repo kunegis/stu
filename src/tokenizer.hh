@@ -119,6 +119,9 @@ private:
 		Context context,
 		const Place &place_percent,
 		string directive);
+	void parse_cd_directive(
+		Context context,
+		const Place &place_percent);
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).  The return

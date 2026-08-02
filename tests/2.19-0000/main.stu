@@ -1,0 +1,16 @@
+A: @prep list.dir/A
+{
+	cp list.dir/A A
+}
+
+@prep
+{
+	mkdir list.dir
+}
+
+%cd list.dir
+
+A
+{
+	echo CORRECT >A
+}

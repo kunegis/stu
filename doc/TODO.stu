@@ -1,3 +1,9 @@
+* Check the status of 'cd -'
+
+#
+# %include -d
+#
+
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
@@ -31,10 +37,6 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 # rule level.  Maybe use '*' instead.  (No).
 *import dir/
 *import -d dir/
-
-# There could also be a 'cd' command, e.g.
-%cd dir/
-%cd - # Pop from cd stack (?)
 
 # And theoretically also braces for blocks
 

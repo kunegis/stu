@@ -1,4 +1,5 @@
-* 'cd -' (check what the shell does)
+%cd aaa
+%cd -
 %cd in dynamic dependency: error
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
@@ -15,6 +16,25 @@
 %cd 'bbb'
 %cd $(VAR)
 %cd aaa/ ; %cd bbb # Same as %cd aaa/bbb
+%cd "" # Error
+%cd -X # Error (can be parsed as flag later)
+%cd <A # Error (dir missing)
+* Check that "%cd X" works even if X doe snot exist -- the error will come later when
+  building or matching a file that starts with "X/".
+%cd list.dir %include main.stu %cd - # Like future %include -d list.dir
+* Dynamic dependency in cd mode
+* Phony in cd mode (gets prefix too?)
+%cd a <RULE> %cd -
+%cd a %cd - <RULE>
+* Copy rule in cd mode
+* Content rule in cd mode
+* %set vvv aaa %cd ddd <RULE that uses $(vvv)> # Value of $(vvv) is not affected
+* What should $(PWD) return?:  Probably the "current" directy based on previous %cd directives
+%cd a %cd b %cd - %cd c # Same as %cd a/c
+%cd '-' # Directory named '-'
+%cd "-" # Directory named '-'
+%cd \- # Directory named '-'
+%cd $(VAR) # When $VAR is '-':  Directory named '-'
 
 #
 # %include -d
@@ -24,17 +44,17 @@
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-%import -d src
-%import --directory src/main.stu
+%include -d src
+%include --directory src/main.stu
 
 # Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
 # $STU_{,LIB_}PATH.
-%import --library c++.stu
-%import -l c++/simple.stu
-%import -l /usr/stulib/c++.stu
+%include --library c++.stu
+%include -l c++/simple.stu
+%include -l /usr/stulib/c++.stu
 * Need to determine in which cases we use $STU_LIB_PATH and in which not.
 
-* Need to determine whether ".stu" is automatically appended to names, but probably not.
+* Need to determine whether ".stu" is automatically appended to names (No)
 * Need to determine whether we want different filenames for "normal" Stu
   files (applying to the current directory) and Stu
   libraries (that should only be imported via '%import -l' (e.g. *.stl).  That also means

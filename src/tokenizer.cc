@@ -1550,7 +1550,7 @@ void Tokenizer::parse_cd_directive(
 	}
 	string name_string= name->unparametrized();
 
-	...; // TODO emit cd-push token
+	tokens.push_back(std::make_shared <CD_Token> (name_string));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

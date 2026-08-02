@@ -110,13 +110,6 @@ class Command
 /* A command delimited by braces, or the content of a file, also delimited by braces. */
 	: public Token
 {
-private:
-	mutable std::unique_ptr <std::vector <string> > lines;
-	/* The individual lines of the command.  Empty lines and leading spaces are not
-	 * included.  These lines are only used for output and writing content, not for
-	 * execution.  May be null.  Generated on demand, and therefore declared as
-	 * mutable. */
-
 public:
 	const string command;
 	/* The command as written in the input; contains newlines */
@@ -134,6 +127,21 @@ public:
 	void render(Parts &parts, Rendering= 0) const override {
 		parts.append_operator("{"); }
 	const std::vector <string> &get_lines() const;
+
+private:
+	mutable std::unique_ptr <std::vector <string> > lines;
+	/* The individual lines of the command.  Empty lines and leading spaces are not
+	 * included.  These lines are only used for output and writing content, not for
+	 * execution.  May be null.  Generated on demand, and therefore declared as
+	 * mutable. */
+};
+
+class CD_Token
+	: public Token
+{
+public:
+	const string dir;
+	/* If empty, this is an pop token, otherwise a push token */
 };
 
 #endif /* ! TOKEN_HH */

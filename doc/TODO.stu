@@ -1,7 +1,3 @@
-#
-# %include -d
-#
-
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of

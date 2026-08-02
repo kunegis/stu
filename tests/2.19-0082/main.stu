@@ -1,0 +1,9 @@
+A=B;
+
+%cd .
+%cd .
+%cd .
+$dir/B
+{
+	echo correct >"$dir"/B
+}

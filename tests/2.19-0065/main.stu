@@ -1,0 +1,14 @@
+A: d d/B
+{
+	cp d/B A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B
+{
+	printf '%s\n' "$PWD" | grep -q -E -e '/d$'
+	touch B
+}

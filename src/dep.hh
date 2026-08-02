@@ -8,19 +8,19 @@
  * All dependency classes allow parametrized targets.
  *
  * A dependency is normalized if it is one of:
- *    - a plain dependency (file or phony);
+ *    - an object dependency (file or phony);
  *    - a dynamic dependency containing a normalized dependency;
- *    - a concatenated dependency of only normalized plain and dynamic dependencies, and
+ *    - a concatenated dependency of only normalized object and dynamic dependencies, and
  *      of size at least two.
  * In particular, compound dependencies are never normalized; they do not appear at all in
  * normalized dependencies.  Also, concatenated dependencies never contain other
  * concatenated dependencies directly -- such constructs are always flattened in a
  * normalized dependency.
  *
- * A plain dependency is a file or a phony.
+ * An object dependency is a file or a phony.
  *
  * A dependency is simple when is does not involve concatenation or compound dependencies,
- * i.e., when it is a possible multiply dynamic dependency of a plain dependency.
+ * i.e., when it is a possible multiply dynamic dependency of an object dependency.
  *
  * A dependency that is not simple is complex.  I.e., a complex dependency involves
  * concatenation and/or compound dependencies.
@@ -29,7 +29,7 @@
 #include <map>
 #include <memory>
 
-#include "target.hh"
+#include "object.hh"
 #include "flags.hh"
 #include "hints.hh"
 #include "options.hh"
@@ -104,6 +104,7 @@ public:
 	/* Remove all trivial flags, recursively.  Return null if already trivialized. */
 
 	shared_ptr <Dep> clone() const; /* Shallow clone */
+	void add_metadata(shared_ptr <const Dep>);
 
 	shared_ptr <const Dep> strip_dynamic() const;
 	/* Strip dynamic dependencies from the given dependency.  Perform
@@ -121,8 +122,7 @@ public:
 	void check() const { }
 #endif
 
-	virtual shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const= 0;
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const= 0;
 	virtual bool find_parameter(
 		string &parameter_name, Place &parameter_place) const= 0;
 
@@ -144,7 +144,7 @@ void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)
 	dep->render(parts, rendering);
 }
 
-class Plain_Dep
+class Object_Dep
 /* A dependency denoting an individual target name, which can be a file or a phony.
  *
  * When the target is a phony, the dependency flags have the F_TARGET_PHONY bit
@@ -153,7 +153,7 @@ class Plain_Dep
 	: public Dep
 {
 public:
-	Placed_Target placed_target;
+	Placed_Object object;
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 
@@ -163,59 +163,58 @@ public:
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
 	explicit
-	Plain_Dep(const Placed_Target &placed_target_)
-		: placed_target(placed_target_),
-		  place(placed_target_.place)
+	Object_Dep(const Placed_Object &object_)
+		: object(object_),
+		  place(object_.place)
 	{
-		flags.add_unplaced_flags(placed_target_.flags);
+		flags.add_unplaced_flags(object_.flags);
 		check();
 	}
 
-	Plain_Dep(const Placed_Flags &placed_flags_, const Placed_Target &placed_target_)
+	Object_Dep(const Placed_Flags &flags_, const Placed_Object &object_)
 		/* Take the dependency place from the target place */
-		: Dep(placed_flags_),
-		  placed_target(placed_target_),
-		  place(placed_target_.place)
+		: Dep(flags_),
+		  object(object_),
+		  place(object_.place)
 	{
 		check();
 	}
 
-	Plain_Dep(
-		const Placed_Flags &placed_flags_,
-		const Placed_Target &placed_target_,
+	Object_Dep(
+		const Placed_Flags &flags_,
+		const Placed_Object &object_,
 		const Place &place_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(placed_flags_),
-		  placed_target(placed_target_),
+		: Dep(flags_),
+		  object(object_),
 		  place(place_),
 		  variable_name(variable_name_)
 	{
 		check();
 	}
 
-	Plain_Dep(
-		const Placed_Flags &placed_flags_,
-		const Placed_Target &placed_target_,
+	Object_Dep(
+		const Placed_Flags &flags_,
+		const Placed_Object &object_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(placed_flags_),
-		  placed_target(placed_target_),
-		  place(placed_target_.place),
+		: Dep(flags_),
+		  object(object_),
+		  place(object_.place),
 		  variable_name(variable_name_)
 	{
 		check();
 	}
 
-	Plain_Dep(const Plain_Dep &plain_dep)
-		: Dep(plain_dep),
-		  placed_target(plain_dep.placed_target),
-		  place(plain_dep.place),
-		  variable_name(plain_dep.variable_name) { }
+	Object_Dep(const Object_Dep &object_dep)
+		: Dep(object_dep),
+		  object(object_dep.object),
+		  place(object_dep.place),
+		  variable_name(object_dep.variable_name) { }
 
 	const Place &get_place() const override { return place; }
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	void render(Parts &, Rendering= 0) const override;
@@ -241,7 +240,7 @@ public:
 		: dep(dep_)
 	{
 		assert(dep_ != nullptr);
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 	}
 
 	Dynamic_Dep(shared_ptr <const Dynamic_Dep> base_dep,
@@ -252,7 +251,7 @@ public:
 		    shared_ptr <const Dep> dep_)
 		: dep(dep_)
 	{
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 		assert((flags_ & F_PLACED) == 0);
 		flags.add_unplaced_flags(flags_);
 		assert((flags.get_flags() & F_VARIABLE) == 0);
@@ -260,18 +259,17 @@ public:
 	}
 
 	Dynamic_Dep(
-		const Placed_Flags &placed_flags_,
+		const Placed_Flags &flags_,
 		shared_ptr <const Dep> dep_)
-		: Dep(placed_flags_),
+		: Dep(flags_),
 		  dep(dep_)
 	{
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 		assert(! flags.contains_index(I_VARIABLE));
 		assert(dep_ != nullptr);
 	}
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 
 	const Place &get_place() const override
@@ -317,9 +315,9 @@ public:
 	Concat_Dep() { }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
 
-	Concat_Dep(const Placed_Flags &placed_flags_)
+	Concat_Dep(const Placed_Flags &flags_)
 		/* The list of dependencies is empty */
-		: Dep(placed_flags_) { }
+		: Dep(flags_) { }
 
 	Concat_Dep(shared_ptr <const Dep> dep)
 		: Dep(*dep) { }
@@ -328,8 +326,7 @@ public:
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override;
@@ -340,11 +337,12 @@ public:
 					     shared_ptr <const Dep> b,
 					     int &error);
 	/* Concatenate two dependencies to a single dependency.  On error, a message is
-	 * printed, bits are set in ERROR, and null is returned.  Only plain and dynamic
+	 * printed, bits are set in ERROR, and null is returned.  Only object and dynamic
 	 * dependencies can be passed. */
 
-	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
-							 shared_ptr <const Plain_Dep> b);
+	static shared_ptr <const Object_Dep> concat_object(
+		shared_ptr <const Object_Dep> a,
+		shared_ptr <const Object_Dep> b);
 	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
 							    shared_ptr <const Dep> b);
 
@@ -395,9 +393,9 @@ public:
 		: place(place_) { }
 
 	Compound_Dep(
-		const Placed_Flags &placed_flags_,
+		const Placed_Flags &flags_,
 		const Place &place_)
-		: Dep(placed_flags_),
+		: Dep(flags_),
 		  place(place_)
 	{ /* The list of dependencies is empty */ }
 
@@ -407,8 +405,7 @@ public:
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;

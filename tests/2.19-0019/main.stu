@@ -1,0 +1,20 @@
+%set STU_TEST_vvv abcd
+
+A: d d/B
+{
+	cp d/B A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B: list.$(STU_TEST_vvv)
+{
+	cp -- "list.${STU_TEST_vvv}" B
+}
+
+>list.$x
+{
+	echo "$x"
+}

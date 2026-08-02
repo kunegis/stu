@@ -1,0 +1,12 @@
+# TOPIC: %cd a/ %cd b
+
+A: @a/b/clone
+{
+}
+
+%cd a/
+%cd b
+
+@clone
+{
+}

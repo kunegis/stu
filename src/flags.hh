@@ -2,10 +2,10 @@
 #define FLAGS_HH
 
 /*
- * Flags apply to dependencies.  Flags are binary and option-like, and appear at multiple
- * levels in Stu, from Stu source code where they are represented by a syntax ressembling
- * that of command line options, to attributes of edges in the dependency graph.
- * Internally, flags are defined as bit fields.
+ * Flags are bitfields that apply to dependencies.  Flags are binary and option-like, and
+ * appear at multiple levels in Stu, from Stu source code where they are represented by a
+ * syntax ressembling that of command line options, to attributes of edges in the
+ * dependency graph.
  *
  * Each edge in the dependency graph is annotated with one object of this type.  This
  * contains bits related to what should be done with the dependency, whether time is
@@ -27,8 +27,8 @@ enum
 	I_PERSISTENT= 0,      /* -p \   common flags    \                    */
 	I_OPTIONAL,           /* -o /                    |                   */
 	I_TRIVIAL,            /* -t                      |                   */
-	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
-	I_TARGET_PHONY,       /* @   /                   | Hash_Dep          */
+	I_DYNAMIC,            /* [ ] \  target flags     |                   */
+	I_PHONY,              /* @   /                   | Hash_Dep          */
 	I_VARIABLE,           /* $                       |                   */
 	I_NEWLINE,            /* -n  \                   |                   */
 	I_NULL,               /* -0   | dynamic format   |                   */
@@ -43,7 +43,7 @@ enum
 	C_ALL,
 	C_COMMON_PLACED =  2, /* Flags that can appear in front of target or dependency */
 	C_CACHE         =  9, /* Flags used for caching */
-	C_WORD          = 10, /* Flags stored in Hash_Dep */
+	C_WORD          = 10, /* Flags stored in Hash_*_Dep */
 
 	/*
 	 * Flag bits to be ORed together
@@ -58,11 +58,11 @@ enum
 	F_TRIVIAL               = 1 << I_TRIVIAL,
 	/* (-t) Trivial dependency */
 
-	F_TARGET_DYNAMIC        = 1 << I_TARGET_DYNAMIC,
-	/* A dynamic target */
+	F_DYNAMIC               = 1 << I_DYNAMIC,
+	/* A dynamic object */
 
-	F_TARGET_PHONY          = 1 << I_TARGET_PHONY,
-	/* A phony target */
+	F_PHONY                 = 1 << I_PHONY,
+	/* A phony object */
 
 	F_VARIABLE              = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */
@@ -79,7 +79,7 @@ enum
 	/* For dynamic dependencies, the file contains Stu code */
 
 	F_NO_FOLLOW             = 1 << I_NO_FOLLOW,
-	/* Target is symlink and should not be dereferenced */
+	/* Object is symlink and should not be dereferenced */
 
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
@@ -102,11 +102,11 @@ enum
 	F_WORD          = (1 << C_WORD) - 1,
 	F_ATTRIBUTE     = F_NEWLINE | F_NULL | F_CODE,
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
-	F_PLACED_TARGET = F_PERSISTENT | F_OPTIONAL | F_NO_FOLLOW | F_ATTRIBUTE,
-	F_PLACED_TARGET_PHONY = F_PERSISTENT | F_OPTIONAL | F_ATTRIBUTE,
+	F_PLACED_OBJECT = F_PERSISTENT | F_OPTIONAL | F_NO_FOLLOW | F_ATTRIBUTE,
+	F_PLACED_OBJECT_PHONY = F_PERSISTENT | F_OPTIONAL | F_ATTRIBUTE,
 	F_PLACED_DEPENDENCY= F_PERSISTENT | F_OPTIONAL | F_TRIVIAL
 		| F_NEWLINE | F_NULL | F_CODE,
-	F_PLACED= F_PLACED_TARGET | F_PLACED_DEPENDENCY,
+	F_PLACED= F_PLACED_OBJECT | F_PLACED_DEPENDENCY,
 	F_UNPLACED= F_ALL & ~F_PLACED,
 };
 

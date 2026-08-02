@@ -1,17 +1,20 @@
 #include "concat_executor.hh"
 
 #include "place.hh"
+#include "show.hh"
 #include "show_dep.hh"
 #include "show_flags.hh"
 #include "trace.hh"
 
 Concat_Executor::Concat_Executor(
 	shared_ptr <const Concat_Dep> dep_,
-	Executor *parent)
-	: dep(dep_), stage(ST_DYNAMIC)
+	Executor *parent,
+	string dynamic_base_)
+	: dep(dep_), stage(ST_DYNAMIC), dynamic_base(dynamic_base_)
 {
 	TRACE_FUNCTION();
 	TRACE("dep_= %s", show_trace(dep_));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
 	assert(dep);
 	assert(dep->is_normalized());
 	assert(parent);
@@ -29,7 +32,7 @@ Concat_Executor::Concat_Executor(
 	/* Push initial dependencies */
 	size_t i= 0;
 	for (auto d: dep->deps) {
-		if (auto plain_d= to <const Plain_Dep> (d)) {
+		if (auto object_d= to <const Object_Dep> (d)) {
 			collected.at(i)->deps.push_back(d);
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
 			/* This is the only place where Dependency::index is set to
@@ -113,7 +116,7 @@ void Concat_Executor::notify_variable(
 
 void Concat_Executor::launch_stage_normal()
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show_trace(dep));
 	assert(stage == ST_DYNAMIC);
 	++stage;
 	assert(stage == ST_NORMAL);
@@ -124,7 +127,7 @@ void Concat_Executor::launch_stage_normal()
 		TRACE("collected[%s]= %s", frmt("%zu", i), show(collected[i]));
 		c->deps.at(i)= move(collected[i]);
 	}
-	TRACE("c= %s", show(c, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("c= %s", show(c, S_TRACE, R_SHOW_FLAGS));
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	c->normalize(deps, e);
@@ -136,13 +139,8 @@ void Concat_Executor::launch_stage_normal()
 
 	for (auto f: deps) {
 		shared_ptr <Dep> f2= f->clone();
-
-		/* Add -% flag */
 		f2->flags.add_unplaced_index(I_RESULT_COPY);
-
-		/* Add flags from self */
-		f2->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
-
+		f2->add_metadata(dep);
 		f2->flags.add(f->flags);
 		push(f2);
 	}
@@ -156,8 +154,6 @@ void Concat_Executor::notify_result(
 {
 	assert(source);
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
-	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
-		!= (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("dep_result= %s", show_trace(dep_result));
@@ -167,7 +163,7 @@ void Concat_Executor::notify_result(
 
 	if (flags & F_RESULT_NOTIFY) {
 		std::vector <shared_ptr <const Dep> > deps;
-		source->read_dynamic(to <const Plain_Dep> (dep_result), deps, dep, this);
+		source->read_dynamic(to <const Object_Dep> (dep_result), deps, dep, this);
 		for (auto &j: deps) {
 			size_t i= dep_source->index;
 			collected.at(i)->deps.push_back(j);
@@ -176,5 +172,23 @@ void Concat_Executor::notify_result(
 		push_result(dep_result);
 	} else {
 		unreachable();
+	}
+}
+
+string Concat_Executor::get_dynamic_base(
+	shared_ptr <const Dep> child,
+	bool for_rebase) const
+{
+	TRACE_FUNCTION(show_trace(dep));
+	assert(child);
+	TRACE("child= %s", show_trace(child));
+	TRACE("for_rebase= %s", frmt("%d", for_rebase));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
+	TRACE("child->index= %s", frmt("%zd", child->index));
+
+	if (!for_rebase || child->index <= 0) {
+		return dynamic_base;
+	} else {
+		return "";
 	}
 }

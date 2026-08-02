@@ -8,6 +8,7 @@
 using std::string;
 using std::shared_ptr;
 
+#include "base.cc"
 #include "buffer.cc"
 #include "buffering.cc"
 #include "canonicalize.cc"
@@ -29,6 +30,7 @@ using std::shared_ptr;
 #include "job.cc"
 #include "job_list.cc"
 #include "name.cc"
+#include "object.cc"
 #include "options.cc"
 #include "parser.cc"
 #include "place.cc"
@@ -43,7 +45,6 @@ using std::shared_ptr;
 #include "show_option.cc"
 #include "signal.cc"
 #include "state.cc"
-#include "target.cc"
 #include "timestamp.cc"
 #include "token.cc"
 #include "tokenizer.cc"

@@ -16,8 +16,8 @@
  *                                          rule
  * Transitive_Executor By Target (w/ flags) Phonies without commands nor file targets in
  *                                          the same rule, i.e., transitive phony targets
- * "Plain executor"    By Target            Name for File_Executor or Transitive_Executor
- * Dynamic_Ex.[nocat]  By Target (w/ flags) Dynamic^+ targets of Plain_Dep w/o -* flag
+ * "Object executor"   By Target            Name for File_Executor or Transitive_Executor
+ * Dynamic_Ex.[nocat]  By Target (w/ flags) Dynamic^+ targets of Object_Dep w/o -* flag
  * Dynamic_Ex.[w/cat]  Not cached           Dynamic^+ targets of Concat_Dep w/o -* flag
  * Concat_Executor     Not cached           Concatenated targets
  *
@@ -61,13 +61,13 @@ public:
 	int get_error() const { return error; }
 
 	void read_dynamic(
-		shared_ptr <const Plain_Dep> dep_target,
+		shared_ptr <const Object_Dep> dep_target,
 		std::vector <shared_ptr <const Dep> > &deps,
 		shared_ptr <const Dep> dep,
-		Executor *dynamic_executor);
-	/* Read dynamic dependencies.  The only reason this is not static is
-	 * that errors can be raised and printed correctly.  Dependencies that
-	 * are read are written into DEPS, which is empty on calling. */
+		Executor *executor);
+	/* Read dynamic dependencies.  The only reason this is not static is that errors
+	 * can be raised and printed correctly.  Dependencies that are read are written
+	 * into DEPS, which is empty on calling. */
 
 	void operator<<(string text) const override;
 	/* Print full trace for the executor.  First the message is printed,
@@ -77,12 +77,9 @@ public:
 	const std::map <Executor *, shared_ptr <const Dep> > &get_parents() const {
 		return parents;
 	}
-	std::map <Executor *, shared_ptr <const Dep> > &get_parents() {
-		return parents;
-	}
-	std::set <Executor *> get_children() {
-		return children;
-	}
+	std::map <Executor *, shared_ptr <const Dep> > &get_parents() { return parents; }
+	std::set <Executor *> get_children() { return children; }
+	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual bool want_delete() const;
 
@@ -120,12 +117,7 @@ public:
 	static bool out_message_done;
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
-	static Rule_Set rule_set;
-	/* Set before calling main_loop() */
-
-	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep);
-	/* Get the target value used for caching.  I.e, return TARGET with certain flags
-	 * removed. */
+	static Based_Hash_Dep get_target_for_cache(Hash_Dep hash_dep, string dynamic_base);
 	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.  Only used for finding
 	 * cycles. */
@@ -143,10 +135,9 @@ protected:
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;
 	/* This is a map rather than an unsorted_map because typically, the number of
-	 * elements is always very small, i.e., mostly one, and a map is better suited in
-	 * this case.  The map is sorted, but by the executor pointer, i.e., the sorting
-	 * is arbitrary as far as Stu is concerned.  The dependencies contain flags
-	 * declared on targets of rules. */
+	 * elements is always very small, i.e., mostly one.  The map is sorted, but by the
+	 * executor pointer, i.e., the sorting is arbitrary as far as Stu is concerned.
+	 * The dependencies contain flags declared on targets of rules. */
 
 	std::set <Executor *> children;
 
@@ -159,7 +150,7 @@ protected:
 	std::vector <shared_ptr <const Dep> > result[2];
 	/* The final list of dependencies represented by the target.  This does not
 	 * include any dynamic dependencies, i.e., all dependencies are flattened to
-	 * Plain_Dep's.  Not used for executors that have file targets, neither for
+	 * Object_Dep's.  Not used for executors that have file targets, neither for
 	 * executors that have multiple targets.  This is not used for file dependencies,
 	 * as a file dependency's result can be each of its files, depending on the parent
 	 * -- for file dependencies, parents are notified directly, bypassing
@@ -189,15 +180,10 @@ protected:
 	/* Execute already-active children */
 
 	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
-	/* DEP_LINK is not null */
-
 	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
-	/* Second pass (trivial dependencies).  Called once we are sure that the target
-	 * must be built. */
 
-	Executor *get_executor(shared_ptr <const Dep> dep);
-	/* Get an existing Executor or create a new one for the given
-	 * DEPENDENCY.  Return null on errors. */
+	Executor *get_executor(shared_ptr <const Dep> dep, string dynamic_base);
+	/* Get an existing Executor or create a new one.  Return null on errors. */
 
 	void check_waited() const {
 		assert(buffer_A.empty());
@@ -235,12 +221,17 @@ protected:
 	 * file does not exist.  Return FALSE when children should be started.  Return
 	 * FALSE in executor types that are not affected. */
 
+	virtual string get_dynamic_base(shared_ptr <const Dep> child, bool for_rebase) const;
+	/* CHILD is null when called for dependency from dynamic dependency.
+	 * FOR_REBASE: true: for rebasing name of content in dynamic dependency. false:
+	 * for determining base of child executor. */
+
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the file system
 	 * should be newer than this. */
 
-	static std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
-		executors_by_hash_dep;
+	static std::unordered_map <Based_Hash_Dep, std::pair <Target_Index, Executor *> >
+		executors_by_dep;
 	/* All cached Executor objects by each of their Target.  Such Executor objects are
 	 * never deleted. */
 

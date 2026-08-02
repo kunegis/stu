@@ -1,0 +1,11 @@
+A: B
+{
+	cp B A
+}
+
+%cd .
+
+$dir/B
+{
+	touch -- "$dir"/B
+}

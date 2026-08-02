@@ -1,0 +1,2 @@
+%cd aaa
+%include aaa_main.stu

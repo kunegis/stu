@@ -1,0 +1,26 @@
+# Names in B are interpreted relatively to A.
+
+>A: list.directory [@list.directory/x].data
+{
+	[ -e I.data ]
+	[ -e J.data ]
+	[ ! -e list.directory/I ]
+	[ ! -e list.directory/J ]
+	[ ! -e list.directory/I.data ]
+	[ ! -e list.directory/J.data ]
+	cat I.data J.data
+}
+
+I.data = {iii}
+J.data = {jjj}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+@x: B;
+
+B = {I J}

@@ -1,0 +1,5 @@
+# TOPIC: First rule is %cd content rule, fails because directory doesn't exist
+
+%cd nonexistingdir
+
+very_special_file_xyz = {content}

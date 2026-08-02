@@ -1,0 +1,7 @@
+A: [B]
+{
+}
+
+B = { %cd d C }
+
+# TOPIC: %cd in dynamic dependency

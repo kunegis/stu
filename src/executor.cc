@@ -17,29 +17,30 @@
 #include "trace_executor.hh"
 #include "transitive_executor.hh"
 
-Rule_Set Executor::rule_set;
-
 Timestamp Executor::timestamp_last;
 /* Initialized to zero, i.e., older than the current date */
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
-	Executor::executors_by_hash_dep;
+std::unordered_map <Based_Hash_Dep, std::pair <Target_Index, Executor *> >
+	Executor::executors_by_dep;
 
 void Executor::read_dynamic(
-	shared_ptr <const Plain_Dep> dep_target,
+	shared_ptr <const Object_Dep> dep_target,
 	std::vector <shared_ptr <const Dep> > &deps,
 	shared_ptr <const Dep> dep,
-	Executor *dynamic_executor)
+	Executor *executor)
 {
-	try {
-		const Placed_Target &placed_target=
-			to <Plain_Dep> (dep_target)->placed_target;
-		assert(placed_target.placed_name.get_n() == 0);
-		const Hash_Dep hash_dep= placed_target.unparametrized();
-		assert(deps.empty());
+	TRACE_FUNCTION();
+	TRACE("dep_target= %s", show_trace(dep_target));
+	TRACE("dep= %s", show_trace(dep));
+	assert(deps.empty());
+	assert(executor);
+	const Placed_Object &object= to <Object_Dep> (dep_target)->object;
+	assert(object.name.get_n() == 0);
+	const Hash_Dep hash_dep= object.unparametrized();
 
+	try {
 		/* Check:  variable dependencies are not allowed in multiply dynamic
 		 * dependencies. */
 		if (dep_target->flags.get_flags() & F_VARIABLE) {
@@ -50,18 +51,16 @@ void Executor::read_dynamic(
 				::show(dep));
 			raise(ERR_LOGICAL);
 		}
-		if (placed_target.flags & F_TARGET_PHONY)
+		if (object.flags & F_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
 		string filename= hash_dep.get_name_nondynamic();
 
-		bool delim= (dep_target->flags.get_flags()
-			& (F_NEWLINE | F_NULL));
+		bool delim= (dep_target->flags.get_flags() & (F_NEWLINE | F_NULL)) != 0;
 		/* Whether the dynamic dependency is delimiter-separated */
 
-		bool allow_enoent= dep_target->flags.get_flags()
-			& (F_OPTIONAL | F_TRIVIAL);
+		bool allow_enoent= dep_target->flags.get_flags() & (F_OPTIONAL | F_TRIVIAL);
 
 		if (! delim) {
 			/* Dynamic dependency in full Stu syntax */
@@ -71,8 +70,8 @@ void Executor::read_dynamic(
 			Tokenizer::parse_tokens_file(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
-				placed_target.place, -1,
-				allow_enoent, false);
+				object.place, -1,
+				allow_enoent, false, false, false);
 			Placed_Name input;
 			Place place_input;
 			try {
@@ -93,8 +92,8 @@ void Executor::read_dynamic(
 					show(Prefix_View("<", input)));
 				Hash_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
-					&= ~F_TARGET_PHONY;
-				(*dynamic_executor) << fmt("%s is declared here",
+					&= ~F_PHONY;
+				(*executor) << fmt("%s is declared here",
 					show(hash_dep_file));
 				raise(ERR_LOGICAL);
 			}
@@ -102,17 +101,17 @@ void Executor::read_dynamic(
 
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
-			const char c= (dep_target->flags.get_flags()
-				& F_NEWLINE) ? '\n' : '\0';
-			Index index= (dep_target->flags.get_flags()
-				& F_NEWLINE) ? I_NEWLINE : I_NULL;
+			const char c= (dep_target->flags.get_flags() & F_NEWLINE)
+				? '\n' : '\0';
+			Index index= (dep_target->flags.get_flags() & F_NEWLINE)
+				? I_NEWLINE : I_NULL;
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
-					placed_target.place,
+					object.place,
 					dep_target->flags.place_by_index(index),
 					c, index,
-					*dynamic_executor, allow_enoent);
+					*executor, allow_enoent);
 			} catch (int e) {
 				raise(e);
 			}
@@ -135,23 +134,32 @@ void Executor::read_dynamic(
 		top->top= top_top;
 
 		std::vector <shared_ptr <const Dep> > deps_new;
+		string dynamic_base_dir= executor->get_dynamic_base(
+			dep_target, true);
+		TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 		for (auto &j: deps) {
-			if (j) {
-				shared_ptr <Dep> j_new= j->clone();
-				j_new->top= top;
-				deps_new.push_back(j_new);
+			if (!j) continue;
+			TRACE("j= %s", show_trace(j));
+			shared_ptr <Dep> j_new= j->clone();
+			j_new->top= top;
+			shared_ptr <const Dep> k= j_new;
+			if (! dynamic_base_dir.empty()) {
+				k= rebase(k, dynamic_base_dir);
 			}
+			TRACE("k= %s", show_trace(k));
+			deps_new.push_back(k);
 		}
 		swap(deps, deps_new);
 	} catch (int e) {
-		dynamic_executor->raise(e);
+		executor->raise(e);
 	}
 }
 
-Executor *Executor::get_executor(shared_ptr <const Dep> dep)
+Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base_dir)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 
 	/*
 	 * Non-cached executors
@@ -160,23 +168,26 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
 		TRACE("Creating Concat_Executor");
-		Concat_Executor *executor= new Concat_Executor(concat_dep, this);
+		Concat_Executor *executor= new Concat_Executor(concat_dep, this, dynamic_base_dir);
 		assert(executor);
 		return executor;
 	}
 
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
 	if (to <const Dynamic_Dep> (dep)
-	    && ! to <const Plain_Dep> (dep->strip_dynamic())) {
+	    && ! to <const Object_Dep> (dep->strip_dynamic())) {
 		TRACE("Create Dynamic_Executor with concatenation inside");
 		int error_additional= 0;
-		Dynamic_Executor *executor= new Dynamic_Executor
-			(to <const Dynamic_Dep> (dep), this, error_additional);
+		Dynamic_Executor *executor= new Dynamic_Executor(
+			to <const Dynamic_Dep> (dep),
+			this,
+			error_additional,
+			dynamic_base_dir);
 		assert(executor);
 		if (error_additional) {
 			should_not_happen();
 			/* This cannot happen currently, as either (1) the dynamic would
-			 * need to contain a single plain dependency, or (2) a cycle at
+			 * need to contain a single object dependency, or (2) a cycle at
 			 * rule-level would be found (but this type of Dynamic_Executor
 			 * does not have a rule. */
 			error |= error_additional;
@@ -193,10 +204,11 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	const Hash_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
-	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
-	auto it= executors_by_hash_dep.find(target_for_cache);
+	const Based_Hash_Dep target_for_cache=
+		get_target_for_cache(hash_dep, dynamic_base_dir);
+	auto it= executors_by_dep.find(target_for_cache);
 
-	if (it != executors_by_hash_dep.end()) {
+	if (it != executors_by_dep.end()) {
 		TRACE("Executor already exists");
 		Target_Index target_index= it->second.first;
 		executor= it->second.second;
@@ -227,7 +239,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			if (executor->rule) {
 				dep2->flags.add(
 					executor->rule->targets[target_index]->flags,
-					F_PLACED_TARGET);
+					F_PLACED_OBJECT);
 			}
 			executor->parents[this]= dep2;
 		}
@@ -239,20 +251,19 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	TRACE("Creating new executor");
 	int error_additional= 0; /* Passed to the executor */
 	if (! hash_dep.is_dynamic()) {
-		/* Plain executor */
+		/* Object executor */
 		shared_ptr <const Rule> rule_child, param_rule_child;
 		std::map <string, string> mapping_parameter;
 		bool use_file_executor= false;
-		shared_ptr <const Plain_Dep> target_plain_dep;
+		shared_ptr <const Object_Dep> target_object_dep;
 		Target_Index target_index;
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
-			hash_dep_without_flags.get_front_word_nondynamic()
-				&= F_TARGET_PHONY;
-			rule_child= rule_set.get(
+			hash_dep_without_flags.get_front_word_nondynamic() &= F_PHONY;
+			rule_child= all_rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
-				dep->get_place(), target_plain_dep, target_index);
+				dep->get_place(), target_object_dep, target_index);
 		} catch (int e) {
 			assert(e);
 			error_additional= e;
@@ -272,16 +283,16 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			use_file_executor= true;
 		} else {
 			for (auto &i: rule_child->targets) {
-				if ((i->flags.get_flags() & F_TARGET_PHONY) == 0)
+				if ((i->flags.get_flags() & F_PHONY) == 0)
 					use_file_executor= true;
 			}
 		}
 
-		if (target_plain_dep) {
-			TRACE("Adding target_plain_dep");
+		if (target_object_dep) {
+			TRACE("Adding target_object_dep");
 			shared_ptr <Dep> dep_new= dep->clone();
 			dep_new->flags.add(dep->flags, F_COMMON_PLACED);
-			dep_new->flags.add(target_plain_dep->flags);
+			dep_new->flags.add(target_object_dep->flags);
 			dep= dep_new;
 		}
 
@@ -298,7 +309,10 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		}
 	} else {
 		executor= new Dynamic_Executor(
-			to <Dynamic_Dep> (dep), this, error_additional);
+			to <Dynamic_Dep> (dep),
+			this,
+			error_additional,
+			dynamic_base_dir);
 	}
 
 	if (error_additional) {
@@ -629,8 +643,8 @@ const Place &Executor::get_place() const
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	assert(options_jobs > 0);
 	assert(dep_link);
+	assert(options_jobs > 0);
 	if (finished(dep_link->flags.get_flags())) {
 		TRACE("Finished");
 		return 0;
@@ -724,6 +738,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
+	assert(dep_link);
 	assert(buffer_A.empty());
 	assert(options_jobs > 0);
 	Proceed proceed= 0;
@@ -783,7 +798,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
+Based_Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string dynamic_base)
 {
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
@@ -793,7 +808,7 @@ Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
 		hash_dep.get_front_word_any() &= (word_t)F_CACHE;
 	}
 
-	return hash_dep;
+	return Based_Hash_Dep(dynamic_base, hash_dep);
 }
 
 shared_ptr <const Dep> Executor::append_top(
@@ -821,15 +836,15 @@ bool Executor::check_clash_without_target_flags(
 	if ((dep_child->flags.get_flags() & (F_VARIABLE | F_OPTIONAL))
 		== (F_VARIABLE | F_OPTIONAL))
 	{
-		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
-		assert(plain_dep_child);
-		assert(!(dep_child->flags.get_flags() & F_TARGET_PHONY));
+		shared_ptr <const Object_Dep> object_dep_child= to <Object_Dep> (dep_child);
+		assert(object_dep_child);
+		assert(!(dep_child->flags.get_flags() & F_PHONY));
 		const Place &place_variable= dep_child->get_place();
 		const Place &place_flag= dep_child->flags.place_by_index(I_OPTIONAL);
 		place_variable << fmt(
 			"variable dependency %s must not be declared as optional dependency",
 			show(Dynamic_Variable_View(
-			plain_dep_child->placed_target.placed_name.unparametrized())));
+			object_dep_child->object.name.unparametrized())));
 		place_flag << fmt("using %s",
 			show(Flag_View(dep_child->flags, I_OPTIONAL)));
 		*this << "";
@@ -917,6 +932,15 @@ bool Executor::check_clash_with_target_flags(
 	return false;
 }
 
+string Executor::get_dynamic_base(shared_ptr <const Dep>, bool) const
+{
+	if (rule) {
+		return rule->base;
+	} else {
+		return "";
+	}
+}
+
 Proceed Executor::connect(
 	shared_ptr <const Dep> dep_this,
 	shared_ptr <const Dep> dep_child)
@@ -925,10 +949,12 @@ Proceed Executor::connect(
 	TRACE("dep_child= %s", show_trace(dep_child));
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
-	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
+	shared_ptr <const Object_Dep> object_dep_this= to <Object_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
+	string dynamic_base_dir= get_dynamic_base(dep_child, false);
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 
-	Executor *child= get_executor(dep_child);
+	Executor *child= get_executor(dep_child, dynamic_base_dir);
 	if (!child) return 0;
 	children.insert(child);
 	if (dep_child->flags.get_flags() & F_RESULT_NOTIFY) {
@@ -957,16 +983,15 @@ bool Executor::same_dependency_for_print(
 	shared_ptr <const Dep> d1,
 	shared_ptr <const Dep> d2)
 {
-	shared_ptr <const Plain_Dep> p1= to <Plain_Dep> (d1);
-	shared_ptr <const Plain_Dep> p2= to <Plain_Dep> (d2);
+	shared_ptr <const Object_Dep> p1= to <Object_Dep> (d1);
+	shared_ptr <const Object_Dep> p2= to <Object_Dep> (d2);
 	if (!p1 && to <Dynamic_Dep> (d1))
-		p1= to <Plain_Dep> (to <Dynamic_Dep> (d1)->strip_dynamic());
+		p1= to <Object_Dep> (to <Dynamic_Dep> (d1)->strip_dynamic());
 	if (!p2 && to <Dynamic_Dep> (d2))
-		p2= to <Plain_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
+		p2= to <Object_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
 	if (! (p1 && p2))
 		return false;
-	return p1->placed_target.unparametrized()
-		== p2->placed_target.unparametrized();
+	return p1->object.unparametrized() == p2->object.unparametrized();
 }
 
 void Executor::check_unparametrized(
@@ -987,9 +1012,9 @@ void Executor::check_unparametrized(
 		show(Hash_Dep(0, hash_dep)),
 		show(Prefix_View("$", parameter_name)));
 	Hash_Dep hash_dep_base= hash_dep;
-	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_PHONY;
+	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;
 	hash_dep_base.get_front_word_nondynamic()
-		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY);
+		|= (hash_dep.get_front_word_nondynamic() & F_PHONY);
 	*this << fmt("%s is declared here", show(hash_dep_base));
 	explain_dynamic_no_param();
 	raise(ERR_LOGICAL);

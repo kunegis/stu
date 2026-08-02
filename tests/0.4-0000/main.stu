@@ -1,4 +1,4 @@
-
+# TOPIC: $[a] in dynamic dependency
 # Can a dynamic dependency contain a dynamic variable, e.g.:
 
 A:  [B]

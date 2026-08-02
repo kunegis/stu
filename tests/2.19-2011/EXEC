@@ -1,0 +1,24 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.directory
+
+cat <<EOF >>list.stu
+@main: A;
+
+%cd list.directory
+%include main.stu
+%cd -
+
+A: list.directory/B
+{
+	cp list.directory/B A
+	grep -q -F -x -e correct A
+}
+EOF
+
+cat <<EOF >list.directory/main.stu
+B = {correct}
+EOF
+
+../../bin/stu.test -f list.stu >list.out 2>list.err

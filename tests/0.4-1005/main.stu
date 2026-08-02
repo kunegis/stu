@@ -1,4 +1,4 @@
 
-# missing closing ']' after opening '$['
+# TOPIC: missing closing ']' after opening '$['
 
 A:  $[B

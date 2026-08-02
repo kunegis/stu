@@ -17,7 +17,7 @@ private:
 
 	std::vector <shared_ptr <const Dep> > deps;
 
-	shared_ptr <const Plain_Dep> target_first;
+	shared_ptr <const Object_Dep> target_first;
 	/* Set to the first target of the first rule when there is one */
 
 	Place place_first; /* Place of first file when no rule is contained */

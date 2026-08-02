@@ -1,0 +1,2 @@
+main.stu:5:5: expected a directory name, not "<"
+main.stu:5:1: after %cd

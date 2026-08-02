@@ -1,0 +1,2 @@
+main.stu:7:1: expected the file without command and without dependencies "/filename_does_not_exist" to exist, but it does not
+main.stu:3:4: "/filename_does_not_exist" is needed by "A"

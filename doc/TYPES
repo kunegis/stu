@@ -1,0 +1,12 @@
+Various classes that represent types.
+
+                    PARAMETRIZED    DYNAMIC  PLACE   FLAGS  PHONY T.   HASHABLE
+--------------------------------------------------------------------------------
+std::string         no              no       no      no     no         yes
+Hash_Dep            no              yes      no      yes    yes        yes
+Name                yes             no       no      no     no         no
+Placed_Name         yes             no       yes     no     no         no
+Object              yes             no       no      no     yes        no
+Placed_Object       yes             no       yes     no     yes        no
+Object_Dep          yes             no       yes     yes    yes        no
+Dynamic_Dep         yes             yes      yes     yes    yes        no

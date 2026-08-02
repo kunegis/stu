@@ -3,10 +3,13 @@
 Dynamic_Executor::Dynamic_Executor(
 	shared_ptr <const Dynamic_Dep> dep_,
 	Executor *parent,
-	int &error_additional)
-	: dep(dep_)
+	int &error_additional,
+	string dynamic_base_)
+	: dep(dep_),
+	  dynamic_base(dynamic_base_)
 {
 	TRACE_FUNCTION();
+	TRACE("dynamic_base_dir='%s'", dynamic_base);
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
@@ -20,18 +23,18 @@ Dynamic_Executor::Dynamic_Executor(
 
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();
-	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-		Hash_Dep hash_dep_base(inner_plain_dep->placed_target.flags,
-			inner_plain_dep->placed_target.placed_name.unparametrized());
+	if (auto inner_object_dep= to <const Object_Dep> (inner_dep)) {
+		Hash_Dep hash_dep_2(inner_object_dep->object.flags,
+			inner_object_dep->object.name.unparametrized());
 		Hash_Dep hash_dep= dep->get_target();
 		Target_Index target_index;
 		TRACE("hash_dep= %s", show(hash_dep));
 		try {
 			std::map <string, string> mapping_parameter;
-			shared_ptr <const Plain_Dep> target_plain_dep;
+			shared_ptr <const Object_Dep> target_object_dep;
 			shared_ptr <const Rule> r=
-				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
-					dep->get_place(), target_plain_dep, target_index);
+				all_rule_set.get(hash_dep_2, param_rule, mapping_parameter,
+					dep->get_place(), target_object_dep, target_index);
 		} catch (int e) {
 			assert(e);
 			*this << "";
@@ -39,7 +42,13 @@ Dynamic_Executor::Dynamic_Executor(
 			raise(e);
 			return;
 		}
-		executors_by_hash_dep[hash_dep]= {target_index, this};
+		Based_Hash_Dep hash_dep_with_parent_base_dir(hash_dep);
+		if (parent->get_rule()) {
+			hash_dep_with_parent_base_dir=
+				Based_Hash_Dep(dynamic_base,
+					hash_dep_with_parent_base_dir);
+		}
+		executors_by_dep[hash_dep_with_parent_base_dir]= {target_index, this};
 	}
 
 	parents.erase(parent);
@@ -102,7 +111,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 bool Dynamic_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();
-	TRACE("flags= %s; done= %s", show(Flags_View(flags), S_DEBUG), done.show());
+	TRACE("flags= %s; done= %s", show(Flags_View(flags), S_TRACE), done.show());
 	bool ret= done.is_done_from_flags(flags);
 	TRACE("ret= %s", frmt("%d", ret));
 	return ret;
@@ -110,7 +119,7 @@ bool Dynamic_Executor::finished(Flags flags) const
 
 bool Dynamic_Executor::want_delete() const
 {
-	return to <Plain_Dep> (dep->strip_dynamic()) == nullptr;
+	return to <Object_Dep> (dep->strip_dynamic()) == nullptr;
 }
 
 #ifndef NDEBUG
@@ -143,13 +152,11 @@ void Dynamic_Executor::notify_result(
 
 	if (flags & F_RESULT_NOTIFY) {
 		std::vector <shared_ptr <const Dep> > deps;
-		source->read_dynamic(to <const Plain_Dep> (dep_result), deps, dep, this);
+		source->read_dynamic(to <const Object_Dep> (dep_result), deps, dep, this);
 		for (auto &j: deps) {
 			shared_ptr <Dep> j_new= j->clone();
-			/* Add -% flag */
 			j_new->flags.add_unplaced_flags(F_RESULT_COPY);
-			/* Add flags from self */
-			j_new->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
+			j_new->add_metadata(dep);
 			j= j_new;
 			push(j);
 		}
@@ -158,4 +165,12 @@ void Dynamic_Executor::notify_result(
 	} else {
 		unreachable();
 	}
+}
+
+string Dynamic_Executor::get_dynamic_base(shared_ptr <const Dep> child, bool) const
+{
+	TRACE_FUNCTION();
+	TRACE("child= %s", show_trace(child));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
+	return dynamic_base;
 }

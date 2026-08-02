@@ -5,6 +5,7 @@
 #include <string>
 
 #include "error.hh"
+#include "name.hh"
 #include "place.hh"
 
 class Job
@@ -31,11 +32,10 @@ public:
 	pid_t start(
 		string command,
 		const std::map <string, string> &mapping,
-		string filename_output,
-		string filename_input,
-		const Place &place_command,
-		const Place &place_output,
-		const Place &place_input);
+		const Placed_Name &input,
+		const Placed_Name &output,
+		string base,
+		const Place &place_command);
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
 	 * redirect output and input; either can be empty to denote no redirection.  On
@@ -43,9 +43,9 @@ public:
 	 * MAPPING contains the environment variables to set. */
 
 	pid_t start_copy(
-		string target,
+		const Placed_Name &target,
 		string source,
-		const Place &place);
+		string base);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
@@ -79,17 +79,19 @@ private:
 	/* The job that is in the foreground, or -1 when none is */
 
 	static void ask_continue(pid_t pid);
+	static void perform_cd(string base);
 	static void create_child_env(const std::map <string, string> &mapping);
 	static const char **create_child_argv(
 		const Place &place_command,
 		const char *shell_shortname,
 		string &command,
 		string &argv0);
+
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);
-	static void create_child_output_redirection(string filename_output, const Place &);
-	static void create_child_input_redirection(string filename_input, const Place &);
+	static void create_child_output_redirection(const Placed_Name &);
+	static void create_child_input_redirection(const Placed_Name &);
 };
 
 #endif /* ! JOB_HH */

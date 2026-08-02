@@ -1,0 +1,13 @@
+# TOPIC: %set v "-" %cd $(v)
+
+A: '-' \-/B
+{
+	cp -- -/B A
+}
+
+-p \- { mkdir -- - ; }
+
+%set STU_TEST_VAR '-'
+%cd $(STU_TEST_VAR)
+
+B = {CORRECT}

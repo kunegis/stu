@@ -13,10 +13,10 @@ Transitive_Executor::Transitive_Executor(
 	TRACE_FUNCTION();
 	swap(mapping_parameter, mapping_parameter_);
 
-	assert(to <Plain_Dep> (dep_link));
-	shared_ptr <const Plain_Dep> plain_dep= to <Plain_Dep> (dep_link);
+	assert(to <Object_Dep> (dep_link));
+	shared_ptr <const Object_Dep> object_dep= to <Object_Dep> (dep_link);
 
-	Hash_Dep hash_dep= plain_dep->placed_target.unparametrized();
+	Hash_Dep hash_dep= object_dep->object.unparametrized();
 	assert(hash_dep.is_phony());
 
 	if (rule == nullptr)
@@ -43,7 +43,7 @@ Transitive_Executor::Transitive_Executor(
 	}
 
 	for (auto &t: rule->targets)
-		hash_deps.push_back(t->placed_target.unparametrized());
+		hash_deps.push_back(t->object.unparametrized());
 	assert(hash_deps.size());
 
 	assert((param_rule == nullptr) == (rule == nullptr));
@@ -52,8 +52,8 @@ Transitive_Executor::Transitive_Executor(
 	 * in the dependency.  Also, add the flags. */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
-			(dep_link->flags.get_flags() & (F_WORD & ~F_TARGET_DYNAMIC));
-		executors_by_hash_dep[t]= {target_index, this};
+			(dep_link->flags.get_flags() & (F_WORD & ~F_DYNAMIC));
+		executors_by_dep[t]= {target_index, this};
 	}
 
 	for (auto &dep: rule->deps) {

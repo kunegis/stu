@@ -1,0 +1,35 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.aaa
+mkdir list.aaa/bbb
+
+cat <<EOF  >list.stu
+@main: A;
+
+%cd list.aaa
+%include main.stu
+%cd -
+
+A: list.aaa/B
+{
+	cp list.aaa/B A
+	grep -q -F -x -e correct A
+}
+EOF
+
+cat <<EOF >list.aaa/main.stu
+@main: B;
+
+%cd bbb
+%include main.stu
+%cd -
+
+B = bbb/C;
+EOF
+
+cat <<EOF >list.aaa/bbb/main.stu
+C = {correct}
+EOF
+
+../../bin/stu.test -f list.stu

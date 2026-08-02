@@ -19,8 +19,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERR_FATAL);
 			}
-			deps.push_back(std::make_shared <Plain_Dep> (
-				Placed_Target(0, Placed_Name(optarg, place))));
+			deps.push_back(std::make_shared <Object_Dep> (
+				Placed_Object(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -43,15 +43,16 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 			had_option_f= true;
 			filenames.push_back(optarg);
-			Parser::get_file(optarg, -1, Executor::rule_set,
+			Parser::get_file(optarg, -1, all_rule_set,
 				target_first, place_first);
 		end:
 			break;
 
 		case 'F':
+			TRACE("Option -F");
 			had_option_f= true;
-			Parser::get_string(optarg, Executor::rule_set,
-				target_first);
+			Parser::get_string(optarg, all_rule_set,
+				target_first, true);
 			break;
 
 		case 'n':
@@ -62,12 +63,12 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERR_FATAL);
 			}
-			Placed_Flags placed_flags;
-			placed_flags.add_placed_index(flag_get_index(c), place);
+			Placed_Flags flags;
+			flags.add_placed_index(flag_get_index(c), place);
 			deps.push_back(std::make_shared <Dynamic_Dep> (
-				std::make_shared <Plain_Dep> (
-					placed_flags,
-					Placed_Target(0, Placed_Name(optarg, place)))));
+				std::make_shared <Object_Dep> (
+					flags,
+					Placed_Object(0, Placed_Name(optarg, place)))));
 			break;
 		}
 
@@ -82,8 +83,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			Index index= flag_get_index(c);
 			Placed_Flags flags;
 			flags.add_placed_index(index, place);
-			deps.push_back(std::make_shared <Plain_Dep>
-				(flags, Placed_Target(0, Placed_Name(optarg, place))));
+			deps.push_back(std::make_shared <Object_Dep>
+				(flags, Placed_Object(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -119,8 +120,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				throw ERR_LOGICAL;
 			error |= ERR_LOGICAL;
 		} else if (option_J) {
-			deps.push_back(std::make_shared <Plain_Dep>
-				(Placed_Target(0, Placed_Name(argv[i], place))));
+			deps.push_back(std::make_shared <Object_Dep>
+				(Placed_Object(0, Placed_Name(argv[i], place))));
 		}
 	}
 
@@ -138,7 +139,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY);
 		if (file_fd >= 0) {
 			Parser::get_file("", file_fd,
-				Executor::rule_set, target_first,
+				all_rule_set, target_first,
 				place_first);
 		} else if (errno == ENOENT) {
 			/* Default file does not exist -- fail if no target is given */
@@ -159,11 +160,11 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	}
 
 	if (option_P) {
-		Executor::rule_set.print_for_option_P();
+		all_rule_set.print_for_option_P();
 		exit(0);
 	}
 	if (option_I) {
-		Executor::rule_set.print_for_option_I();
+		all_rule_set.print_for_option_I();
 		exit(0);
 	}
 
@@ -172,20 +173,20 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	if (deps.empty() && ! had_option_target) {
 		if (target_first == nullptr) {
 			if (! place_first.empty()) {
-				place_first
-					<< "expected a rule, because no target is given";
+				place_first <<
+					"expected a rule, because no target is given";
 			} else {
 				print_error("no rules and no targets given");
 			}
 			exit(ERR_FATAL);
 		}
-		if (target_first->placed_target.placed_name.is_parametrized()) {
+		if (target_first->object.name.is_parametrized()) {
 			target_first->place << fmt(
 				"the first target %s must not be parametrized if no target is given",
 				show(target_first));
 			exit(ERR_FATAL);
 		}
-		deps.push_back(std::make_shared <Plain_Dep> (*target_first));
+		deps.push_back(std::make_shared <Object_Dep> (*target_first));
 	}
 }
 

@@ -1,0 +1,9 @@
+# TOPIC: a=b;  %cd .  %cd .  $p/b {...}
+
+A = B;
+%cd .
+%cd .
+$dir/B
+{
+	echo correct >$dir/B
+}

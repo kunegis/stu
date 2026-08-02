@@ -1,0 +1,17 @@
+# TOPIC: %cd a $(PWD)
+
+A: d $(PWD)/d/B
+{
+	cp d/B A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+$(PWD)/B:  C
+{
+	cp C B
+}
+
+C = {CORRECT}

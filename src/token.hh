@@ -53,7 +53,10 @@ public:
 	const char op;
 	const Place place;
 
-	Operator(char op_, Place place_, Environment environment_)
+	Operator(
+		char op_,
+		Environment environment_,
+		Place place_)
 		: Token(environment_), op(op_), place(place_) {
 		assert(! isalnum(op_));
 	}
@@ -73,10 +76,10 @@ public:
 	string name; /* empty if not a long flag */
 
 	Flag_Token(
+		char flag_char_,
 		Environment environment_,
 		const Place &place_dash_,
 		const Place &place_letter_,
-		char flag_char_,
 		string name_= "");
 
 	const Place &get_place() const override { return place_letter; }
@@ -93,9 +96,11 @@ class Name_Token
 	: public Token, public Placed_Name
 {
 public:
-	Name_Token(const Placed_Name &placed_name_, bool environment_)
+	Name_Token(
+		const Placed_Name &name_,
+		bool environment_)
 		: Token(environment_),
-		  Placed_Name(placed_name_)
+		  Placed_Name(name_)
 	{}
 
 	const Place &get_place() const override { return Placed_Name::place; }
@@ -110,13 +115,6 @@ class Command
 /* A command delimited by braces, or the content of a file, also delimited by braces. */
 	: public Token
 {
-private:
-	mutable std::unique_ptr <std::vector <string> > lines;
-	/* The individual lines of the command.  Empty lines and leading spaces are not
-	 * included.  These lines are only used for output and writing content, not for
-	 * execution.  May be null.  Generated on demand, and therefore declared as
-	 * mutable. */
-
 public:
 	const string command;
 	/* The command as written in the input; contains newlines */
@@ -127,13 +125,36 @@ public:
 	const Place place_start;
 	/* The opening brace */
 
-	Command(string command_, const Place &place_, const Place &place_start_,
-		Environment environment_);
+	Command(
+		string command_,
+		Environment environment_,
+		const Place &place_,
+		const Place &place_start_);
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place_start; }
 	void render(Parts &parts, Rendering= 0) const override {
 		parts.append_operator("{"); }
 	const std::vector <string> &get_lines() const;
+
+private:
+	mutable std::unique_ptr <std::vector <string> > lines;
+	/* The individual lines of the command.  Empty lines and leading spaces are not
+	 * included.  These lines are only used for output and writing content, not for
+	 * execution.  May be null.  Generated on demand, and therefore declared as
+	 * mutable. */
+};
+
+class CD_Token
+	: public Token
+{
+public:
+	const string base;
+	Place place;
+
+	CD_Token(Environment, const Place &, string base_); /* Push */
+	const Place &get_place() const override { return place; }
+	const Place &get_place_start() const override { return place; }
+	void render(Parts &, Rendering= 0) const override;
 };
 
 #endif /* ! TOKEN_HH */

@@ -1,0 +1,5 @@
+# TOPIC First rule is %cd copy rule
+
+%cd nonexistentdirectory
+
+uniquefilename_12345 = /bin/sh;

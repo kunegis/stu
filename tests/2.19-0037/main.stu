@@ -1,0 +1,27 @@
+A: list.dir list.dir/B
+{
+	cp list.dir/B A
+	grep -q -F -x -e 'abcd' A
+	grep -q -F -x -e 'efgh' A
+	grep -q -F -x -e 'ijkl' A
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+>list.dir/C
+{
+	echo list.'1 2'
+	echo list.'3 4'
+	echo list.'5 6'
+}
+
+%cd list.dir
+
+B: [-n C]
+{
+	cat list.'1 2' list.'3 4' list.'5 6' >B
+}
+
+list."1 2" = {abcd}
+list."3 4" = {efgh}
+list."5 6" = {ijkl}

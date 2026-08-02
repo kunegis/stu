@@ -1,0 +1,4 @@
+main.stu:13:4: no rule to build "list.dir/X", needed by "list.dir/D"
+main.stu:11:6: "list.dir/D" is needed by "list.dir/C"
+main.stu:9:5: "list.dir/C" is needed by "list.dir/B"
+main.stu:1:13: "list.dir/B" is needed by "A"

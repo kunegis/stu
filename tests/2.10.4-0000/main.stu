@@ -1,1 +1,2 @@
-A = {aaa}
+A= abc.data;
+abc.data = {aaa}

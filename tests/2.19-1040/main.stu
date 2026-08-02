@@ -1,0 +1,22 @@
+# TOPIC: a: b  %cd c  $p/
+#
+# The '$name' is not used, because there is no way to set the current directory and
+# parameter $name sensibly.
+#
+
+A: list.directory B
+{
+	echo error
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+$name
+{
+	echo error
+}

@@ -1,0 +1,15 @@
+# TOPIC: %cd a//b
+
+A: d/eee d/eee/B
+{
+	cp d/eee/B A
+}
+
+-p d/eee
+{
+	mkdir -p d/eee
+}
+
+%cd d//eee
+
+B = {content}

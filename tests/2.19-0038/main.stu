@@ -1,0 +1,25 @@
+A: list.dir list.dir/B
+{
+	grep -q -F -x -e '11 11 11' list.dir/B
+	grep -q -F -x -e '22 22 22' list.dir/B
+	touch A
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+>list.dir/C
+{
+	printf '11 11 11.data\00022 22 22.data'
+}
+
+%cd list.dir
+
+>B: [-0 C]
+{
+	cat '11 11 11.data' '22 22 22.data'
+}
+
+>$name.data
+{
+	printf '%s\n' "$name"
+}

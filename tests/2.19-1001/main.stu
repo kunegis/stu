@@ -1,0 +1,15 @@
+#
+# There is no directory of the form /xxx/yyy that is guaranteed to exist in POSIX, so we
+# test this produces an error.
+#
+
+>A: /bin/nonexistingdirectory/B
+{
+}
+
+%cd /bin
+%cd nonexistingdirectory
+
+>B
+{
+}

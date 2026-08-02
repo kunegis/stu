@@ -1,0 +1,24 @@
+A: d [d/X] d/B
+{
+	grep -q -F -x -e 111 Y
+	grep -q -F -x -e 222 d/Y
+	cat Y d/Y >A
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+Y = {111}
+
+%cd d
+
+>B: [X]
+{
+	echo
+}
+
+X = {Y}
+
+Y = {222}

@@ -1,4 +1,16 @@
 #
+# 2.7.70-1* tests: check all whether they should be moved to another version number.
+#
+
+#
+# Check that we are not performing double-canonicalization, i.e., run canonicalize()
+# multiple times on same input, or on output of canonicalize().
+#
+
+$ make bin/stu.debug && sh/rm_tmps && STU_TRACE='canonicalize hash_dep name object rule' bin/stu.debug -F 'A={x}'
+# * Need to keep track which dependency types are canonicalized or not.
+
+#
 # %include -d
 #
 
@@ -6,17 +18,17 @@
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-%import -d src
-%import --directory src/main.stu
+%include -d src
+%include --directory src/main.stu
 
 # Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
 # $STU_{,LIB_}PATH.
-%import --library c++.stu
-%import -l c++/simple.stu
-%import -l /usr/stulib/c++.stu
+%include --library c++.stu
+%include -l c++/simple.stu
+%include -l /usr/stulib/c++.stu
 * Need to determine in which cases we use $STU_LIB_PATH and in which not.
 
-* Need to determine whether ".stu" is automatically appended to names, but probably not.
+* Need to determine whether ".stu" is automatically appended to names (No)
 * Need to determine whether we want different filenames for "normal" Stu
   files (applying to the current directory) and Stu
   libraries (that should only be imported via '%import -l' (e.g. *.stl).  That also means
@@ -35,10 +47,6 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 # rule level.  Maybe use '*' instead.  (No).
 *import dir/
 *import -d dir/
-
-# There could also be a 'cd' command, e.g.
-%cd dir/
-%cd - # Pop from cd stack (?)
 
 # And theoretically also braces for blocks
 
@@ -481,3 +489,49 @@ calc:  @build-c':'calc':'calc.c;
 VARIABLE
 # comment (not allowed at the moment)
 VALUE
+
+#
+# Check whether we can use (or already use) -fstack-protector.
+#
+
+#
+# Maybe merge stu-utils into the stu repo
+#
+
+#
+# Tutorial as PDF, HTML, and also as source files.
+#
+
+#
+# sh/test.sh:  When calling EXEC, set $PATH to include sh/, so:
+#  * EXEC can do ". test.sh" without "../../"
+#  * test.sh can do ". util.sh" and doesn't need to define its own version of "Not"
+#
+
+#
+# Take into account .. during canonicalization.  Not done at the moment because it is
+# inconsistent with realpath(), but it may be needed in conjunction with '%include -d'.
+#
+# This is "logical" treatment of .., like in "cd -P" (which is not the default for the
+# shell's cd).
+#
+
+# At the moment, the following example doesn't work because A and dir/../A are not
+# recognized as the same file.
+
+# main.stu:
+%include -d dir/
+A { ... }
+
+# dir/main.stu
+B: ../A { ... }
+
+#
+# An option that does the same as -F '%cd <dir>'.  I.e., -X <dir>.  Long name --cd.
+#
+
+#
+# "make -k" interrupts the full build when a single process ends by SIGINT.  Stu doesn't.
+# Have an option that emulates that behavior.  There are a few more signals that have the
+# same behavior (at least in GNU Make).
+#

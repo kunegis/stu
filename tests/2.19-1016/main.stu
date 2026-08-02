@@ -1,0 +1,7 @@
+# TOPIC: %cd a  b { mkdir . ; }
+
+A: ddd/B;
+
+%cd ddd
+
+B { mkdir . ; }  # Does not work; cd to the directory fails

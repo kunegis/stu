@@ -1,0 +1,18 @@
+# TOPIC: %cd <
+
+A: d d/B
+{
+	cp d/B A
+	grep -q -F -x -e '12345' A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B: <C
+{
+	cat >B
+}
+
+C = {12345}

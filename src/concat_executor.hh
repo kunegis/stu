@@ -11,6 +11,9 @@
  * Concatenated executors always have exactly one parent.  They are not cached, and they
  * are deleted when done.  Thus, they also don't need the 'done' field.  (But the parent
  * class has it.)  For the same reason, they also cannot appear in cycles.
+ *
+ * Concatenated executors have at least two components.  If they had one, they would
+ * behave likely dynamic executors, except that they would not be cached.
  */
 
 #include "executor.hh"
@@ -19,7 +22,10 @@ class Concat_Executor
 	: public Executor
 {
 public:
-	Concat_Executor(shared_ptr <const Concat_Dep> dep_, Executor *parent);
+	Concat_Executor(
+		shared_ptr <const Concat_Dep> dep_,
+		Executor *parent,
+		string dynamic_base);
 	~Concat_Executor()= default;
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
@@ -47,9 +53,12 @@ private:
 
 	Stage stage;
 	std::vector <shared_ptr <Compound_Dep> > collected;
+	string dynamic_base;
 
 	bool finished() const;
 	void launch_stage_normal();
+
+	virtual string get_dynamic_base(shared_ptr <const Dep> child, bool for_rebase) const override;
 };
 
 #endif /* ! CONCAT_EXECUTOR_HH */

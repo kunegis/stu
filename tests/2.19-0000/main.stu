@@ -1,0 +1,18 @@
+A: prep.data list.dir/A
+{
+	cp list.dir/A A
+}
+
+>prep.data
+{
+	mkdir list.dir
+}
+
+%cd list.dir
+
+A: B
+{
+	cp B A
+}
+
+B = {CORRECT}

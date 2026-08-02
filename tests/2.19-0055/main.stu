@@ -1,0 +1,35 @@
+A{}
+B C{}
+@a{}
+@b @c{}
+
+%cd directory
+D{}
+E/F{}
+@d{}
+@e/f{}
+
+%cd -
+G{}
+@g{}
+
+%cd aaa
+%cd bbb
+H{}
+@h{}
+
+%cd ccc////
+I{}
+@i{}
+
+%cd ddd//eee
+J{}
+@j{}
+
+%cd .
+K{}
+@k{}
+
+%cd -
+L{}
+@l{}

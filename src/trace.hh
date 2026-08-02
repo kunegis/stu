@@ -45,6 +45,11 @@
  *     STU_TRACE='all=>file.log;dep=1'
  *                              Send all traces to 'file.log', except for dep.cc/hh to
  *                              stderr
+ *
+ * LIMITATIONS
+ *
+ * - When TRACE_FUNCTION() is missing at the beginning of a function, all TRACE() lines
+ *   are shown and enabled/disabled based on the previous TRACE_FUNCTION().
  */
 
 #ifndef NDEBUG

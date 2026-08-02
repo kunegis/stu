@@ -1,0 +1,15 @@
+# TOPIC: %cd multitarget
+
+A: d d/D
+{
+	cp d/D A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B C D E
+{
+	touch B C D E
+}

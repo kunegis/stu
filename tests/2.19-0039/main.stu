@@ -1,0 +1,19 @@
+A: list.dir B
+{
+	cp B A
+	grep -q -F -x -e 'abcd' A
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+B: [list.dir/C]
+{
+	file=$(cat list.dir/C)
+	cp -- "$file" B
+}
+
+D = {abcd}
+
+%cd list.dir
+
+C = {D}

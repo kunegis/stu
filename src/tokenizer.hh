@@ -2,8 +2,8 @@
 #define TOKENIZER_HH
 
 #include "backtrace.hh"
+#include "object.hh"
 #include "place.hh"
-#include "target.hh"
 #include "token.hh"
 
 /*
@@ -23,9 +23,11 @@ public:
 		Place &place_end,
 		string filename,
 		const Place &place_diagnostic,
-		int fd= -1,
-		bool allow_enoent= false,
-		bool try_defaut= true);
+		int fd,
+		bool allow_enoent,
+		bool try_defaut,
+		bool use_base,
+		bool filename_already_rebased);
 	/* The given file descriptor FD may optionally be that file already opened.  If
 	 * the file was not yet opened, FD is -1.  If FILENAME is "", use standard input,
 	 * but FD must be -1.
@@ -40,7 +42,8 @@ public:
 		Context context,
 		Place &place_end,
 		string string_,
-		const Place &place_string);
+		const Place &place_string,
+		bool use_base);
 
 	static void parse_tokens_arg(
 		std::vector <shared_ptr <Token> > &tokens,
@@ -67,8 +70,8 @@ private:
 	const char *p; /* Current position */
 	const char *const p_end; /* End of input */
 
-	Environment environment= E_WHITESPACE;
-	/* For the next token */
+	Environment environment= E_WHITESPACE; /* For the next token */
+	bool use_base;
 
 	Tokenizer(
 		std::vector <shared_ptr <Token> > &tokens_,
@@ -76,6 +79,7 @@ private:
 		std::vector <string> &filenames_,
 		std::set <string> &includes_,
 		const Place &place_base_,
+		bool use_base_,
 		const char *p_,
 		size_t length);
 
@@ -94,8 +98,8 @@ private:
 
 	void parse_dollar(Placed_Name &);
 	void parse_home(Placed_Name &);
-	void parse_parameter(string &name);
-	void parse_environment_variable(string &name);
+	void parse_parameter(Placed_Name &);
+	void parse_environment_variable(Placed_Name &);
 
 	/* The following three functions parse the two types of quotes, and escapes.  The
 	 * pointer must be on a ", ', or \ character respectively.  The read string is
@@ -119,6 +123,9 @@ private:
 		Context context,
 		const Place &place_percent,
 		string directive);
+	void parse_cd_directive(
+		Context context,
+		const Place &place_percent);
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).  The return
@@ -141,9 +148,11 @@ private:
 		std::vector <string> &filenames,
 		std::set <string> &includes,
 		const Place &place_diagnostic,
-		int fd= -1,
-		bool allow_enoent= false,
-		bool try_defaut= true);
+		int fd,
+		bool allow_enoent,
+		bool try_defaut,
+		bool use_base,
+		bool filename_already_rebased);
 	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
 	 * be modified when returning, but is declared as non-const because it is used as
 	 * a stack.

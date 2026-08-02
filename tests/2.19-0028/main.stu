@@ -1,0 +1,21 @@
+#
+# d/../B does *NOT* get canonicalized to B, therefore the rule with the exit does not get
+# called.
+#
+# TOPIC: %cd ..
+
+A: B
+{
+	cp B A
+}
+
+B = {content}
+
+%cd d
+
+%cd ..
+
+B
+{
+	exit 77
+}

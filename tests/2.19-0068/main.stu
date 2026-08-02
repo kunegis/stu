@@ -1,0 +1,32 @@
+A: B d d/D
+{
+	cat B d/D >A
+	grep -q -F -x -e main E
+	grep -q -F -x -e sub d/E
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+>B: d [d/C]
+{
+	cat E
+}
+
+E = {main}
+
+%cd d
+
+C
+{
+	echo E >C
+}
+
+D: [C]
+{
+	cp E D
+}
+
+E = {sub}

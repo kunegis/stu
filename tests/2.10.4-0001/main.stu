@@ -1,1 +1,2 @@
-A = {aaa}
+A = list.xyz;
+list.xyz = {aaa}

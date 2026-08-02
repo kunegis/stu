@@ -63,7 +63,7 @@ private:
 
 	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
-	 * targets are non-dynamic, i.e., only plain files and phonies are included. */
+	 * entries are non-dynamic, i.e., only files and phonies are included. */
 
 	Timestamp *timestamps_old;
 	/* Timestamp of each file target, before the command is executed.  Only valid once

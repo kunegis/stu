@@ -1,10 +1,10 @@
 #include "show_flags.hh"
 
-Flag_View::Flag_View(const Placed_Flags &placed_flags, Index index_)
+Flag_View::Flag_View(const Placed_Flags &flags, Index index_)
 {
 	assert(index_ < C_ALL);
 	index= index_;
-	const Place &place= placed_flags.place_by_index(index);
+	const Place &place= flags.place_by_index(index);
 	long_flag= place.bits & Place::Bits::LONG_FLAG;
 }
 

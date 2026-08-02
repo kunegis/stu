@@ -1,0 +1,14 @@
+# TOPIC: %cd a b{} %cd -
+
+A: d d/B
+{
+	cp d/B A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B = {CORRECT}
+
+%cd -

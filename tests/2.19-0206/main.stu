@@ -1,0 +1,22 @@
+A: d d/B
+{
+	cp d/B A
+	grep -q -F -x -e 'content' A
+}
+
+>d/C:  d
+{
+	echo D
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+
+B: list.[[C].data]
+{
+	cp list.E B
+}
+
+D.data = {E}
+list.E = {content}

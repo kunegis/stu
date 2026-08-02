@@ -1,0 +1,17 @@
+# TOPIC: %cd $(v) # when $VAR starts with a dash
+
+A: '-dir.data' '-dir.data'/file
+{
+	cp -- -dir.data/file A
+	grep -q -F -x -e 'content' A
+}
+
+-p '-dir.data'
+{
+	mkdir -p -- -dir.data
+}
+
+%set STU_TEST_VAR "-dir.data"
+%cd $(STU_TEST_VAR)
+
+file = {content}

@@ -1,0 +1,13 @@
+>A: /bin/sh
+{
+}
+
+# Not an error even though the directory does not exist
+%cd aaaa
+
+%cd /bin
+
+sh
+{
+	exit 77
+}

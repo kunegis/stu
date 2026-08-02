@@ -18,7 +18,7 @@ File_Executor::File_Executor(
 	TRACE_FUNCTION();
 	TRACE("dep= %s", show_trace(dep));
 	dep->check();
-	assert(to <Plain_Dep> (dep));
+	assert(to <Object_Dep> (dep));
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
 	swap(mapping_parameter, mapping_parameter_);
@@ -28,9 +28,9 @@ File_Executor::File_Executor(
 
 	/* Later replaced with all targets from the rule, if a rule exists */
 	Hash_Dep hash_dep_no_flags= hash_dep_;
-	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_PHONY;
+	hash_dep_no_flags.get_front_word_nondynamic() &= F_PHONY;
 	hash_deps.push_back(hash_dep_no_flags);
-	executors_by_hash_dep[hash_dep_no_flags]= {target_index, this};
+	executors_by_dep[hash_dep_no_flags]= {target_index, this};
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -44,10 +44,10 @@ File_Executor::File_Executor(
 
 	if (rule) {
 		hash_deps.clear();
-		for (auto &d: rule->targets) {
-			Hash_Dep hd= d->placed_target.unparametrized();
+		for (auto t: rule->targets) {
+			Hash_Dep hd= t->object.unparametrized();
 			hd.get_front_word_nondynamic() |=
-				d->flags.get_flags() & F_WORD;
+				t->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
 			TRACE("hd_flags= %s",
 				show(Flags_View(hd.get_front_word_nondynamic())));
@@ -59,7 +59,7 @@ File_Executor::File_Executor(
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
 	 * in the dependency. */
 	for (size_t i= 0; i < hash_deps.size(); ++i)
-		executors_by_hash_dep[hash_deps[i]]= {i, this};
+		executors_by_dep[hash_deps[i]]= {i, this};
 
 	if (rule != nullptr) {
 		TRACE("There is a rule for this executor");
@@ -87,15 +87,15 @@ File_Executor::File_Executor(
 
 	/* It is not allowed to have a dynamic of a non-transitive phony */
 	if (dynamic_cast <Dynamic_Executor *> (parent) &&
-		(dep->flags.get_flags() & (F_RESULT_NOTIFY | F_TARGET_PHONY))
-		== (F_RESULT_NOTIFY | F_TARGET_PHONY))
+		(dep->flags.get_flags() & (F_RESULT_NOTIFY | F_PHONY))
+		== (F_RESULT_NOTIFY | F_PHONY))
 	{
 		Place place_target;
-		for (auto &i: rule->targets) {
-			if (i->placed_target.placed_name.unparametrized() ==
+		for (auto &t: rule->targets) {
+			if (t->object.name.unparametrized() ==
 				hash_dep_.get_name_nondynamic())
 			{
-				place_target= i->place;
+				place_target= t->place;
 				break;
 			}
 		}
@@ -117,14 +117,14 @@ File_Executor::File_Executor(
 		return;
 	}
 
-	if (dep->flags.get_flags() & F_TARGET_PHONY &&
+	if (dep->flags.get_flags() & F_PHONY &&
 		dep->flags.get_flags() & (F_OPTIONAL | F_PERSISTENT))
 	{
 		Place place_target;
-		for (auto &i: rule->targets) {
-			if (i->placed_target.placed_name.unparametrized() ==
+		for (auto &t: rule->targets) {
+			if (t->object.name.unparametrized() ==
 				hash_dep_.get_name_nondynamic()) {
-				place_target= i->place;
+				place_target= t->place;
 				break;
 			}
 		}
@@ -185,17 +185,9 @@ void File_Executor::wait()
 	int status;
 	const pid_t pid= Job::wait(&status);
 	timestamp_last= Timestamp::now();
-
 	size_t index;
 	File_Executor *executor= Job_List::find(pid, index);
-	if (!executor) {
-		should_not_happen();
-		print_warning(Place(),
-			frmt("the function waitpid(2) returned the unknown process ID %jd",
-				(intmax_t)pid));
-		return;
-	}
-
+	assert(executor);
 	executor->waited(pid, index, status);
 	++options_jobs;
 }
@@ -220,7 +212,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	if (job.waited(status, pid)) {
 		state |=  State::EXISTING;
 		state &= ~State::MISSING;
-		/* Subsequently set to State::MISSING if at least one target file is missing */
+		/* Later set to State::MISSING if at least one target file is missing */
 
 		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
@@ -255,10 +247,9 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 				     Color::highlight_off[CH_ERR]);
 		}
 
-		if (! param_rule->is_copy) {
+		if (! param_rule->is_copy()) {
 			Hash_Dep hash_dep= parents.begin()->second->get_target();
-			param_rule->command->place <<
-				fmt("command for %s %s",
+			param_rule->command->place << fmt("command for %s %s",
 				    show(hash_dep), reason);
 		} else {
 			/* Copy rule */
@@ -328,7 +319,7 @@ bool File_Executor::remove_if_existing(bool output)
 		 * newer timestamp. */
 
 		if (output) {
-			string text_filename= ::show(filename, S_DEBUG);
+			string text_filename= ::show(filename, S_TRACE);
 			print_error_reminder(fmt("removing file %s because command failed",
 					::show(filename)));
 		}
@@ -399,10 +390,10 @@ void File_Executor::print_command() const
 		return;
 	}
 
-	if (rule->is_copy) {
+	if (rule->is_copy()) {
 		assert(rule->targets.size() == 1);
-		string cp_target= show(rule->targets[0]->placed_target.placed_name, S_NORMAL);
-		string cp_source= show(rule->placed_name_input.unparametrized(), S_NORMAL);
+		string cp_target= show(rule->copy_dst.unparametrized(), S_NORMAL);
+		string cp_source= show(rule->copy_src.unparametrized(), S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -424,10 +415,8 @@ void File_Executor::print_command() const
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */
 
-	string filename_output= rule->output_target_index == TARGET_INDEX_NONE ? "" :
-		rule->targets[rule->output_target_index]->placed_target
-		.placed_name.unparametrized();
-	string filename_input= rule->placed_name_input.unparametrized();
+	string filename_input= rule->name_input.unparametrized();
+	string filename_output= rule->name_output.unparametrized();
 
 	/* Redirections */
 	if (! filename_output.empty()) {
@@ -502,7 +491,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	 */
 
 	/* A target for which no execution has to be done */
-	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
+	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy();
 	TRACE("no_execution= %s", frmt("%d", no_execution));
 
 	if (! (state & State::CHECKED)) {
@@ -608,9 +597,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
-	if (rule->output_target_index != TARGET_INDEX_NONE)
-		assert(! (rule->targets[rule->output_target_index]->placed_target.flags
-				& F_TARGET_PHONY));
 	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override
@@ -680,7 +666,7 @@ bool File_Executor::check_file_target(
 	TRACE("target= \"%s\"", target.get_name_c_str_nondynamic());
 	assert(target.is_file());
 	Flags flags= target.get_front_word_nondynamic();
-	if (to <Plain_Dep> (dep_link)->placed_target.placed_name.unparametrized()
+	if (to <Object_Dep> (dep_link)->object.name.unparametrized()
 		== target.get_name_c_str_nondynamic())
 	{
 		Flags dep_flags= dep_link->flags.get_flags();
@@ -824,7 +810,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	TRACE("result_variable.size()= %s", frmt("%zu", result_variable.size()));
 	TRACE("error= %s", frmt("%d", error));
 	TRACE("state= %s", show(state));
-	assert(to <Plain_Dep> (dep));
+	assert(to <Object_Dep> (dep));
 	if (! result_variable.empty())
 		return;
 	if (error)
@@ -843,18 +829,18 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (!file) {
 		if (errno == ENOENT) {
 			Hash_Dep hash_dep_variable=
-				to <Plain_Dep> (dep)->placed_target.unparametrized();
+				to <Object_Dep> (dep)->object.unparametrized();
 			if (rule == nullptr) {
 				dep->get_place() <<
 					fmt("file %s was up to date but cannot be found now",
 						show(hash_dep_variable));
 			} else {
 				for (auto const &i: rule->targets) {
-					if (i->placed_target.unparametrized()
+					if (i->object.unparametrized()
 						== hash_dep_variable) {
 						i->place << fmt(
 							"generated file %s was built but cannot be found now",
-							show(i->placed_target));
+							show(i->object));
 						break;
 					}
 				}
@@ -888,7 +874,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	content.erase(content.find_last_not_of(whitespace) + 1);
 
 	/* The variable name */
-	dependency_variable_name= to <Plain_Dep> (dep)->variable_name;
+	dependency_variable_name= to <Object_Dep> (dep)->variable_name;
 	{
 		string variable_name=
 			dependency_variable_name.empty() ?
@@ -909,8 +895,8 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	TRACE("dep_link= %s", show_trace(dep_link));
 
 	if (dep_link->flags.get_flags() & F_OPTIONAL
-		&& to <Plain_Dep> (dep_link)
-		&& ! (to <Plain_Dep> (dep_link)->placed_target.flags & F_TARGET_PHONY))
+		&& to <Object_Dep> (dep_link)
+		&& ! (to <Object_Dep> (dep_link)->object.flags & F_PHONY))
 	{
 		TRACE("Is optional file target");
 
@@ -921,15 +907,15 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		}
 		TRACE("File not known to be missing");
 
-		const char *name= to <Plain_Dep> (dep_link)
-			->placed_target.placed_name.unparametrized().c_str();
+		const char *name= to <Object_Dep> (dep_link)
+			->object.name.unparametrized().c_str();
 		TRACE("name= '%s'", name);
 		TRACE("flags= %s",
-			show(Flags_View(to <Plain_Dep> (dep_link)->flags.get_flags())));
+			show(Flags_View(to <Object_Dep> (dep_link)->flags.get_flags())));
 
 		struct stat buf;
 		int ret_stat= stat_file(name, &buf,
-			to <Plain_Dep> (dep_link)->flags.get_flags());
+			to <Object_Dep> (dep_link)->flags.get_flags());
 		TRACE("ret_stat= %s", frmt("%d", ret_stat));
 		if (ret_stat < 0) {
 			TRACE("Stat failed");
@@ -937,7 +923,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			state &= ~State::EXISTING;
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
-				to <Plain_Dep> (dep_link)->placed_target.place <<
+				to <Object_Dep> (dep_link)->object.place <<
 					format_errno("fstatat", name);
 				raise(ERR_BUILD);
 				done |= Done::from_flags(dep_link->flags.get_flags());
@@ -1046,16 +1032,16 @@ bool File_Executor::start(
 	pid_t &pid,
 	const std::map <string, string> &mapping)
 {
-	if (rule->is_copy) {
+	if (rule->is_copy()) {
 		assert(rule->targets.size() == 1);
-		assert(! (rule->targets.front()->placed_target.flags & F_TARGET_PHONY));
-		string source= rule->placed_name_input.unparametrized();
+		assert(! (rule->targets.front()->object.flags & F_PHONY));
+		string source= rule->copy_src.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up
 		 * whether the source exists in the cache */
 		if (rule->deps.at(0)->flags.get_flags() & F_OPTIONAL) {
 			Executor *executor_source_base=
-				executors_by_hash_dep.at(Hash_Dep(0, source)).second;
+				executors_by_dep.at(Hash_Dep(0, source)).second;
 			assert(executor_source_base);
 			File_Executor *executor_source
 				= dynamic_cast <File_Executor *> (executor_source_base);
@@ -1063,9 +1049,9 @@ bool File_Executor::start(
 			if (executor_source->state & State::MISSING) {
 				/* Neither the source file nor the target file exist:  an
 				 * error. */
-				rule->deps.at(0)->get_place()
-					<< fmt("source file %s in optional copy rule must exist",
-						::show(source));
+				rule->deps.at(0)->get_place() << fmt(
+					"source file %s in optional copy rule must exist",
+					::show(source));
 				*this << fmt("when target file %s does not exist",
 					show(hash_deps.at(0)));
 				explain_missing_optional_copy_source();
@@ -1075,22 +1061,12 @@ bool File_Executor::start(
 			}
 		}
 
-		pid= job.start_copy(
-			rule->targets[0]->placed_target.placed_name.unparametrized(),
-			source,
-			rule->targets[0]->place);
+		pid= job.start_copy(rule->copy_dst, source, rule->base);
 	} else {
 		pid= job.start(
-			rule->command->command,
-			mapping,
-			rule->output_target_index == TARGET_INDEX_NONE ? "" :
-				rule->targets[rule->output_target_index]
-				->placed_target.placed_name.unparametrized(),
-			rule->placed_name_input.unparametrized(),
-			rule->command->place,
-			rule->output_target_index == TARGET_INDEX_NONE ? Place() :
-				rule->targets[rule->output_target_index]->place,
-			rule->placed_name_input.place);
+			rule->command->command, mapping,
+			rule->name_input, rule->name_output,
+			rule->base, rule->command->place);
 	}
 	return false;
 }

@@ -137,6 +137,8 @@
 # Note: we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
+. sh/util.sh
+
 ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG TOPIC VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 VARIANT=${VARIANT:-debug}
@@ -262,7 +264,7 @@ preload_prefix()
 File_List()
 # List files that should not be changed by tests.
 {
-	ls -ld sh/test tests tests/*/* conf/CXX src/*.cc src/*.hh || {
+	{ ls -l -d tests && ls -l -d tests/*/* | grep -v -E -e '^d' ; } || {
 		echo >&2 "Error creating file list"
 		exit 1
 	}
@@ -290,12 +292,6 @@ mkdir -p log
 exec 6>log/error.log
 exec 8>log/runtime.$VARIANT
 
-# Execute rm_tmps in all test dirs before calling File_List, otherwise an interrupted test
-# run will make the next one fail (due to remaining temp files).
-sh/rm_tmps tests/*
-
-File_List >"$file_list_begin"
-
 [ -z "$nopreload" ] && {
 	sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
 }
@@ -305,7 +301,7 @@ cd tests
 if [ "$1" ] ; then
 	tests="$@"
 	tests=$(echo $tests | filter_tests)
-	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l)))"
+	subset=" subset($(echo $tests | tr ' ' '\n' | grep -c -E -e .))"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
@@ -319,6 +315,14 @@ fi
 
 count_total=$(echo $tests | tr ' ' '\n' | grep -c .)
 
+../sh/rm_tmps $tests # Unquoted for glob replacement
+
+cd ..
+# Execute rm_tmps in all test dirs before calling File_List, otherwise an interrupted test
+# run will make the next one fail (due to remaining temp files).
+File_List >"$file_list_begin"
+cd tests
+
 # In the next line, '$tests' expands with glob replacement
 for file in $tests
 do
@@ -329,12 +333,12 @@ do
 		{ test_fail_fatal_no_cd "Expected '$file' to be a directory" ; continue ; }
 
 	# There are no files in the test directory (ignoring dotfiles)
-	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
+	ls -1 "$file" | grep -q -E -e . || {
 		if [ "$emptyok" != 1 ] ; then
 			test_fail_fatal_no_cd "Directory '$file' is empty"
 			continue
 		fi
-	fi
+	}
 
 	output_next
 	cd "$file" || {
@@ -466,11 +470,8 @@ do
 
 					# Check that NOTINCONTENT is not found in the error output
 					if [ -e NOTINCONTENT ]; then
-						cat NOTINCONTENT | while IFS= read -r line ; do
-							if grep -q -F -e "$line" "$target" ; then
-								test_fail "'$line' was found in target, but should not be there (NOTINCONTENT)"
-							fi
-						done
+						Not grep -q -F -f NOTINCONTENT -- "$target" ||
+							test_fail "String from NOTINCONTENT found in target $target"
 					fi
 				fi
 			else
@@ -500,7 +501,7 @@ do
 
 		# Check that INSTDOUT is found in the output
 		if [ -e INSTDOUT ]; then
-			# TODO should use grep -f
+			# TODO should use grep -f (depends on whether we allow multiple lines in INSTDOUT
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
 				echo >&3 "INSTDOUT...correct"
 			else
@@ -550,11 +551,8 @@ do
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -e NOTINSTDERR ]; then
-			cat NOTINSTDERR | while IFS= read -r line ; do
-				if grep -q -F -e "$line" list.def.err ; then
-					test_fail "'$line' was found in error output, but should not be there (NOTINSTDERR)"
-				fi
-			done
+			Not grep -q -F -f NOTINSTDERR -- list.def.err ||
+				test_fail "String from NOTINSTDERR found in error output"
 		fi
 
 		# TTYSTDOUTERR / INTTYSTDOUTERR
@@ -632,7 +630,7 @@ do
 				echo >&3 "Second invocation...correct"
 			else
 				test_fail "Second invocation did no result in 'Targets are up to date'"
-				>&2 echo STDOUT:
+				>&2 echo stdout:
 				>&2 printf '/---------\n'
 				>&2 cat list.def.out
 				>&2 printf '\\---------\n'
@@ -708,7 +706,7 @@ output_success
 
 File_List >"$file_list_end"
 diff "$file_list_begin" "$file_list_end" || {
-	echo >&2 "Error tests changes files that should not be changed; see $file_list_begin $file_list_end"
+	echo >&2 "Error: tests haved changed files that should not be changed; see $file_list_begin $file_list_end"
 	exit 1
 }
 

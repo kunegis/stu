@@ -1,0 +1,7 @@
+# TOPIC: %cd -x
+
+A{}
+
+%cd -X directory
+
+B{}

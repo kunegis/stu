@@ -1,0 +1,14 @@
+# TOPIC: a=b;%cd
+
+A=B;
+
+C: d d/ddd
+{
+	cp d/ddd C
+}
+
+-p d { mkdir -p d ; }
+
+B=C;%cd d
+
+ddd = {111}

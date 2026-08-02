@@ -9,6 +9,7 @@
 #	a - File/phony
 #       p - Parameter
 #       v - Environment variable
+#       x - Flag
 #
 
 set -e

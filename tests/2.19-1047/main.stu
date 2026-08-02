@@ -1,0 +1,4 @@
+%cd directory
+%cd -
+
+%include main.stu

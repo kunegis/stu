@@ -1,0 +1,18 @@
+# TOPIC: $[a$p]
+#
+# The name of an environment variable cannot be parametrized.  This would be possible in
+# principle, and the code below shows how it could be used.
+#
+
+A: list.def
+{
+	cp list.def A
+}
+
+list.$name: $[abc$name]
+{
+	eval v=\$abc$name
+	echo "$v" >list."$name"
+}
+
+abcdef = {xyz}

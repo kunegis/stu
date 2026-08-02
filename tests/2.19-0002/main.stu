@@ -1,0 +1,15 @@
+A: list.aaa/bbb list.aaa/bbb/B
+{
+	cp list.aaa/bbb/B A
+}
+
+-p list.aaa/bbb
+{
+	mkdir -p list.aaa
+	mkdir -p list.aaa/bbb
+}
+
+%cd list.aaa
+%cd bbb
+
+B = {CORRECT}

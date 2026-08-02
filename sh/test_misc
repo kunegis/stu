@@ -1,0 +1,419 @@
+#!/bin/sh
+set -e
+dir=${TMPDIR:-/tmp}/test_misc.$$
+error_file=$dir/error
+ret=0 # Functions report errors by returning non-zero OR by touching $error_file
+
+trap Clean EXIT
+rm -R -f -- "$dir"
+mkdir -- "$dir"
+
+Clean()
+{
+	rm -R -f -- "$dir"
+}
+
+Find_Source_Files()
+{
+	find . -type f |
+		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
+	find tests -name EXEC -o -name PRELOAD.cc -o -name EXITSTATUS -o -name CMD \
+	     -o -name VARIANT -o -name TOPIC
+}
+
+Find_Shell_Scripts()
+{
+	find sh -type f
+	find tests -name EXEC
+}
+
+Check_Test_Names()
+{
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	grep -v -E -x -e '(long-)?[0-9]+(\.[0-9]+(\.[0-9]+)?)?-[012][0-9][0-9][0-9]' |
+	sed -E -e 's,^,tests/,;s,$,: Invalid test name: Must be of the form [long-]<version>-xxxx,' |
+	grep -E -e '.' >&2 && return 1
+
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	sed -E -e 's,^long-,,
+s,-.*$,,
+/^[1-9][0-9]*$/!d' |
+	sed -E -e 's,^,tests/,;s,$,: Invalid test name: Major updates cannot have their own tests (create N.0.x versions instead),' |
+	grep -E -e '.' >&2 && return 1
+
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	while IFS= read -r name ; do
+		first_digit=$(echo "$name" | sed -E -e 's,^.*(.)...$,\1,')
+		[ -e tests/"$name"/EXITSTATUS ] ; exist_EXITSTATUS=$?
+		[ -e tests/"$name"/EXEC ] ; exist_EXEC=$?
+		[ "$first_digit" = 1 ] ; is_1=$?
+		[ "$first_digit" = 2 ] ; is_2=$?
+
+		[ "$exist_EXITSTATUS" = "$is_1" ] || {
+			echo >&2 "tests/$name: EXITSTATUS must exist iff the test is *-1xxx"
+			touch -- "$error_file"
+		}
+		[ "$exist_EXEC" = "$is_2" ] || {
+			echo >&2 "tests/$name: EXEC must exist iff the test is *-2xxx"
+			touch -- "$error_file"
+		}
+	done
+
+	patterns=$dir/patterns
+	sed -E -e '
+s,^.*\[([0-9]+(\.[0-9]+(\.[0-9]+)?)?)\].*$,\1,
+tend
+s,^Version ([0-9.]+):$,\1,
+tend
+d
+:end
+s,\.,\\.,g
+s,^,(long-)?,
+s,$,-....,
+' NEWS >"$patterns"
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	grep -v -E -x -f "$patterns" |
+	sed -E -e 's,$,: Version number of test does not appear in NEWS,' |
+	grep -E -e '.' >&2 && return 1
+
+	return 0
+}
+
+Check_Test_Own_Name()
+{
+	ls -1U tests | while IFS= read -r test ; do
+		grep -r -F -n -e "$test" "tests/$test" |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Source code of test must not contain name of directory in order for directories in tests/ to be renamable,' |
+		grep -E -e '.' >&2 && touch -- "$error_file"
+	done
+	return 0
+}
+
+Check_Test_Dir()
+{
+	find tests -type d | grep -E -e '/.*/' |
+		sed -E -e 's,$,: Directories under tests/ must not have subdirectories,' |
+		grep -E -e '.' >&2 && touch -- "$error_file"
+	return 0
+}
+
+Check_Test_EXEC()
+{
+	line='. ../../sh/test.sh'
+	( cd tests ; ls -1U ) | sh/sort_tests | while IFS= read -r name ; do
+		file=tests/"$name"/EXEC
+		if [ -e "$file" ] ; then
+			if ! grep -q -F -x -e "$line" "$file" ; then
+				printf '%s:2: expected $line to be appear\n' "$file"
+				touch -- "$error_file"
+			fi
+		fi
+		file=tests/"$name"/SETUP
+		if [ -e "$file" ] ; then
+			if ! grep -q -F -x -e "$line" "$file" ; then
+				printf '%s:2: expected $line to be appear\n' "$file"
+				touch -- "$error_file"
+			fi
+		fi
+	done
+}
+
+Check_Test_bin_name()
+{
+	find tests -name EXEC |
+		xargs grep -n -E -e 'bin/stu\.([a-su-z])' |
+		sed -E -e 's,(:[0-9]+:),\1 Only bin/stu.test must be used in tests: ,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Cov_Tag()
+{
+	list_src=$dir/cov-src
+	list_tests=$dir/cov-tests
+
+	find src -name '*.cc' | xargs cat -- |
+		sed -E -e 's,^.*cov_tag\("([^"]+)"\).*$,\1,
+t
+d' | LC_ALL= sort >"$list_src"
+
+	find tests -name 'PRELOAD.cc' | xargs cat -- |
+		sed -E -e 's,^.*cov_hash\("([^"]+)"\).*$,\1,
+t
+d' | LC_ALL= sort >"$list_tests"
+
+	if ! cmp -s -- "$list_src" "$list_tests" ; then
+		grep -v -F -x -f "$list_tests" -- "$list_src" | while IFS= read -r tag ; do
+			grep -n -r -F -e "$tag" -- src |
+				sed -E -e 's,(^[^:]+:[^:]+:),\1 Cov tag appears in src/ but not in tests/:,' >&2
+		done
+		grep -v -F -x -f "$list_src" -- "$list_tests" | while IFS= read -r tag ; do
+			grep -n -r -F -e "$tag" -- tests |
+				sed -E -e 's,(^[^:]+:[^:]+:),\1 Cov tag appears in tests/ but not in src/:,' >&2
+		done
+		ret=1
+	fi
+}
+
+Check_Newline_EOF()
+{
+	Find_Source_Files | {
+		my_ret=0
+		while read file ; do
+			[ -s "$file" ] || continue
+			has_newline_eof=$(echo $(tail -c-1 -- "$file" | wc -l))
+			if [ "$has_newline_eof" = 0 ] ; then
+				echo >&2 "$file:$((1 + $(wc -l <"$file"))): newline missing at end of file"
+				my_ret=1
+			fi
+		done
+		return "$my_ret"
+	}
+}
+
+Check_Space_File()
+{
+	Find_Source_Files | {
+		my_ret=0
+		while read file ; do
+			head -n 1 -- "$file" | grep -q -E '^\s*$' && {
+				echo >&2 "$file:1: File must not begin with empty line"
+				my_ret=1
+			}
+			tail -n 1 -- "$file" | grep -q -E '^\s*$' && {
+				echo >&2 "$file:$(echo $(wc -l <"$file")): File must not end with empty line"
+				my_ret=1
+			}
+		done
+		return "$my_ret"
+	}
+}
+
+Check_Space_Line()
+{
+	Find_Source_Files |
+		xargs grep -E -n '\s$' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Double_Empty_Line()
+{
+	Find_Source_Files |
+	xargs awk '
+BEGIN {
+	previ= "x";
+}
+/^$/ {
+	if (previ == "") {
+		print FILENAME ":" (FNR-1) ": Multiple empty lines should not be present";
+	};
+	previ= "";
+}
+/./ {
+	previ= "x";
+}
+' |
+	grep -E '.' >&2 && return 1
+	return 0
+}
+
+Check_Midline_Tab()
+{
+	Find_Source_Files |
+		xargs grep -E -n -e '[^'"$(printf '\t')"'#*]'"$(printf '\t')" |
+		grep -v -F -e "$(printf '\t')"'\' |
+		grep -v -E -e '://' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Tabs can only be present at beginning of line,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Manpage_Tab()
+{
+	grep -F -n -e "$(printf '\t')" man/stu.1.in && {
+		echo >&2 "*** 'man/stu.1.in' must not contain tabs"
+		return 1
+	}
+	return 0
+}
+
+Check_Backtick()
+{
+	Find_Source_Files |
+		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_misc|MANPAGE|.*\.cc)$' |
+		xargs grep -E -n -e '`' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backtick "`",' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Escape()
+{
+	Find_Source_Files |
+		xargs grep -F -n -e $(printf '\033') |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain escape,' |
+		grep -E -e '.' >&2 && return 1
+	Find_Source_Files |
+		xargs grep -F -n -e "\\"e |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backslash-e sequence,' |
+		grep -E -e '.' >&2 && return 1
+	Find_Source_Files |
+		grep -v -E -e './(man|doc)/' |
+		xargs grep -F -n -e '$'"'\\" |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain $-single-quote escape,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Control()
+{
+	Find_Source_Files |
+		xargs grep -E -n -e '['"$(printf '\r')"']' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain control character,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Double_Slash()
+{
+	find . -name '*.cc' -o -name '*.hh' |
+		xargs grep -E -n '(^|[^:])//' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Double_Hash()
+{
+	find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) \
+		-a \! -name '*~' -a \! -path './.git*' -a \! -path './bin/stu.*' \
+		-a \! -path './bin/stu' -a \! -path './config*' \
+		-a \! -path './build-aux/*' -a \! -path doc/TODO.stu |
+		xargs grep -F -n '#''#' >&2 && return 1
+	return 0
+}
+
+Check_Hash_Bang()
+{
+	Find_Source_Files | while IFS= read -r file ; do
+		line=$(<"$file" head -1)
+		printf '%s\n' "$line" | grep -q -E -e '^#!' || continue
+		printf '%s\n' "$line" | grep -q -E -e '^#!/bin/sh$' || {
+			printf >&2 '%s:1: %s: script should start with "#!/bin/sh"\n' \
+				   "$file" "$line"
+			touch -- "$error_file"
+		}
+	done
+	return 0
+}
+
+Check_assert_false()
+{
+	grep -F -n 'assert(false)' src/*.cc src/*.hh |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must use hints.hh instead of assert(false),' |
+	grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_NULL()
+{
+	find . -name '*.cc' -o -name '*.hh' |
+		xargs grep -E -n -e '(^|[^_])NULL' |
+		sed -E -e 's,^([^:]+:[^:]+:).*$,\1 NULL should not be used; use nullptr instead,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_TODO()
+{
+	find . -name '*.cc' -o -name '*.hh' |
+		xargs grep -E -n -e 'TODO' |
+		sed -E -e 's,^([^:]+:[^:]+:).*(TODO.*)$,\1 \2,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Preload()
+{
+	find tests -name PRELOAD.cc |
+	while IFS= read -r filename ; do
+		grep -q -F -e 'extern "C"' -- "$filename" || {
+			echo >&2 "$filename:1:  Preload files must contain 'extern \"C\"'"
+			return 1
+		}
+	done
+	return 0
+}
+
+Check_seq()
+{
+	{ ls -1U sh/* ; find . -name EXEC -o -name '*.stu' ; } |
+		grep -v -E -x -e sh/seq -e sh/test_misc |
+		xargs grep -n -E -e '(^|[^/a-zA-Z_])seq[^a-zA-Z_]' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Script must not use seq (use sh/seq instead),' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Empty_RE()
+{
+	Find_Shell_Scripts | xargs grep -E -n -e '\(\||\|\)' -- |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Script must not use empty RE,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
+Check_Cpp()
+{
+	Check_TODO || ret=1
+	Check_assert_false || ret=1
+	Check_NULL || ret=1
+	Check_Preload || ret=1
+}
+
+Check_Shell_Script()
+{
+	Check_seq || ret=1
+	Check_Empty_RE || ret=1
+}
+
+Check_Test()
+{
+	Check_Test_Names || ret=1
+	Check_Test_Own_Name || ret=1
+	Check_Test_Dir || ret=1
+	Check_Test_EXEC || ret=1
+	Check_Test_bin_name || ret=1
+	Check_Cov_Tag || ret=1
+}
+
+Check_Characters()
+{
+	Check_Backtick || ret=1
+	Check_Escape || ret=1
+	Check_Control || ret=1
+	Check_Double_Slash || ret=1
+	Check_Double_Hash || ret=1
+	Check_Hash_Bang || ret=1
+}
+
+Check_Spaces()
+{
+	Check_Newline_EOF || ret=1
+	Check_Space_File || ret=1
+	Check_Space_Line || ret=1
+	Check_Double_Empty_Line || ret=1
+	Check_Midline_Tab || ret=1
+	Check_Manpage_Tab || ret=1
+}
+
+Check_Cpp
+Check_Shell_Script
+Check_Test
+Check_Characters
+Check_Spaces
+
+[ -e "$error_file" ] && ret=1
+exit "$ret"

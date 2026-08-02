@@ -15,7 +15,7 @@ test: \
     log/test_unit.debug \
     log/test_todo \
     cov \
-    log/test_clean \
+    log/test_misc \
     log/test_unit.release \
     topic \
     sani
@@ -80,9 +80,9 @@ log/test_options:   sh/test_options src/options.hh man/stu.1.in
 log/test_todo:  doc/TODO.stu
 	@echo sh/test_todo
 	@     sh/test_todo && mkdir -p log && touch $@
-log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/* doc/* NEWS
-	@echo sh/test_clean
-	@     sh/test_clean && mkdir -p log && touch $@
+log/test_misc:  src/*.cc src/*.hh sh/test_misc sh sh/* tests tests/*/* doc/* NEWS
+	@echo sh/test_misc
+	@     sh/test_misc && mkdir -p log && touch $@
 
 log/test_unit.debug:            bin/stu.debug    sh/test tests tests/*/*
 	@echo                                    sh/test
@@ -128,7 +128,7 @@ install:  sh/install bin/stu man/stu.1
 	sh/install
 clean:
 	rm -Rf bin/ conf/ log/ cov/ src/version.hh
-	sh/rm_tmps --not-sh
+	sh/rm_tmps
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

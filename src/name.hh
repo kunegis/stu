@@ -2,27 +2,35 @@
 #define NAME_HH
 
 /*
- * The possibly parametrized name of a file or phony.  A name has N >= 0
- * parameters.  When N > 0, the name is parametrized, otherwise it is
- * unparametrized.  A name consists of N+1 static text elements (in the variable
- * TEXTS) and N parameters (in PARAMETERS), which are interleaved.  For instance
- * when N = 2, the name is given by
+ * An optionally parametrized name of a file or phony.  A name has N >= 0 parameters.  When
+ * N > 0, the name is parametrized, otherwise it is unparametrized.  A name consists of
+ * N+1 static text elements (in the variable TEXTS) and N parameters (in PARAMETERS),
+ * which are interleaved.  For instance when N = 2, the name is given by
  *
  *	texts[0] parameters[0] texts[1] parameters[1] texts[2].
  *
- * Names can be valid or invalid.  A name is valid when all internal texts
- * (between two parameters) are non-empty, and, if N = 0, the single text is
- * non-empty.  A name is empty if N = 0 and the single text is empty (empty
- * names are invalid).
+ * Names can be valid or invalid.  A name is valid when all internal texts (between two
+ * parameters) are non-empty, and, if N = 0, the single text is non-empty.  A name is
+ * empty if N = 0 and the single text is empty (empty names are invalid).
  */
 
 #include "place.hh"
+#include "show.hh"
+
+typedef unsigned Name_Flags;
+
+enum
+{
+	NF_SPECIAL_B= 1 << 0,
+	/* Set if special canonicalization rule (b) is known to apply to the name.  If
+	 * set, the name is of the form <text>/$param/<...> */
+};
 
 class Name
 {
 public:
-	Name(string name_): texts({name_}) {} /* Zero parameters */
-	Name(): texts({""}) {} /* Empty name */
+	Name(string name_): texts({name_}) {} /* Unparametrized */
+	Name(): texts({""}) {} /* Empty */
 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size());
@@ -42,18 +50,11 @@ public:
 	const std::vector <string> &get_texts() const { return texts; }
 	const std::vector <string> &get_parameters() const { return parameters; }
 
-	void append_parameter(string parameter)
+	void append_parameter(string parameter);
 	/* Append a PARAMETER and an empty text.  Do not check that the result is valid. */
-	{
-		parameters.push_back(parameter);
-		texts.push_back("");
-	}
-
-	void append_text(string text)
+	void prepend_base(string text);
+	void append_text(string text);
 	/* Append the given text to the last text element */
-	{
-		texts[texts.size() - 1] += text;
-	}
 
 	void append(const Name &name);
 	/* Append another parametrized name.  Check that the result is valid. */
@@ -99,8 +100,6 @@ public:
 	 * parameters with the two unseparated parameters. */
 
 	void canonicalize();
-	/* In-place canonicalizarion */
-
 	bool equals_same_length(const Name &that) const;
 
 	bool operator<(const Name &) const; /* Compares only texts */
@@ -116,6 +115,7 @@ public:
 private:
 	std::vector <string> texts; /* Length = N + 1 */
 	std::vector <string> parameters; /* Length = N */
+	Name_Flags name_flags= 0;
 };
 
 void render(const Name &name, Parts &parts, Rendering rendering= 0)
@@ -124,7 +124,6 @@ void render(const Name &name, Parts &parts, Rendering rendering= 0)
 }
 
 class Placed_Name
-/* A possibly parametrized name annotated with places */
 	: public Name
 {
 public:
@@ -152,19 +151,11 @@ public:
 		return places;
 	}
 
-	void append_parameter(string parameter, const Place &place_parameter)
-	/* Append the given PARAMETER and an empty text */
-	{
-		Name::append_parameter(parameter);
-		places.push_back(place_parameter);
-	}
+	void append_parameter(string parameter, const Place &place_parameter);
 
-	shared_ptr <Placed_Name> instantiate(const std::map <string, string> &mapping) const
+	shared_ptr <Placed_Name> instantiate(
+		const std::map <string, string> &mapping) const;
 	/* In the returned object, the PLACES vector is empty */
-	{
-		string name= Name::instantiate(mapping);
-		return std::make_shared <Placed_Name> (name, place);
-	}
 };
 
 #endif /* ! NAME_HH */

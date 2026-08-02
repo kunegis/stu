@@ -13,14 +13,21 @@ void Tokenizer::parse_tokens_file(
 	const Place &place_diagnostic,
 	int fd,
 	bool allow_enoent,
-	bool try_default)
+	bool try_default,
+	bool use_base,
+	bool filename_already_rebased)
 {
+	assert(use_base == (context == SOURCE || context == OPTION_C));
+
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
 	std::set <string> includes;
+
 	parse_tokens_file(
-		tokens, context, place_end, filename, backtraces, filenames, includes,
-		place_diagnostic, fd, allow_enoent, try_default);
+		tokens, context, place_end, filename,
+		backtraces, filenames, includes,
+		place_diagnostic, fd, allow_enoent, try_default, use_base,
+		filename_already_rebased);
 }
 
 void Tokenizer::parse_tokens_file(
@@ -34,7 +41,9 @@ void Tokenizer::parse_tokens_file(
 	const Place &place_diagnostic,
 	int fd,
 	bool allow_enoent,
-	bool try_default)
+	bool try_default,
+	bool use_base,
+	bool filename_already_rebased)
 {
 	TRACE_FUNCTION();
 	TRACE("filename= '%s'", filename);
@@ -46,6 +55,17 @@ void Tokenizer::parse_tokens_file(
 	enum {TC_MMAP, TC_MALLOC} technique;
 
 	try {
+		/* Map empty string to stdin */
+		if (filename.empty()) {
+			assert(fd == -1);
+			fd= 0;
+		} else {
+			if (use_base && !filename_already_rebased) {
+				filename= Base_Stack::rebase(filename);
+				TRACE("Rebased filename='%s'", filename);
+			}
+		}
+
 		if (context == SOURCE) {
 			assert(filenames.size() == 0 ||
 			       filenames[filenames.size() - 1] != filename);
@@ -54,12 +74,6 @@ void Tokenizer::parse_tokens_file(
 		} else {
 			assert(filenames.size() == 0);
 			assert(backtraces.size() == 0);
-		}
-
-		/* Map empty string to stdin */
-		if (filename.empty()) {
-			assert(fd == -1);
-			fd= 0;
 		}
 
 		if (fd < 0) {
@@ -151,7 +165,7 @@ void Tokenizer::parse_tokens_file(
 				tokens, backtraces, filenames, includes,
 				Place(Place::Type::INPUT_FILE, (Place::Bits)0,
 					filename, 1, 0),
-				in, in_size);
+				use_base, in, in_size);
 			tokenizer.parse_tokens(context, place_diagnostic);
 			place_end= tokenizer.current_place();
 
@@ -234,7 +248,8 @@ void Tokenizer::parse_tokens_string(
 	Context context,
 	Place &place_end,
 	string string_,
-	const Place &place_string)
+	const Place &place_string,
+	bool use_base)
 {
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
@@ -242,7 +257,7 @@ void Tokenizer::parse_tokens_string(
 
 	Tokenizer tokenizer(
 		tokens, backtraces, filenames, includes,
-		place_string,
+		place_string, use_base,
 		string_.c_str(), string_.size());
 	tokenizer.parse_tokens(context, place_string);
 	place_end= tokenizer.current_place();
@@ -262,21 +277,21 @@ void Tokenizer::parse_tokens_arg(
 	while (*p) {
 		if (allow_at && *p == '@') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
 		} else if (*p == '[') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= true;
 			allow_at= true;
 			environment= 0;
 		} else if (*p == ']') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= false;
 			allow_at= false;
@@ -301,7 +316,7 @@ void Tokenizer::parse_tokens_arg(
 				throw ERR_LOGICAL;
 			}
 			tokens.push_back(std::make_shared <Flag_Token> (
-				environment, place, place, *p));
+				*p, environment, place, place));
 			++p;
 			allow_dash= true;
 			allow_at= true;
@@ -315,9 +330,8 @@ void Tokenizer::parse_tokens_arg(
 				++p;
 			}
 			assert(p > q);
-			Placed_Name placed_name(string(q, p-q), place);
-			tokens.push_back(std::make_shared <Name_Token>
-				(placed_name, environment));
+			Placed_Name name(string(q, p-q), place);
+			tokens.push_back(std::make_shared <Name_Token> (name, environment));
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
@@ -432,8 +446,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 						place_base.text,
 						line_command, column_command);
 					return std::make_shared <Command> (
-						command, place_command, place_open,
-						environment);
+						command, environment,
+						place_command, place_open);
 				} else {
 					++p;
 				}
@@ -572,8 +586,8 @@ void Tokenizer::parse_flag_or_name()
 		return;
 	}
 
-	shared_ptr <Placed_Name> placed_name= parse_name(allow_special);
-	if (placed_name == nullptr) {
+	shared_ptr <Placed_Name> name= parse_name(allow_special);
+	if (name == nullptr) {
 		if (*p == '!') {
 			current_place() << fmt(
 				"character %s is invalid for persistent dependencies; use %s instead",
@@ -597,8 +611,8 @@ void Tokenizer::parse_flag_or_name()
 		}
 		throw ERR_LOGICAL;
 	}
-	assert(! placed_name->empty());
-	tokens.push_back(std::make_shared <Name_Token> (*placed_name, environment));
+	assert(! name->empty());
+	tokens.push_back(std::make_shared <Name_Token> (*name, environment));
 }
 
 void Tokenizer::parse_flag()
@@ -639,7 +653,7 @@ void Tokenizer::parse_flag()
 		p= q;
 		char flag_char= flag_chars[index];
 		shared_ptr <Flag_Token> token= std::make_shared <Flag_Token> (
-			environment, place_dash, place_name, flag_char, name);
+			flag_char, environment, place_dash, place_name, name);
 		tokens.push_back(token);
 		return;
 	}
@@ -664,7 +678,7 @@ void Tokenizer::parse_flag()
 			throw ERR_LOGICAL;
 		}
 		token= std::make_shared <Flag_Token> (
-			environment, place_dash, place_name, flag_char);
+			flag_char, environment, place_dash, place_name);
 		tokens.push_back(token);
 		++p;
 	} while (p < p_end && isalnum(*p));
@@ -737,11 +751,10 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(
 	return ret;
 }
 
-void Tokenizer::parse_dollar(Placed_Name &placed_name)
+void Tokenizer::parse_dollar(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
-	string name;
 	Place place_dollar= current_place();
 
 	if (p + 1 == p_end || p[1] == '\n') {
@@ -762,23 +775,12 @@ void Tokenizer::parse_dollar(Placed_Name &placed_name)
 
 	if (p[1] == '(') {
 		parse_environment_variable(name);
-		TRACE("name= %s", show(name));
-		assert(name.size() > 0);
-		const char *value= getenv(name.c_str());
-		TRACE("name= %s", value ? show(value) : "<null>");
-		if (!value) {
-			place_dollar << fmt("expected environment variable %s to be set",
-				show(Environment_Variable_View(name)));
-			throw ERR_LOGICAL;
-		}
-		placed_name.append_text(value);
 	} else {
 		parse_parameter(name);
-		placed_name.append_parameter(name, place_dollar);
 	}
 }
 
-void Tokenizer::parse_home(Placed_Name &placed_name)
+void Tokenizer::parse_home(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '~');
@@ -787,12 +789,16 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 	++p;
 	const char *begin= p;
 
-	while (p < p_end && (isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin))) ++p;
+	while (p < p_end &&
+		(isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin)))
+	{
+		++p;
+	}
 
 	if (p == begin) {
 		TRACE("Standalone ~");
 		if (! (p == p_end || is_tilde_char(*p))) {
-			placed_name.append_text("~");
+			name.append_text("~");
 			return;
 		}
 		const char *home= getenv(ENV_HOME);
@@ -805,14 +811,14 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 					"cannot determine home directory of user by UID";
 				throw ERR_BUILD;
 			}
-			placed_name.append_text(info->pw_dir);
+			name.append_text(info->pw_dir);
 		} else {
-			placed_name.append_text(home);
+			name.append_text(home);
 		}
 	} else {
 		TRACE("Specific user's home directory");
 		if (! (p == p_end || is_tilde_char(*p))) {
-			placed_name.append_text(string(tilde, p - tilde));
+			name.append_text(string(tilde, p - tilde));
 			return;
 		}
 		string username= string(begin, p - begin);
@@ -823,11 +829,11 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 				show(username));
 			throw ERR_BUILD;
 		}
-		placed_name.append_text(info->pw_dir);
+		name.append_text(info->pw_dir);
 	}
 }
 
-void Tokenizer::parse_parameter(string &name)
+void Tokenizer::parse_parameter(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
@@ -872,21 +878,24 @@ void Tokenizer::parse_parameter(string &name)
 		throw ERR_LOGICAL;
 	}
 
-	name= string(p_name, p - p_name);
+	string key= string(p_name, p - p_name);
 
-	if (isdigit(name[0])) {
+	if (isdigit(key[0])) {
 		place_name << fmt(
 			"parameter name %s must not start with a digit",
-			show(Prefix_View("$", name)));
+			show(Prefix_View("$", key)));
 		throw ERR_LOGICAL;
 	}
 	if (braces) ++p;
+
+	name.append_parameter(key, place_dollar);
 }
 
-void Tokenizer::parse_environment_variable(string &name)
+void Tokenizer::parse_environment_variable(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p+2 <= p_end && p[0] == '$' && p[1] == '(');
+	string key;
 	Place place_dollar= current_place();
 	p += 2;
 	Place place_name= current_place();
@@ -926,8 +935,51 @@ void Tokenizer::parse_environment_variable(string &name)
 		throw ERR_LOGICAL;
 	}
 
-	name = string(p_name, p - p_name);
+	key = string(p_name, p - p_name);
+	TRACE("key= '%s'", show(key));
+	assert(key.size() > 0);
 	++p;
+
+	if (key == "PWD") {
+		string buf;
+		buf.resize(0x400);
+	retry:
+		TRACE("Try size= %s", frmt("%zu", buf.size()));
+		char *r= getcwd(buf.data(), buf.size());
+		if (!r && errno == ERANGE) {
+			TRACE("Resize getcwd buffer");
+			buf.resize(4 * buf.size());
+			goto retry;
+		}
+		TRACE("PWD= '%s'", buf.c_str());
+		string pwd= buf.c_str();
+		if (use_base) {
+			string base_dir= Base_Stack::get_base();
+			if (! base_dir.empty()) {
+				if (base_dir[0] == '/') {
+					pwd= base_dir;
+				} else {
+					if (! pwd.empty() &&
+						pwd[pwd.size() - 1] != '/')
+						{
+							pwd += '/';
+						}
+					pwd += base_dir;
+				}
+			}
+		}
+		name.append_text(pwd);
+	} else {
+		const char *v= getenv(key.c_str());
+		if (!v) {
+			place_dollar << fmt(
+				"expected environment variable %s to be set",
+				show(Environment_Variable_View(key)));
+			throw ERR_LOGICAL;
+		}
+		TRACE("value= '%s'", v);
+		name.append_text(v);
+	}
 }
 
 bool Tokenizer::is_name_char(char c)
@@ -1053,6 +1105,7 @@ Tokenizer::Tokenizer(
 	std::vector <string> &filenames_,
 	std::set <string> &includes_,
 	const Place &place_base_,
+	bool use_base_,
 	const char *p_,
 	size_t length)
 	: tokens(tokens_),
@@ -1060,7 +1113,8 @@ Tokenizer::Tokenizer(
 	  filenames(filenames_),
 	  includes(includes_),
 	  place_base(place_base_),
-	  line(1), p_line(p_), p(p_), p_end(p_ + length)
+	  line(1), p_line(p_), p(p_), p_end(p_ + length),
+	  use_base(use_base_)
 {
 	TRACE_FUNCTION();
 	if (length > 0)
@@ -1079,7 +1133,8 @@ void Tokenizer::parse_tokens(
 		/* Operators except '$' */
 		if (is_operator_char(*p)) {
 			Place place= current_place();
-			tokens.push_back(std::make_shared <Operator> (*p, place, environment));
+			tokens.push_back(std::make_shared <Operator> (
+				*p, environment, place));
 			++p;
 		}
 
@@ -1089,9 +1144,9 @@ void Tokenizer::parse_tokens(
 			Place place_lbracket(place_base.type, (Place::Bits)0,
 				place_base.text, line, p + 1 - p_line);
 			tokens.push_back(std::make_shared <Operator>
-				('$', place_dollar, environment));
+				('$', environment, place_dollar));
 			tokens.push_back(std::make_shared <Operator>
-				('[', place_lbracket, environment));
+				('[', environment, place_lbracket));
 			p += 2;
 		}
 
@@ -1315,7 +1370,7 @@ void Tokenizer::parse_directive(
 	skip_space(skipped_actual_space);
 	const char *const p_name= p;
 	Place place_directive= current_place();
-	while (p < p_end && isalnum(*p)) ++p;
+	while (p < p_end && (isalnum(*p) || *p == '_' || *p == '-')) ++p;
 
 	if (p == p_name) {
 		if (p < p_end)
@@ -1339,6 +1394,8 @@ void Tokenizer::parse_directive(
 		parse_version_directive(place_percent);
 	} else if (name == "set" || name == "unset") {
 		parse_set_directive(context, place_percent, name);
+	} else if (name == "cd") {
+		parse_cd_directive(context, place_percent);
 	} else {
 		/* Invalid directive */
 		place_percent << fmt("invalid directive %s",
@@ -1364,9 +1421,9 @@ void Tokenizer::parse_include_directive(
 		throw ERR_LOGICAL;
 	}
 
-	shared_ptr <Placed_Name> placed_name= parse_name(false);
+	shared_ptr <Placed_Name> name= parse_name(false);
 
-	if (placed_name == nullptr) {
+	if (name == nullptr) {
 		current_place() <<
 			(p == p_end
 				? "expected a filename"
@@ -1375,26 +1432,30 @@ void Tokenizer::parse_include_directive(
 		place_percent << fmt("after %s", show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
-	if (placed_name->get_n() != 0) {
-		placed_name->place << fmt("name %s must not be parametrized",
-			show(*placed_name));
+	if (name->get_n() != 0) {
+		name->place << fmt("name %s must not be parametrized",
+			show(*name));
 		place_percent << fmt("after %s",
 			show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
 
-	const string filename_include= placed_name->unparametrized();
-	Backtrace backtrace_stack(placed_name->place,
-		fmt("%s is included from here", show(filename_include)));
+	string filename_include= name->unparametrized();
+	string filename_include_based= filename_include;
+	if (use_base) {
+		filename_include_based= Base_Stack::rebase(filename_include_based);
+	}
+	Backtrace backtrace_stack(name->place,
+		fmt("%s is included from here", show(filename_include_based)));
 	backtraces.push_back(backtrace_stack);
 	filenames.push_back(place_base.text);
 
-	if (includes.count(filename_include)) {
+	if (includes.count(filename_include_based)) {
 		/* Do nothing -- file was already parsed, or is being parsed.  It is an
 		 * error if a file includes itself directly or indirectly.  It it ignored
 		 * if a file is included a second time non-recursively. */
 		for (auto &i: filenames) {
-			if (filename_include != i)
+			if (filename_include_based != i)
 				continue;
 			std::vector <Backtrace> backtraces_backward;
 			for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
@@ -1402,7 +1463,7 @@ void Tokenizer::parse_include_directive(
 				if (j == backtraces.rbegin()) {
 					backtrace.message= fmt(
 						"recursive inclusion of %s using %s",
-						show(filename_include),
+						show(filename_include_based),
 						show(Operator_View("%include")));
 				}
 				backtraces_backward.push_back(backtrace);
@@ -1417,8 +1478,9 @@ void Tokenizer::parse_include_directive(
 		Place place_end_sub;
 		parse_tokens_file(
 			tokens, Tokenizer::SOURCE, place_end_sub,
-			filename_include, backtraces, filenames, includes,
-			place_diagnostic, -1);
+			filename_include_based,
+			backtraces, filenames, includes,
+			place_diagnostic, -1, false, true, use_base, true);
 	}
 	backtraces.pop_back();
 	filenames.pop_back();
@@ -1512,6 +1574,85 @@ void Tokenizer::parse_set_directive(
 	} else {
 		unsetenv(name_string.c_str());
 	}
+}
+
+void Tokenizer::parse_cd_directive(
+	Context context,
+	const Place &place_percent)
+{
+	TRACE_FUNCTION();
+	TRACE("use_base= %s", frmt("%d", use_base));
+	TRACE("context= %s", frmt("%d", context));
+	assert(use_base || context == DYNAMIC || context == OPTION_C);
+	Environment environment_= 0;
+
+	if (context == DYNAMIC) {
+		place_percent << fmt("%s cannot appear in dynamic dependencies",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	if (context == OPTION_C) {
+		place_percent << fmt("%s cannot appear in argument to %s",
+			show(Operator_View("%cd")),
+			show(Operator_View("-C")));
+		throw ERR_LOGICAL;
+	}
+
+	bool skipped_space;
+	skip_space(skipped_space);
+	if (skipped_space) environment_= E_WHITESPACE;
+	Place place_name= current_place();
+
+	if (*p == '-') {
+		++p;
+		if (p < p_end && isalnum(*p)) {
+			place_percent << fmt("%s must not be followed by a flag",
+				show(Operator_View("%cd")));
+			throw ERR_LOGICAL;
+		}
+		if (p < p_end && *p == '-') {
+			/* "%cd --" is reserved for future extension */
+			place_percent << fmt("%s must not be followed by %s",
+				show(Operator_View("%cd")),
+				show(Operator_View("--")));
+			throw ERR_LOGICAL;
+		}
+		if (!use_base || Base_Stack::empty()) {
+			place_percent << fmt(
+				"no previous directory to %s into",
+				show(Operator_View("%cd -")));
+			throw ERR_LOGICAL;
+		}
+		Base_Stack::pop();
+		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
+			Base_Stack::get_base()));
+		return;
+	}
+
+	shared_ptr <Placed_Name> name= parse_name(false);
+
+	if (!name) {
+		current_place() <<
+			(p == p_end
+				? "expected a directory name"
+				: fmt("expected a directory name, not %s",
+					show(current_mbchar())));
+		place_percent << fmt("after %s",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	if (name->is_parametrized()) {
+		place_name << fmt("directory name %s cannot be parametrized",
+			show(*name));
+		place_percent << fmt("after %s",
+			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	string name_string= name->unparametrized();
+
+	Base_Stack::push(name_string);
+	tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
+		Base_Stack::get_base()));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

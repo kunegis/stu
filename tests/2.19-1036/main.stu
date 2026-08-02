@@ -1,0 +1,5 @@
+# TOPIC: $cd $v/a
+
+A = {error}
+
+%cd $dir/aaa # Error (no parameters allowed)

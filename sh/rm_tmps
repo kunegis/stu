@@ -4,17 +4,12 @@
 # patterns.  Executed within each test directory.  Any such named files may be
 # directories.
 #
-# None of the patterns matches any file that we would create within the main stu/
-# directory, so we can safely call this to remove junk files created while debugging.  In
-# particular, all one-letter and two-letter files are deleted except 'sh'.
-#
 # Kept in sync with .gitignore.
 #
-# INVOCATION
-#    $0 [--not-sh] [DIR]...
+# When called without arguments, do not delete 'sh', otherwise, do delete it.
 #
-# OPTIONS
-#    --not-sh   Don't delete 'sh' (only used for main directory of Stu repo)
+# INVOCATION
+#    $0 [DIR]...
 #
 
 SCRIPT=$0
@@ -33,24 +28,22 @@ x.*
 *abcdef
 '
 
-if [ "$1" = --not-sh ] ; then
+if [ "$1" = --delete ] ; then
 	shift
-	[ $# != 0 ] && { echo >&2 "Option --not-sh cannot be used with explicit directories" ; exit 1 ; }
-	rm -Rf -f ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
+	rm -R -f -- $@ || exit 1
+	exit
+fi
+
+Remove_Files_Slow()
+{
+	rm -R -f -- ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ ./*abcdef || exit 1
 	for file in ?? ; do
 		[ "$file" = sh ] && continue
 		rm -R -f -- "$file" || exit 1
 	done
-	exit
-fi
+}
 
-if [ "$1" = --delete ] ; then
-	shift
-	rm -R -f -- $@
-	exit
-fi
-
-Remove_Files() # [DIR]...
+Remove_Files_Fast() # [DIR]...
 {
 	printf '%s\n' "$@" |
 	while IFS= read -r dir ; do
@@ -59,11 +52,11 @@ Remove_Files() # [DIR]...
 			printf '%s/%s\0' "$dir" "$pattern"
 		done
 	done |
-	xargs -0 "$SCRIPT" --delete
+	xargs -0 "$SCRIPT" --delete || exit 1
 }
 
 if [ $# = 0 ] ; then
-	Remove_Files .
+	Remove_Files_Slow
 else
-	Remove_Files "$@"
+	Remove_Files_Fast "$@"
 fi

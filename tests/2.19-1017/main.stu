@@ -1,0 +1,8 @@
+A: list.ddd list.ddd/B;
+
+-p list.ddd { touch list.ddd; }
+
+%cd list.ddd
+
+B { echo bbb >B ; }
+

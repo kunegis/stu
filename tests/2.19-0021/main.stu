@@ -1,0 +1,25 @@
+# TOPIC: %cd a %cd b %cd - %cd c
+
+A: a/c a/c/B
+{
+	cp a/c/B A
+}
+
+-p a/c
+{
+	mkdir -p a/c
+}
+
+%cd a
+%cd b
+%cd -
+%cd c
+
+B: C
+{
+	cp C B
+}
+
+C = D;
+
+D = {CORRECT}

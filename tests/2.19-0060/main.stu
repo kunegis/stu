@@ -1,0 +1,24 @@
+# In the future d/../C and C will refer to the same file (".." canonicalization).  For
+# now, they are two different files.
+
+A: d d/B
+{
+	cp d/B A
+	grep -q -F -x -e 123 A
+}
+
+C
+{
+	exit 77
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+%cd d
+
+B = ../C;
+
+../C = {123}

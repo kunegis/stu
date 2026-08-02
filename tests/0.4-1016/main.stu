@@ -1,0 +1,18 @@
+# TOPIC: $[a/b]
+
+A: @check $[x/y]
+{
+	[ "$y" ]
+	touch A
+}
+
+@check
+{
+	[ -z "$y" ]
+}
+
+x/y
+{
+	mkdir -p x
+	echo content >x/y
+}

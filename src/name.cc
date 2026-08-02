@@ -38,7 +38,7 @@ bool Name::match(
  * This implementation takes into account the special rules described in the manpage.
  * Each special rule is referred to by a letter (a, b, c, etc.). */
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show(*this));
 	TRACE("name= '%s'", name);
 	assert(mapping.size() == 0);
 	assert(! name.empty());
@@ -57,13 +57,23 @@ bool Name::match(
 		priority= 1;
 
 	/* $A/bbb matches /bbb with $A set to / */
-	bool special_b_potential= n != 0
+	/* dir/$A/bbb matches dir/bbb with $A set to . */
+	bool special_b_potential_unbased= n != 0
 		&& texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/';
+	bool special_b_potential_based= name_flags & NF_SPECIAL_B;
 
-	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
+	/* We are in the second pass for Special Rule (b)/(c) */
+	bool special_b_second_pass= false;
+	bool special_c_second_pass= false;
+
+	TRACE("name_flags= %s", frmt("%u", name_flags));
+	TRACE("special_a= %s", frmt("%d", special_a));
+	TRACE("special_b_potential_based= %s", frmt("%d", special_b_potential_based));
+	TRACE("special_b_potential_unbased= %s", frmt("%d", special_b_potential_unbased));
 
  restart:
-	TRACE("Start special_c= %s", frmt("%d", special_c));
+	TRACE("Start special_b_second_pass= %s", frmt("%d", special_b_second_pass));
+	TRACE("Start special_c_second_pass= %s", frmt("%d", special_c_second_pass));
 	const char *const p_begin= name.c_str();
 	const char *const p_end= name.c_str() + name.size();
 	const char *p= p_begin;
@@ -72,14 +82,17 @@ bool Name::match(
 	if (! special_a) {
 		TRACE("Not (a)");
 		size_t k= texts[0].size();
-		if ((size_t)(p_end - p) <= k) {
-			TRACE("String is too short for first text");
-			goto failed;
-		}
-		/* Note:  K can be zero here, in which case memcmp() always returns zero,
-		 * i.e., a match. */
-		if (memcmp(p, texts[0].c_str(), k)) {
+		if ((size_t)(p_end - p) <= k || memcmp(p, texts[0].c_str(), k)) {
 			TRACE("String does not start with first text");
+			if (special_b_potential_based) {
+				assert(p < p_end);
+				if (p[0] != '/') {
+					TRACE("Special rule (b), based, but text[0] does not match and name is relative: fail");
+					return false;
+				}
+				anchoring[0]= 0;
+				goto pass;
+			}
 			goto failed;
 		}
 		p += k;
@@ -90,16 +103,20 @@ bool Name::match(
 		assert(texts[0] == "./");
 		anchoring[0]= 0;
 	}
-
+ pass:
 	for (size_t i= 0; i < n; ++i) {
 		TRACE("i= %s, p= '%s', texts[i+1]= %s", frmt("%zu", i), p, texts[i+1]);
-		size_t length_min= 1;
-		/* Minimal length of the matching parameter */
+		size_t length_min= 1; /* Minimal length of the matching parameter */
 
-		if (special_b_potential && i == 0)
+		if ((special_b_potential_based || special_b_potential_unbased) && i == 0)
 			length_min= 0;
 
-		if (special_c && i == 0) {
+		if (special_b_second_pass && i == 0) {
+			ret[parameters[i]]= ".";
+			--p; /* Parse the '/' twice */
+			continue;
+		}
+		if (special_c_second_pass && i == 0) {
 			ret[parameters[i]]= ".";
 
 			if (i == n - 1) {
@@ -144,7 +161,8 @@ bool Name::match(
 			}
 			string matched= string(p, p_end - p - size_last);
 			if (matched.empty()) {
-				assert(special_b_potential);
+				assert(special_b_potential_based
+					|| special_b_potential_unbased);
 				priority= 1;
 				matched= "/";
 			}
@@ -170,7 +188,8 @@ bool Name::match(
 					goto failed;
 			}
 			if (matched.empty()) {
-				assert(special_b_potential);
+				assert(special_b_potential_based
+					|| special_b_potential_unbased);
 				priority= 1;
 				matched= "/";
 			}
@@ -193,7 +212,7 @@ bool Name::match(
 
  failed:
 	TRACE("Failed");
-	if (special_c)
+	if (special_c_second_pass || special_b_second_pass)
 		return false;
 
 	/*
@@ -213,9 +232,14 @@ bool Name::match(
 	 */
 
 	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
-		TRACE("Restart");
-		special_c= true;
+		TRACE("Restart (c)");
+		special_c_second_pass= true;
 		priority= -1;
+		goto restart;
+	} else if (special_b_potential_based) {
+		TRACE("Restart (b)");
+		assert (texts[0][texts[0].size()-1] == '/' && texts[1][0] == '/');
+		special_b_second_pass= true;
 		goto restart;
 	} else {
 		TRACE("ret= false");
@@ -323,6 +347,7 @@ void Name::render(Parts &parts, Rendering rendering) const
 
 void Name::canonicalize()
 {
+	TRACE_FUNCTION();
 	for (size_t i= 0; i <= get_n(); ++i) {
                 char *const p= (char *) texts[i].c_str();
 		Canonicalize_Flags canonicalize_flags= 0;
@@ -330,7 +355,7 @@ void Name::canonicalize()
 			canonicalize_flags |= A_BEGIN;
 		if (i == get_n())
 			canonicalize_flags |= A_END;
-		const char *q= canonicalize_string(canonicalize_flags, p);
+		const char *q= canonicalize_string(p, canonicalize_flags);
 		texts[i].resize(q - p);
 	}
 }
@@ -347,6 +372,30 @@ bool Name::equals_same_length(const Name &that) const
 	if (this->texts[get_n()] != that.texts[get_n()])
 		return false;
 	return true;
+}
+
+void Name::append_parameter(string parameter)
+{
+	parameters.push_back(parameter);
+	texts.push_back("");
+}
+
+void Name::prepend_base(string text)
+{
+	TRACE_FUNCTION();
+	TRACE("text= '%s'", text);
+	assert(! text.empty() && text[text.size()-1] == '/');
+	const size_t n= get_n();
+	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
+		name_flags |= NF_SPECIAL_B;
+		TRACE("name_flags= %s", frmt("%u", name_flags));
+	}
+	texts[0] = text + texts[0];
+}
+
+void Name::append_text(string text)
+{
+	texts[texts.size() - 1] += text;
 }
 
 void Name::append(const Name &name)
@@ -378,4 +427,17 @@ bool Name::operator<(const Name &that) const
 		if (r > 0) return false;
 	}
 	return false;
+}
+
+void Placed_Name::append_parameter(string parameter, const Place &place_parameter)
+{
+	Name::append_parameter(parameter);
+	places.push_back(place_parameter);
+}
+
+shared_ptr <Placed_Name>
+Placed_Name::instantiate(const std::map <string, string> &mapping) const
+{
+	string name= Name::instantiate(mapping);
+	return std::make_shared <Placed_Name> (name, place);
 }

@@ -1,2 +1,2 @@
-dep.cc
-cycle.cc
+src/dep.cc
+src/cycle.cc

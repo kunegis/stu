@@ -1,0 +1,14 @@
+# TOPIC: %cd $(v)
+
+%set STU_TEST_VAR list.abc
+
+A: list.abc list.abc/B
+{
+	cp list.abc/B A
+}
+
+-p list.abc { mkdir -p list.abc ; }
+
+%cd $(STU_TEST_VAR)
+
+B = {content}

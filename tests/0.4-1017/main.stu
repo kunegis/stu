@@ -1,0 +1,14 @@
+# TOPIC: $[a$p] # in dynamic dependency
+
+A: list.def
+{
+	cp list.def A
+}
+
+list.$name: [B]
+{
+	eval v=\$abc$name
+	echo "$v" >list."$name"
+}
+
+B={$[abc$name]}

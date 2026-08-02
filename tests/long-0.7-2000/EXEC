@@ -3,10 +3,12 @@
 # It is possible to have multiple version directives, in particular in different source
 # files.
 #
+# TOPIC: multiple version directives
+#
 . ../../sh/test.sh
 
-STUFILE1=tmp1.stu
-STUFILE2=tmp2.stu
+STUFILE1=list.tmp1.stu
+STUFILE2=list.tmp2.stu
 
 error=0
 

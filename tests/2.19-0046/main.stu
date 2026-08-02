@@ -1,0 +1,19 @@
+A: list.dir list.dir/B
+{
+	cp list.dir/B A
+	grep -q -F -x -e 1234 A
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+>V
+{
+	echo 1234
+}
+
+B: $[V]
+{
+	echo "$V" >B
+}

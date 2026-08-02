@@ -1,0 +1,1 @@
+main.stu:4:4: no rule to build "directory/nonexistingfile", needed by "directory/A"

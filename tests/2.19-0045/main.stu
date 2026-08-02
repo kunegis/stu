@@ -1,0 +1,19 @@
+# TOPIC: %cd a  $[b]
+
+>A: list.dir list.dir/B
+{
+	grep -q -F -x -e CORRECT list.dir/B
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+B: $[V]
+{
+	set
+	echo "$V" >B
+}
+
+V = {CORRECT}
+

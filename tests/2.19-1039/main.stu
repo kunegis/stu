@@ -1,0 +1,24 @@
+#
+# This cannot work.  $name in list.directory/ cannot match B because there is no sensible
+# value for $name that would be possible for "touch $name" to work". (We never prepend an
+# absolute name).
+#
+
+A: list.directory B
+{
+	cp B A
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+$name
+{
+	echo "pwd='$(pwd)'"
+	echo "name='$name'"
+	touch -- "$name"
+}

@@ -1,0 +1,3 @@
+a/b: chdir: 
+main.stu:11:2: command for @a/b/clone failed with exit status 127
+main.stu:3:4: @a/b/clone is needed by "A"

@@ -1,0 +1,25 @@
+# TOPIC: $name.data {...}  %cd d  $name.data {...}  # Both can be used; no error due to duplicate rule
+
+A: abc.data d d/xyz.data
+{
+	cat abc.data d/xyz.data >A
+	grep -q -F -x -e 111 abc.data
+	grep -q -F -x -e 222 d/xyz.data
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+>$name.data
+{
+	echo 111
+}
+
+%cd d
+
+>$name.data
+{
+	echo 222
+}

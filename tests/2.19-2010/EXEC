@@ -1,0 +1,21 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.aaa
+
+cat <<EOF >>list.stu
+%cd list.aaa
+%include aaa_main.stu
+EOF
+
+cat <<EOF >>list.aaa/aaa_main.stu
+:::::
+EOF
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ]
+grep -q -F -e 'aaa/aaa_main.stu:1:1: expected a rule, not :' list.err

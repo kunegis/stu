@@ -1,0 +1,27 @@
+A: list.directory list.directory/B
+{
+	cp list.directory/B A
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+B: [C]
+{
+	cat X Y Z list.X.xyz list.Y.xyz list.Z.xyz >B
+}
+
+C = {(X Y Z) () list.(X Y Z).xyz}
+
+X = {x}
+Y = {y}
+Z = {z}
+
+>list.$v
+{
+	echo $v$v
+}

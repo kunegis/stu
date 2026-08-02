@@ -460,15 +460,16 @@ VARIABLE DEPENDENCIES
            $[ [ NAME = ] [ <flags> ] FILENAME ]
 
        NAME is the name of the environment variable, and defaults to FILENAME.
+       Names of environment variables cannot be parametrized.
 
-       If  a rule has multiple variable dependencies with the same name, it is
+       If a rule has multiple variable dependencies with the same name, it  is
        unspecified which one is used.  If a variable dependencies has the same
        name as a parameter, it overrides the parameter.
 
-       Variable  dependencies  may be declared as persistent as in $[-p X] and
+       Variable dependencies may be declared as persistent as in $[-p  X]  and
        as trivial as in $[-t X] but not as optional using the -o flag.
 
-       In the following example, the C flags are stored in  the  file  CFLAGS,
+       In  the  following  example, the C flags are stored in the file CFLAGS,
        and used in the compilation command using the $[CFLAGS] dependency.
 
            compute:  compute.c $[CFLAGS]
@@ -478,63 +479,63 @@ VARIABLE DEPENDENCIES
            CFLAGS = { -Wall -Werror }
 
 FLAGS
-       Targets  and dependencies can be annotated with flags.  Flags have syn‐
+       Targets and dependencies can be annotated with flags.  Flags have  syn‐
        tax similar to options on the command line, and change the way Stu han‐
-       dles  files.  A short flag is written as a dash immediately followed by
-       one or more letters, each of which is interpreted as a different  flag.
-       A  long  flag is introduced by two dashes. Flags apply to the following
+       dles files.  A short flag is written as a dash immediately followed  by
+       one  or more letters, each of which is interpreted as a different flag.
+       A long flag is introduced by two dashes. Flags apply to  the  following
        name, and more than one flag can precede any name.
 
        -0, --null
-              If the file is used as a dynamic dependency, interpret the  con‐
+              If  the file is used as a dynamic dependency, interpret the con‐
               tent as a \0-separated list of filenames.  This flag can be used
               before targets and dependencies.
 
        -C, --full-syntax
-              If the file is used as a dynamic dependency, interpret the  con‐
-              tent  in full Stu syntax. This is the default for dynamic depen‐
+              If  the file is used as a dynamic dependency, interpret the con‐
+              tent in full Stu syntax. This is the default for dynamic  depen‐
               dencies.  This flag can be used before targets and dependencies.
 
        -n, --newline
-              If the file is used as a dynamic dependency, interpret the  con‐
+              If  the file is used as a dynamic dependency, interpret the con‐
               tent as a newline-separated list of filenames.  This flag can be
               used before targets and dependencies.
 
        -o, --optional
               Optional dependency. The file is not built if it doesn't already
-              exist.   If the file exists, the modification date is taken into
-              account for determining whether the target has  to  be  rebuilt.
+              exist.  If the file exists, the modification date is taken  into
+              account  for  determining  whether the target has to be rebuilt.
               This flag can be used before targets and dependencies.
 
        -p, --persistent
               Persistent dependency. The file is not rebuilt if it already ex‐
-              ists.  Stu will only check whether the  dependency  exists,  but
+              ists.   Stu  will  only check whether the dependency exists, but
               not its modification time for determining whether the target has
               to be rebuilt.  (If the file itself is the target of a rule, the
-              modification  time  of the dependency will be taken into account
-              while building the file.)  This is mostly  useful  for  directo‐
-              ries,  as  the modification time of directories is updated when‐
-              ever files are added or removed in the directory.  Can  be  used
+              modification time of the dependency will be taken  into  account
+              while  building  the  file.)  This is mostly useful for directo‐
+              ries, as the modification time of directories is  updated  when‐
+              ever  files  are added or removed in the directory.  Can be used
               before targets and dependencies.
 
        -P, --no-dereference
-              Do  not  dereference symlink target.  This flag can only be used
-              before file targets of rules.  It cannot be  used  transitively,
+              Do not dereference symlink target.  This flag can only  be  used
+              before  file  targets of rules.  It cannot be used transitively,
               before phonies, or before dependencies.
 
        -t, --trivial
-              Trivial  dependency.  The  file  is only (re)built if the parent
-              target needs to be (re)built for other reasons.  This is  mostly
+              Trivial dependency. The file is only  (re)built  if  the  parent
+              target  needs to be (re)built for other reasons.  This is mostly
               useful for configuration files that are generated automatically,
-              including the case of files containing the flags used to  invoke
-              compilers  and other programs.  Trivial dependencies are not al‐
-              lowed if the rule has no command.  This flag can only be  placed
+              including  the case of files containing the flags used to invoke
+              compilers and other programs.  Trivial dependencies are not  al‐
+              lowed  if the rule has no command.  This flag can only be placed
               before dependencies.
 
-       A  dependency cannot be declared as persistent and optional at the same
+       A dependency cannot be declared as persistent and optional at the  same
        time, as that would imply that its command is never executed.
 
-       Targets of rules can have the flags -p (persistent dependency)  and  -o
+       Targets  of  rules can have the flags -p (persistent dependency) and -o
        (optional dependency).  In that case, the target will always be consid‐
        ered persistent or optional.
 
@@ -546,7 +547,7 @@ FLAGS
 
            -flag [ ... ]
 
-       in which case all the flag is applied to all resulting  dynamic  depen‐
+       in  which  case all the flag is applied to all resulting dynamic depen‐
        dencies.
 
        The flags -n/-0/-C can be used on files used as dynamic dependencies to
@@ -558,30 +559,30 @@ FLAGS
        fault)
 
 COPY RULES
-       Using  the  equal  sign with a file name creates a copy rule, i.e., the
+       Using the equal sign with a file name creates a copy  rule,  i.e.,  the
        given file is copied with the cp command:
 
            TARGET = [ -p | -o ] SOURCE;
 
-       By default, Stu will use /bin/cp to perform  the  copy.   This  can  be
-       changed  by  setting  the  variable $STU_CP.  If SOURCE ends in a slash
-       (outside of any parameter value), then Stu will look for  a  file  with
+       By  default,  Stu  will  use  /bin/cp to perform the copy.  This can be
+       changed by setting the variable $STU_CP.  If SOURCE  ends  in  a  slash
+       (outside  of  any  parameter value), then Stu will look for a file with
        the same basename as TARGET in the directory SOURCE.
 
-       If  the persistent flag -p is used, the timestamp of the source file is
-       not verified, only its existence.  If the optional flag -o is used,  it
-       is  not  an error if the target exists and not the source: in that case
-       the target is considered up to date.  Both flags must not be  used  si‐
+       If the persistent flag -p is used, the timestamp of the source file  is
+       not  verified, only its existence.  If the optional flag -o is used, it
+       is not an error if the target exists and not the source: in  that  case
+       the  target  is considered up to date.  Both flags must not be used si‐
        multaneously.
 
 CONTENT RULES
-       A  content  rule  allows  to  hardcode the content of a file in the Stu
-       source.  For a content rule, a single filename must be followed  by  an
+       A content rule allows to hardcode the content of  a  file  in  the  Stu
+       source.   For  a content rule, a single filename must be followed by an
        equal sign, and then braces containing the content:
 
            TARGET = { CONTENT ... }
 
-       The  content can span multiple lines.  The content is stripped of empty
+       The content can span multiple lines.  The content is stripped of  empty
        lines and common whitespace at the beginning of lines, and written into
        the file.
 
@@ -589,41 +590,41 @@ CONTENT RULES
        recreate the file if the file already exists.
 
 REDIRECTION
-       The operators < and > are used for input and output redirection,  in  a
+       The  operators  < and > are used for input and output redirection, in a
        similar way as in the shell.
 
        The operator > can be used in front of the target name to indicate that
-       the output of the command should be redirected into  the  target  file.
-       As  an  example, the following rule creates the file HEADERS containing
+       the  output  of  the command should be redirected into the target file.
+       As an example, the following rule creates the file  HEADERS  containing
        the output of the given echo command:
 
            >HEADERS { echo *.h ; }
 
-       Only a single target may be annotated with the  >  operator,  and  when
+       Only  a  single  target  may be annotated with the > operator, and when
        flags are used, they must preceded the output operator.
 
            >A B { ... } # Output into file A; B is also built by the command
            -o >A { ... } # Output into file A, which is optional
 
-       A  file  dependency  can  be  annotated with the < operator to redirect
-       standard input from the given file to the command.  Only a single  file
-       can  be  used for input redirection.  If no input redirection is speci‐
+       A file dependency can be annotated with  the  <  operator  to  redirect
+       standard  input from the given file to the command.  Only a single file
+       can be used for input redirection.  If no input redirection  is  speci‐
        fied, standard input for the command is redirected from /dev/null (when
        option -i is not used) and from Stu's stdin (when -i is used).
 
 ENVIRONMENT VARIABLES
-       Environment  variables  can be accessed using the syntax $(name), where
-       name is the name of the environment variables.  It is an error  if  the
+       Environment variables can be accessed using the syntax  $(name),  where
+       name  is  the name of the environment variables.  It is an error if the
        environment variable is not defined.
 
-       Environment  variables  can  appear anywhere where names can appear: in
-       targets, dependencies, and in arguments to %include/%set/%unset.   They
+       Environment variables can appear anywhere where names  can  appear:  in
+       targets,  dependencies, and in arguments to %include/%set/%unset.  They
        are not allowed in the version number specified by %version.
 
-       Environment  variables  can  appear outside of quotes, inside of double
-       quotes, but not inside of single quotes.   The  result  of  environment
-       variable  substitution is never word-split, i.e., spaces and other spe‐
-       cial characters in the value of environment variables  are  not  inter‐
+       Environment variables can appear outside of quotes,  inside  of  double
+       quotes,  but  not  inside  of single quotes.  The result of environment
+       variable substitution is never word-split, i.e., spaces and other  spe‐
+       cial  characters  in  the value of environment variables are not inter‐
        preted after substitution.
 
        Environment variables can be set and unset:
@@ -631,10 +632,13 @@ ENVIRONMENT VARIABLES
            %set VARIABLE value
            %unset VARIABLE
 
-       Both  the variable name and the value can use single and double quotes,
-       backslash escapes and use environment variables using the $(name)  syn‐
-       tax,  but  not  the home directory ~.  Comments are not allowed between
+       Both the variable name and the value can use single and double  quotes,
+       backslash  escapes and use environment variables using the $(name) syn‐
+       tax, but not the home directory ~.  Comments are  not  allowed  between
        %set/%unset and its arguments.
+
+       The  environment  variable  $(PWD)  is special. It always refers to the
+       current directory, taking %cd directives into account.
 
        %set and %unset are executed sequentially at parse time, and are global
        to  the Stu process.  When a command is executed, environment variables
@@ -851,6 +855,34 @@ DIRECTIVES
 
            %set VARIABLE value
            %unset VARIABLE
+
+       Directives to change directories:
+
+           %cd DIRECTORY
+           %cd -
+
+       The %cd changes to the given directory.  Directories form a stack, with
+       %cd and %cd i used to push and pop from the stack.
+
+       Directory changes are processed at parsing time.  Each rule will be in‐
+       terpreted  relative  to  the current %cd directory.  This includes tar‐
+       gets, dependencies, and the command itself.   The  Stu  process  itself
+       will  not  change directory -- only the commands are executed in a dif‐
+       ferent directory.
+
+       Phony targets are also interpreted relative to the current  %cd  direc‐
+       tory.  For instance,
+
+           %cd dir
+           @do { ... }
+
+       will create a rule for the target @dir/do.
+
+       The environment variable $(PWD) always refers to the current directory,
+       taking %cd into account.
+
+       %cd can only be used between rules, not in the middle of  a  rule.   It
+       cannot be used in a dynamic dependency.
 
 TOKENIZATION
        Unquoted names in Stu may contain the following ASCII characters:
@@ -1284,4 +1316,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.18.8                        August 2026                           STU(1)
+stu-2.19.1                      September 2026                          STU(1)

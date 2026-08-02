@@ -1,0 +1,12 @@
+A: /nonexistingfile
+{
+}
+
+%cd /
+
+$name/
+{
+	echo "pwd='$(pwd)'"
+	echo "name='$name'"
+	exit 1
+}

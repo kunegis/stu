@@ -1,0 +1,6 @@
+# TOPIC: file ends in valid "%cd -"
+
+A = {content}
+
+%cd directory
+%cd -

@@ -1,0 +1,2 @@
+dir: chdir: 
+main.stu:5:2: command for "dir" failed with exit status 127

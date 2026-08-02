@@ -1,3 +1,8 @@
+Version 2.19:
+
+* cd <DIR> and cd - can be used to push and pop a directory.  No canonicalization is
+  performed.
+
 Version 2.18:
 
 * Setting and unsetting environment variable at the global level using %set and %unset.

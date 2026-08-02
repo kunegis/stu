@@ -1,0 +1,4 @@
+# TOPIC: %cd a  b: c;
+
+%cd directory
+A: nonexistingfile;

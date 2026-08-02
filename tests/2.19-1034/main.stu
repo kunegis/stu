@@ -1,0 +1,8 @@
+%cd dir
+
+.
+{
+	echo ERROR
+}
+
+# Same as "dir {...}", but must fail because chdir fails

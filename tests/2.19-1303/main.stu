@@ -1,0 +1,12 @@
+A: list.directory /bin/nonexistingfile
+{
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+$dir/nonexistingfile
+{
+	echo >&2 ABCD
+}

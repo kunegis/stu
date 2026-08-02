@@ -37,18 +37,18 @@ file: --argument first_file --argument [FILES] command
 }
 
 #
+# Allow dir/@phony.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b.
+#
+
+#
 # A flag which means "delete this file at the end of the Stu run".
 #
 
 A: B.utf8 { ... ; }
 --temp >B.utf8 <B { recode ... ; }
 B;
-
-#
-# Allow dir/@phony.  Will allow dir/(a b @c @d).
-#
-# a/@b is equivalent to @a/b.
-#
 
 #
 # Nested/inline rules.  Good for dependencies that are used only once.  This is
@@ -502,3 +502,45 @@ A/B = {c} # Does 'mkdir -p A' first
 # rm_tmps:  Maybe stop using ?? as temporary files in tests, then we can remove the
 # special case handling for 'sh' in sh/rm_tmps.
 #
+
+#
+# Flag -X to prevent rebasing.
+#
+
+# 'B' is built and executed in current directory, not in dir/:
+A: -X B;
+%cd dir
+B {...}
+
+#
+# $(PWD)/ should be the same as ./
+#
+
+# B matches the rule:
+A: B { ... }
+$(PWD)/B { ... }
+
+#
+# $(PWD)/x and x should refer to the same file.
+#
+
+A: x {...}
+$(PWD)/x {...}
+
+#
+# --silent:  Don't print anything when excuting a command
+#
+
+A: B --silent { ... }
+
+#
+# %cd --:  Pop all directories from the base stack.
+#
+
+% cd --
+
+#
+# Flag to not execute jobs in parallel.
+#
+
+@all-sequencial: --sequential @all;

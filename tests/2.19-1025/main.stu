@@ -1,0 +1,16 @@
+A: list.directory list.directory/X
+{
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+X: /aaa[B]
+{
+}
+
+B = {bbb}

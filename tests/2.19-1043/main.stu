@@ -1,0 +1,17 @@
+A: list.directory /bin/nonexistingfile_stu_123
+{
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+%cd list.directory
+
+/bin/nonexistingfile_stu_123
+{
+	echo "pwd='$(pwd)'=pwd"
+	echo ABCD
+	exit 1
+}

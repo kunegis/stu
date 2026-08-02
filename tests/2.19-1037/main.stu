@@ -1,0 +1,8 @@
+A: aaa/bbb/nonexisting;
+
+%cd aaa//bbb
+
+# Fails becase 'chdir' fails
+nonexisting
+{
+}

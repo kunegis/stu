@@ -1,0 +1,2 @@
+main.stu:2:13: expected a filename
+main.stu:2:12: after = in variable dependency "a"

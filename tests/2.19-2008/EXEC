@@ -1,0 +1,20 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+{
+	printf '%%cd list.directory %%include main.stu\n'
+} >list.stu
+
+mkdir list.directory
+
+{
+	printf '%%include main.stu\n'
+} >list.directory/main.stu
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ]
+cmp -s list.err stderr

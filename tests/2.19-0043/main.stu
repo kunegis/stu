@@ -1,0 +1,19 @@
+>A: list.dir data.a list.dir/data.b
+{
+	grep -q -F -x -e xxx data.a
+	grep -q -F -x -e bbb list.dir/data.b
+}
+
+>$dir/data.$x
+{
+	echo xxx
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+>data.b
+{
+	echo bbb
+}  

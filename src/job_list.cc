@@ -19,12 +19,11 @@ File_Executor *Job_List::find(pid_t pid, size_t &index)
 
 	/* No File_Executor is registered for the PID that just finished.  Should not
 	 * happen, but since the PID value came from outside this process, we better
-	 * handle this case gracefully, i.e., do nothing. */
-	should_not_happen();
-	print_warning(Place(),
-		frmt("the function waitpid(2) returned the invalid process ID %jd",
+	 * handle this case gracefully, i.e., abort. */
+	print_error(
+		frmt("the function waitpid(2) returned the PID %jd, which is not a known child process",
 			(intmax_t)pid));
-	return nullptr;
+	error_exit();
 }
 
 void Job_List::add(pid_t pid, size_t &index, File_Executor *executor)

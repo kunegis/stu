@@ -1,0 +1,1 @@
+../../bin/stu.test: the function waitpid(2) returned the PID 1, which is not a known child process

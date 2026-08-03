@@ -105,3 +105,17 @@ void render(const Flag_Token &flag_token, Parts &parts, Rendering rendering)
 {
 	flag_token.render(parts, rendering);
 }
+
+CD_Token::CD_Token(
+	Environment environment_,
+	const Place &place_,
+	string dir_)
+	: Token(environment_), dir(dir_), place(place_)
+{
+}
+
+void CD_Token::render(Parts &parts, Rendering) const
+{
+	parts.append_operator("%cd");
+}
+

@@ -72,6 +72,7 @@ public:
 	const char flag_char;
 	string name; /* empty if not a long flag */
 
+	// TODO systematically place environment before places in all token constructors.
 	Flag_Token(
 		Environment environment_,
 		const Place &place_dash_,
@@ -142,6 +143,13 @@ class CD_Token
 public:
 	const string dir;
 	/* If empty, this is an pop token, otherwise a push token */
+
+	Place place;
+
+	CD_Token(Environment, const Place &, string dir_);
+	const Place &get_place() const override { return place; }
+	const Place &get_place_start() const override { return place; }
+	void render(Parts &, Rendering= 0) const override;
 };
 
 #endif /* ! TOKEN_HH */

@@ -1521,6 +1521,7 @@ void Tokenizer::parse_cd_directive(
 	const Place &place_percent)
 {
 	TRACE_FUNCTION();
+	Environment environment_= 0;
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%cd")));
@@ -1528,6 +1529,7 @@ void Tokenizer::parse_cd_directive(
 	}
 	bool skipped_space;
 	skip_space(skipped_space);
+	if (skipped_space) environment_= E_WHITESPACE;
 	Place place_name= current_place();
 	shared_ptr <Placed_Name> name= parse_name(true);
 
@@ -1550,7 +1552,10 @@ void Tokenizer::parse_cd_directive(
 	}
 	string name_string= name->unparametrized();
 
-	tokens.push_back(std::make_shared <CD_Token> (name_string));
+	tokens.push_back(std::make_shared <CD_Token> (
+			environment_,
+			place_percent,
+			name_string));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

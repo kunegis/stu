@@ -35,6 +35,7 @@
 %cd "-" # Directory named '-'
 %cd \- # Directory named '-'
 %cd $(VAR) # When $VAR is '-':  Directory named '-'
+A=B;%cd DIR <RULE> # No whitespace before %
 
 #
 # %include -d

@@ -194,7 +194,7 @@ shared_ptr <Rule> Parser::parse_rule(
 
 	return std::make_shared <Rule> (
 		move(targets), deps, command, is_content, output_target_index,
-		filename_input);
+		filename_input, cd_stack.get_base_dir());
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -1015,6 +1015,21 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	return ret;
 }
 
+void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
+{
+	if (cd_token->is_push()) {
+		cd_stack.push_back(cd_token->dir);
+	} else {
+		if (cd_stack.empty()) {
+			cd_token->get_place() << fmt(
+				"no previous directory to %s into",
+				show(cd_token));
+			throw ERR_LOGICAL;
+		}
+		cd_stack.pop_back();
+	}
+}
+
 void Parser::append_copy(      Name &to,
 			 const Name &from)
 {
@@ -1294,6 +1309,12 @@ void Parser::parse_rule_list(
 #ifndef NDEBUG
 		const auto iter_begin= iter;
 #endif /* ! NDEBUG */
+
+		while (is <CD_Token> ()) {
+			shared_ptr <CD_Token> cd_token= is <CD_Token> ();
+			++iter;
+			handle_cd(cd_token);
+		}
 
 		shared_ptr <Rule> rule= parse_rule(target_first);
 

@@ -150,6 +150,7 @@ public:
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;
+	bool is_push() const { return ! dir.empty(); }
 };
 
 #endif /* ! TOKEN_HH */

@@ -1,6 +1,7 @@
 Version 2.19:
 
-* cd <DIR> and cd - can be used to push a directory and pop.
+* cd <DIR> and cd - can be used to push a directory and pop.  No canonicalization is
+  performed.
 
 Version 2.18:
 

@@ -39,6 +39,7 @@
  * dependency.
  */
 
+#include "cd_stack.hh"
 #include "dep.hh"
 #include "place.hh"
 #include "rule.hh"
@@ -121,6 +122,8 @@ public:
 private:
 	std::vector <shared_ptr <Token> > &tokens;
 	std::vector <shared_ptr <Token> > ::iterator &iter;
+	CD_Stack cd_stack;
+//	std::vector <string> cd_stack;
 	const Place place_end;
 
 	Parser(std::vector <shared_ptr <Token> > &tokens_,
@@ -170,20 +173,18 @@ private:
 		Placed_Name &placed_name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
-
 	shared_ptr <const Dep> parse_dynamic_dep(
 		Placed_Name &placed_name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
-
 	shared_ptr <const Dep> parse_variable_dep(
 		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
-
 	shared_ptr <const Dep> parse_redirect_dep(
 		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
-
+	void handle_cd(shared_ptr <CD_Token>);
+	
 	template <typename T> shared_ptr <T> is() const
 	/* If the next token is of type T, return it, otherwise return null.  Also return
 	 * null when at the end of the token list. */

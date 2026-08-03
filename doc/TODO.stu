@@ -7,6 +7,7 @@
 % cd DIR # With space between % and cd
 %cd /bin # Directory starts with /
 %cd aaa ; %cd /bin # Same as %cd /bin
+%cd aaa ; %cd /bin ; %cd - # Same as %cd aaa
 %cd /bin ; %cd aaa # Same as $cd /bin/aaa
 %cd /
 %cd in the middle of a rule:  Only the next rule is affected.
@@ -15,8 +16,9 @@
 %cd "aaa"
 %cd 'bbb'
 %cd $(VAR)
-%cd aaa/ ; %cd bbb # Same as %cd aaa/bbb
+%cd aaa/ ; %cd bbb # Same as %cd aaa/bbb (without double slash)
 %cd "" # Error
+%cd '' # Error
 %cd -X # Error (can be parsed as flag later)
 %cd <A # Error (dir missing)
 * Check that "%cd X" works even if X doe snot exist -- the error will come later when
@@ -35,7 +37,12 @@
 %cd "-" # Directory named '-'
 %cd \- # Directory named '-'
 %cd $(VAR) # When $VAR is '-':  Directory named '-'
-A=B;%cd DIR <RULE> # No whitespace before %
+A=B;%cd DIR <RULE> # No whitespace before %%
+%cd .
+%cd ..
+%cd aaa//bbb # double slash is preserved
+%cd //bin # double slash is preserved
+%cd aaa///bbb # Triple slash is preserved
 
 #
 # %include -d

@@ -10,7 +10,9 @@ A: @prep list.dir/A
 
 %cd list.dir
 
-A
+A: B
 {
-	echo CORRECT >A
+	cp B A
 }
+
+B = {CORRECT}

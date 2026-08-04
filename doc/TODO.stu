@@ -49,6 +49,8 @@ A=B;%cd DIR <RULE> # No whitespace before %%
 %cd /// # Stays as-is
 %cd ////// # Stays as-is
 * Multitarget rule in %cd mode
+A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...}
+A = [list.dir/C] {...}  %cd list.dir  C {...}
 
 #
 # %include -d

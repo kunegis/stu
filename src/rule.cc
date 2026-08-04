@@ -66,13 +66,14 @@ Rule::Rule(
 	shared_ptr <const Placed_Name> placed_name_source_,
 	const Place &place_persistent,
 	const Place &place_optional,
-	string base_dir)
+	string base_dir_)
 	: targets{target_},
 	  place(target_->place),
 	  placed_name_input(*placed_name_source_),
 	  output_target_index(TARGET_INDEX_NONE),
 	  is_content(false),
-	  is_copy(true)
+	  is_copy(true),
+	  base_dir(base_dir_)
 {
 	auto dep= std::make_shared <Plain_Dep>
 		(Placed_Target(0, *placed_name_source_));
@@ -114,7 +115,8 @@ shared_ptr <const Rule> Rule::instantiate(
 		move(deps), rule->place, rule->command,
 		*placed_name_input,
 		rule->is_content, rule->output_target_index,
-		rule->is_copy);
+		rule->is_copy,
+		rule->base_dir);
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const

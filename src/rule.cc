@@ -8,7 +8,8 @@ Rule::Rule(
 	const Placed_Name &placed_name_input_,
 	bool is_content_,
 	Target_Index output_target_index_,
-	bool is_copy_)
+	bool is_copy_,
+	string base_dir_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(place_),
@@ -16,7 +17,8 @@ Rule::Rule(
 	  placed_name_input(placed_name_input_),
 	  output_target_index(output_target_index_),
 	  is_content(is_content_),
-	  is_copy(is_copy_)
+	  is_copy(is_copy_),
+	  base_dir(base_dir_)
 { }
 
 Rule::Rule(
@@ -25,7 +27,8 @@ Rule::Rule(
 	shared_ptr <const Command> command_,
 	bool is_content_,
 	Target_Index output_target_index_,
-	const Placed_Name &placed_name_input_)
+	const Placed_Name &placed_name_input_,
+	string base_dir_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(targets_[0]->place),
@@ -33,7 +36,8 @@ Rule::Rule(
 	  placed_name_input(placed_name_input_),
 	  output_target_index(output_target_index_),
 	  is_content(is_content_),
-	  is_copy(false)
+	  is_copy(false),
+	  base_dir(base_dir_)
 {
 	assert(targets.size() != 0);
 	assert(output_target_index == TARGET_INDEX_NONE ||
@@ -61,7 +65,8 @@ Rule::Rule(
 	shared_ptr <const Plain_Dep> target_,
 	shared_ptr <const Placed_Name> placed_name_source_,
 	const Place &place_persistent,
-	const Place &place_optional)
+	const Place &place_optional,
+	string base_dir)
 	: targets{target_},
 	  place(target_->place),
 	  placed_name_input(*placed_name_source_),

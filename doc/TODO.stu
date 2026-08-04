@@ -1,5 +1,6 @@
 %cd aaa
 %cd -
+* Check that $(PWD) in a command with %cd
 %cd in dynamic dependency: error
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
@@ -43,6 +44,11 @@ A=B;%cd DIR <RULE> # No whitespace before %%
 %cd aaa//bbb # double slash is preserved
 %cd //bin # double slash is preserved
 %cd aaa///bbb # Triple slash is preserved
+%cd aaa// # Same as aaa
+%cd aaa///// # Same as aaa
+%cd // # Stays as-is
+%cd /// # Stays as-is
+%cd ////// # Stays as-is
 
 #
 # %include -d

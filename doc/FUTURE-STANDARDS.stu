@@ -36,6 +36,10 @@
 #
 
 #
+# For variants debug/cdebug and maybe others, use the C++ library in "hardened mode".
+#
+
+#
 # Use std::zstring_view/cstring_view once it's standardized.
 #
 

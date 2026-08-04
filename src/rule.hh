@@ -57,29 +57,37 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
 	 * filename. */
 
-	Rule(std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
-	     std::vector <shared_ptr <const Dep> > &&deps_,
-	     const Place &place_,
-	     const shared_ptr <const Command> &command_,
-	     const Placed_Name &placed_name_input_,
-	     bool is_content_,
-	     Target_Index output_target_index_,
-	     bool is_copy_);
+	const string base_dir;
+	
+	Rule(
+		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
+		std::vector <shared_ptr <const Dep> > &&deps_,
+		const Place &place_,
+		const shared_ptr <const Command> &command_,
+		const Placed_Name &placed_name_input_,
+		bool is_content_,
+		Target_Index output_target_index_,
+		bool is_copy_,
+		string base_dir);
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 
-	Rule(std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
-	     const std::vector <shared_ptr <const Dep> > &deps_,
-	     shared_ptr <const Command> command_,
-	     bool is_content_,
-	     Target_Index output_target_index_,
-	     const Placed_Name &placed_name_input_);
+	Rule(
+		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
+		const std::vector <shared_ptr <const Dep> > &deps_,
+		shared_ptr <const Command> command_,
+		bool is_content_,
+		Target_Index output_target_index_,
+		const Placed_Name &placed_name_input_,
+		string base_dir);
 	/* Regular rule:  all cases except copy rules */
 
-	Rule(shared_ptr <const Plain_Dep> placed_target_,
-	     shared_ptr <const Placed_Name> placed_name_source_,
-	     const Place &place_persistent,
-	     const Place &place_optional);
+	Rule(
+		shared_ptr <const Plain_Dep> placed_target_,
+		shared_ptr <const Placed_Name> placed_name_source_,
+		const Place &place_persistent,
+		const Place &place_optional,
+		string base_dir);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
 	/* Whether the rule is parametrized */

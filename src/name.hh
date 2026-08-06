@@ -2,18 +2,16 @@
 #define NAME_HH
 
 /*
- * The possibly parametrized name of a file or phony.  A name has N >= 0
- * parameters.  When N > 0, the name is parametrized, otherwise it is
- * unparametrized.  A name consists of N+1 static text elements (in the variable
- * TEXTS) and N parameters (in PARAMETERS), which are interleaved.  For instance
- * when N = 2, the name is given by
+ * The possibly parametrized name of a file or phony.  A name has N >= 0 parameters.  When
+ * N > 0, the name is parametrized, otherwise it is unparametrized.  A name consists of
+ * N+1 static text elements (in the variable TEXTS) and N parameters (in PARAMETERS),
+ * which are interleaved.  For instance when N = 2, the name is given by
  *
  *	texts[0] parameters[0] texts[1] parameters[1] texts[2].
  *
- * Names can be valid or invalid.  A name is valid when all internal texts
- * (between two parameters) are non-empty, and, if N = 0, the single text is
- * non-empty.  A name is empty if N = 0 and the single text is empty (empty
- * names are invalid).
+ * Names can be valid or invalid.  A name is valid when all internal texts (between two
+ * parameters) are non-empty, and, if N = 0, the single text is non-empty.  A name is
+ * empty if N = 0 and the single text is empty (empty names are invalid).
  */
 
 #include "place.hh"
@@ -21,8 +19,8 @@
 class Name
 {
 public:
-	Name(string name_): texts({name_}) {} /* Zero parameters */
-	Name(): texts({""}) {} /* Empty name */
+	Name(string name_): texts({name_}) {} /* Unparametrized */
+	Name(): texts({""}) {} /* Empty */
 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size());
@@ -49,6 +47,8 @@ public:
 		texts.push_back("");
 	}
 
+	void prepend_text(string text);
+	
 	void append_text(string text)
 	/* Append the given text to the last text element */
 	{

@@ -8,10 +8,10 @@
 using std::string;
 using std::shared_ptr;
 
+#include "base.cc"
 #include "buffer.cc"
 #include "buffering.cc"
 #include "canonicalize.cc"
-#include "cd_stack.cc"
 #include "color.cc"
 #include "concat_executor.cc"
 #include "cycle.cc"

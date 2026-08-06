@@ -15,6 +15,7 @@ pid_t Job::start(
 	const std::map <string, string> &mapping,
 	string filename_output,
 	string filename_input,
+	string base_dir,
 	const Place &place_command,
 	const Place &place_output,
 	const Place &place_input)
@@ -68,6 +69,7 @@ pid_t Job::start(
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL);
 
+		perform_cd(base_dir);
 		create_child_env(mapping);
 		string argv0;
 		const char **argv= create_child_argv(
@@ -101,6 +103,7 @@ pid_t Job::start(
 pid_t Job::start_copy(
 	string target,
 	string source,
+	string base_dir,
 	const Place &place)
 /* This function works analogously to start() with respect to invocation of fork() and
  * other system-related functions. */
@@ -112,7 +115,6 @@ pid_t Job::start_copy(
 	init_signals();
 
 	pid= fork();
-
 	if (pid < 0) {
 		place << format_errno("fork");
 		assert(pid == -1);
@@ -129,6 +131,9 @@ pid_t Job::start_copy(
 	if (pid == 0) {
 		TRACE("In child");
 		in_child= 1;
+
+		perform_cd(base_dir);
+		
 		/* We don't set $STU_STATUS for copy jobs */
 		const char *cp_shortname;
 		const char *cp= get_cp(cp_shortname);
@@ -399,6 +404,18 @@ void Job::ask_continue(pid_t pid)
 	/* Continue job */
 	::kill(-pid, SIGCONT);
 	free(lineptr);
+}
+
+void Job::perform_cd(string base_dir)
+{
+	if (base_dir.empty()) return;
+
+	int r= chdir(base_dir.c_str());
+	if (r) {
+		print_errno("chdir");
+		__gcov_dump();
+		_Exit(ERR_FORK_CHILD);
+	}
 }
 
 void Job::create_child_env(

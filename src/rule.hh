@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base.hh"
 #include "dep.hh"
 #include "place.hh"
 #include "preset.hh"
@@ -18,14 +19,16 @@ class Rule
 /* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
-	std::vector <shared_ptr <const Plain_Dep> > targets;
+	// TODO rename targets
+	std::vector <shared_ptr <const Plain_Dep> > targets_unbased;
 	/* The targets of the rule, in the order specified in the rule.  Contains at least
 	 * one element.  Each element contains all parameters of the rule, and therefore
 	 * should be used for iterating over all parameters.  The place in each target is
 	 * used when referring to a target specifically.  The targets may or may not be
 	 * canonicalized. */
 
-	std::vector <shared_ptr <const Dep> > deps;
+	// TODO rename unbased
+	std::vector <shared_ptr <const Dep> > deps_unbased;
 	/* The dependencies in order of declaration.  Dependencies are included multiple
 	 * times if they appear multiple times in the source.  Any parameter occuring in
 	 * a dependency must occur in every target. */
@@ -92,7 +95,7 @@ public:
 
 	/* Whether the rule is parametrized */
 	bool is_parametrized() const {
-		return targets.front()->placed_target.placed_name.get_n() != 0;
+		return targets_unbased.front()->placed_target.placed_name.get_n() != 0;
 	}
 
 	/* A rule in which the targets must exist */
@@ -112,14 +115,18 @@ public:
 
 	const std::vector <string> &get_parameters() const
 	{
-		assert(targets.size() != 0);
-		return targets.front()->placed_target.placed_name.get_parameters();
+		assert(targets_unbased.size() != 0);
+		return targets_unbased.front()->placed_target.placed_name.get_parameters();
 	}
 
 	void canonicalize();
 	/* In-place canonicalization of the rule.  This applies to the targets of the
 	 * rule.  Called by Rule_Set::add(). */
 
+	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
+		return ::base(d, base_dir);
+	}
+	
 	static shared_ptr <const Rule> instantiate(
 		shared_ptr <const Rule> rule,
 		const std::map <string, string> &mapping);

@@ -1,9 +1,11 @@
-#ifndef CD_STACK_HH
-#define CD_STACK_HH
+#ifndef BASE_HH
+#define BASE_HH
 
 #include <vector>
 
-class CD_Stack
+#include "dep.hh"
+
+class Base_Stack
 {
 public:
 	string get_base_dir() const;
@@ -19,4 +21,8 @@ private:
 	 * - Components only end in slash if they consist only of slashes */
 };
 
-#endif /* ! CD_STACK_HH */
+shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir);
+
+bool is_absolute(shared_ptr <const Plain_Dep>);
+
+#endif /* ! BASE_HH */

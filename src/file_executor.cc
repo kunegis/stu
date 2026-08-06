@@ -44,8 +44,11 @@ File_Executor::File_Executor(
 
 	if (rule) {
 		hash_deps.clear();
-		for (auto &d: rule->targets) {
-			Hash_Dep hd= d->placed_target.unparametrized();
+		for (auto t: rule->targets_unbased) {
+			shared_ptr <const Dep> d= rule->base(t);
+//			auto t2= t->placed_target;
+			Hash_Dep hd= to <const Plain_Dep> (d)->
+				placed_target.unparametrized();
 			hd.get_front_word_nondynamic() |=
 				d->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
@@ -1078,6 +1081,7 @@ bool File_Executor::start(
 		pid= job.start_copy(
 			rule->targets[0]->placed_target.placed_name.unparametrized(),
 			source,
+			rule->base_dir,
 			rule->targets[0]->place);
 	} else {
 		pid= job.start(
@@ -1087,6 +1091,7 @@ bool File_Executor::start(
 				rule->targets[rule->output_target_index]
 				->placed_target.placed_name.unparametrized(),
 			rule->placed_name_input.unparametrized(),
+			rule->base_dir,
 			rule->command->place,
 			rule->output_target_index == TARGET_INDEX_NONE ? Place() :
 				rule->targets[rule->output_target_index]->place,

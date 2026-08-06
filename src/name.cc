@@ -349,6 +349,11 @@ bool Name::equals_same_length(const Name &that) const
 	return true;
 }
 
+void Name::prepend_text(string text)
+{
+	texts[0] = text + texts[0];
+}
+
 void Name::append(const Name &name)
 {
 	assert(this->texts.back() != "" ||

@@ -226,7 +226,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			shared_ptr <Dep> dep2= dep->clone();
 			if (executor->rule) {
 				dep2->flags.add(
-					executor->rule->targets[target_index]->flags,
+					executor->rule->targets_unbased[target_index]->flags,
 					F_PLACED_TARGET);
 			}
 			executor->parents[this]= dep2;
@@ -271,7 +271,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		} else if (rule_child->command) {
 			use_file_executor= true;
 		} else {
-			for (auto &i: rule_child->targets) {
+			for (auto &i: rule_child->targets_unbased) {
 				if ((i->flags.get_flags() & F_TARGET_PHONY) == 0)
 					use_file_executor= true;
 			}

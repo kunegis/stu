@@ -39,7 +39,7 @@
  * dependency.
  */
 
-#include "cd_stack.hh"
+#include "base.hh"
 #include "dep.hh"
 #include "place.hh"
 #include "rule.hh"
@@ -122,7 +122,7 @@ public:
 private:
 	std::vector <shared_ptr <Token> > &tokens;
 	std::vector <shared_ptr <Token> > ::iterator &iter;
-	CD_Stack cd_stack;
+	Base_Stack base_stack;
 //	std::vector <string> cd_stack;
 	const Place place_end;
 

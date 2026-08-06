@@ -502,3 +502,12 @@ A/B = {c} # Does 'mkdir -p A' first
 # rm_tmps:  Maybe stop using ?? as temporary files in tests, then we can remove the
 # special case handling for 'sh' in sh/rm_tmps.
 #
+
+#
+# Flag -X to prevent rebasing.
+#
+
+# 'B' is built and executed in current directory, not in dir/:
+A: -X B;
+%cd dir
+B {...} 

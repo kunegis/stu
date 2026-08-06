@@ -33,6 +33,7 @@ public:
 		const std::map <string, string> &mapping,
 		string filename_output,
 		string filename_input,
+		string base_dir,
 		const Place &place_command,
 		const Place &place_output,
 		const Place &place_input);
@@ -45,6 +46,7 @@ public:
 	pid_t start_copy(
 		string target,
 		string source,
+		string base_dir,
 		const Place &place);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
@@ -79,12 +81,14 @@ private:
 	/* The job that is in the foreground, or -1 when none is */
 
 	static void ask_continue(pid_t pid);
+	static void perform_cd(string base_dir);
 	static void create_child_env(const std::map <string, string> &mapping);
 	static const char **create_child_argv(
 		const Place &place_command,
 		const char *shell_shortname,
 		string &command,
 		string &argv0);
+	
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);

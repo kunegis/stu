@@ -511,3 +511,11 @@ A/B = {c} # Does 'mkdir -p A' first
 A: -X B;
 %cd dir
 B {...} 
+
+#
+# $(PWD)/ should be the same as ./
+#
+
+# B matches the rule:
+A: B { ... }
+$(PWD)/B { ... }

@@ -15,6 +15,7 @@
 
 class Target
 /* A parametrized name for which it is saved what type it represents.  Non-dynamic. */
+// TODO rename:  Target -> Object
 {
 public:
 	Flags flags;  /* Only file/phony target info */

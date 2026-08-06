@@ -42,7 +42,7 @@ public:
 	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For content
 	 * rules, the content of the file (not optional). */
 
-	const Placed_Name placed_name_input;
+	const Placed_Name placed_name_input_unbased;
 	/* Unparametrized. When !is_copy:  The name of the file from which input should be
 	 * read; must be one of the file dependencies.  Empty for no input redirection.
 	 * When is_copy: the file from which to copy; never empty. */

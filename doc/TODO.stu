@@ -1,6 +1,5 @@
 %cd aaa # 2.19-0000
 %cd -
-* Check that $(PWD) in a command with %cd
 %cd in dynamic dependency: error
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
@@ -69,6 +68,13 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 * Concatenation used in a %cd rule
 * main.stu does %cd immediately and then a rule.  The default rule is %cd rule.
 * In %cd rule:  dependency /aaa[B] is not rebased because it is absolute
+* Canonicalization:  A: list.dir/x/y;  %cd list.dir//x  y {...}  # The rule for 'y' must match the dependency.
+* Canonicalization:  A: list.dir//x/y;  %cd list.dir/./x  y {...}  # The rule for 'y' must match the dependency.
+%cd ./
+%cd dir/.
+%cd dir/./
+%cd dir/./.
+%cd ./dir
 
 #
 # %include -d

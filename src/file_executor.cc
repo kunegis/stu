@@ -66,8 +66,8 @@ File_Executor::File_Executor(
 
 	if (rule != nullptr) {
 		TRACE("There is a rule for this executor");
-		for (auto &d: rule->deps)
-			push(d);
+		for (auto &d: rule->deps_unbased)
+			push(rule->base(d));
 	} else {
 		TRACE("There is no rule for this executor");
 
@@ -94,11 +94,13 @@ File_Executor::File_Executor(
 		== (F_RESULT_NOTIFY | F_TARGET_PHONY))
 	{
 		Place place_target;
-		for (auto &i: rule->targets) {
-			if (i->placed_target.placed_name.unparametrized() ==
+		for (auto &i: rule->targets_unbased) {
+			shared_ptr <const Plain_Dep> i2=
+				to <const Plain_Dep> (rule->base(i));
+			if (i2->placed_target.placed_name.unparametrized() ==
 				hash_dep_.get_name_nondynamic())
 			{
-				place_target= i->place;
+				place_target= i2->place;
 				break;
 			}
 		}
@@ -124,10 +126,12 @@ File_Executor::File_Executor(
 		dep->flags.get_flags() & (F_OPTIONAL | F_PERSISTENT))
 	{
 		Place place_target;
-		for (auto &i: rule->targets) {
-			if (i->placed_target.placed_name.unparametrized() ==
+		for (auto &i: rule->targets_unbased) {
+			shared_ptr <const Plain_Dep> i2=
+				to <const Plain_Dep> (rule->base(i));
+			if (i2->placed_target.placed_name.unparametrized() ==
 				hash_dep_.get_name_nondynamic()) {
-				place_target= i->place;
+				place_target= i2->place;
 				break;
 			}
 		}
@@ -229,7 +233,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
 			const Hash_Dep hash_dep= hash_deps[i];
 			if (! hash_dep.is_file()) continue;
-			check_file_was_built(hash_dep, rule->targets[i]->place);
+			check_file_was_built(hash_dep, rule->targets_unbased[i]->place);
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel && !option_s) {
@@ -403,8 +407,9 @@ void File_Executor::print_command() const
 	}
 
 	if (rule->is_copy) {
-		assert(rule->targets.size() == 1);
-		string cp_target= show(rule->targets[0]->placed_target.placed_name, S_NORMAL);
+		assert(rule->targets_unbased.size() == 1);
+		shared_ptr <const Plain_Dep> d_target= to <const Plain_Dep> (rule->base(rule->targets_unbased[0]));
+		string cp_target= show(d_target->placed_target.placed_name, S_NORMAL);
 		string cp_source= show(rule->placed_name_input.unparametrized(), S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;

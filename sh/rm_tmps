@@ -33,24 +33,22 @@ x.*
 *abcdef
 '
 
-if [ "$1" = --not-sh ] ; then
-	shift
-	[ $# != 0 ] && { echo >&2 "Option --not-sh cannot be used with explicit directories" ; exit 1 ; }
-	rm -Rf -f ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
-	for file in ?? ; do
-		[ "$file" = sh ] && continue
-		rm -R -f -- "$file" || exit 1
-	done
-	exit
-fi
-
 if [ "$1" = --delete ] ; then
 	shift
 	rm -R -f -- $@
 	exit
 fi
 
-Remove_Files() # [DIR]...
+Remove_Files_Slow()
+{
+	rm -Rf -f ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
+	for file in ?? ; do
+		[ "$file" = sh ] && continue
+		rm -R -f -- "$file" || exit 1
+	done
+}
+
+Remove_Files_Fast() # [DIR]...
 {
 	printf '%s\n' "$@" |
 	while IFS= read -r dir ; do
@@ -63,7 +61,7 @@ Remove_Files() # [DIR]...
 }
 
 if [ $# = 0 ] ; then
-	Remove_Files .
+	Remove_Files_Slow
 else
-	Remove_Files "$@"
+	Remove_Files_Fast "$@"
 fi

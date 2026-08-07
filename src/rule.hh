@@ -71,7 +71,8 @@ public:
 
 	const string base_dir_x;
 	// TODO rm '_x'
-	/* The base directory is also contained in TARGETS and DEPS */
+	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
+	 * needed. */
 	
 	Rule(
 		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
@@ -90,6 +91,19 @@ public:
 		const Place &place_optional,
 		string base_dir);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
+
+	Rule(
+		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
+		std::vector <shared_ptr <const Dep> > &&deps_,
+		const Place &place_,
+		const shared_ptr <const Command> &command_,
+		const Placed_Name &placed_name_input_,
+		bool is_content_,
+		Target_Index output_target_index_,
+		bool is_copy_,
+		string base_dir);
+	/* Direct constructor that specifies everything; no checks, initialization or
+	 * canonicalization is performed. */
 
 	bool is_parametrized() const;
 
@@ -120,19 +134,6 @@ public:
 	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  Must be a parametrized rule. */
 private:
-	Rule(
-		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
-		std::vector <shared_ptr <const Dep> > &&deps_,
-		const Place &place_,
-		const shared_ptr <const Command> &command_,
-		const Placed_Name &placed_name_input_,
-		bool is_content_,
-		Target_Index output_target_index_,
-		bool is_copy_,
-		string base_dir);
-	/* Direct constructor that specifies everything; no checks, initialization or
-	 * canonicalization is performed. */
-
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
 		return ::base(d, base_dir_x);
 	}

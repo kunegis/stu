@@ -42,7 +42,7 @@ Transitive_Executor::Transitive_Executor(
 		return;
 	}
 
-	for (auto &t: rule->targets)
+	for (auto &t: rule->targets_x)
 		hash_deps.push_back(t->placed_target.unparametrized());
 	assert(hash_deps.size());
 
@@ -56,7 +56,7 @@ Transitive_Executor::Transitive_Executor(
 		executors_by_hash_dep[t]= {target_index, this};
 	}
 
-	for (auto &dep: rule->deps) {
+	for (auto &dep: rule->deps_x) {
 		push(prepare(dep, dep_link));
 	}
 

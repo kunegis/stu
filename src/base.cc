@@ -38,10 +38,9 @@ void Base_Stack::pop()
 shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
 {
 	if (base_dir.empty()) return d;
-	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
-
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
-		if (is_absolute_for_base(e)) return d;
+		if (is_absolute_for_base(e->placed_target.placed_name)) return d;
+		bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
 		f->placed_target.placed_name.prepend_text(base_dir + sep);
@@ -65,10 +64,10 @@ shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
 	}
 }
 
-bool is_absolute_for_base(shared_ptr <const Plain_Dep> d)
+bool is_absolute_for_base(const Name &name)
+/* Starts with '/' text, or with param followed by '/' text */
 {
-	// starts with '/' text, or with param followed by '/' text.
-	const Name &name= d->placed_target.placed_name;
+//	const Name &name= d->placed_target.placed_name;
 
 	return
 		(name.get_texts()[0].size() != 0 && name.get_texts()[0][0] == '/') ||

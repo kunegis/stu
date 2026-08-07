@@ -23,6 +23,6 @@ private:
 
 shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir);
 
-bool is_absolute_for_base(shared_ptr <const Plain_Dep>);
+bool is_absolute_for_base(const Name &);
 
 #endif /* ! BASE_HH */

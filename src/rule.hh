@@ -16,19 +16,27 @@ typedef unsigned Target_Index;
 inline constexpr Target_Index TARGET_INDEX_NONE= std::numeric_limits <Target_Index> ::max();
 
 class Rule
-/* The class Rule allows parameters; there is no "unparametrized rule" class. */
+/* 
+ * The class Rule allows parameters; there is no "unparametrized rule" class. 
+ *
+ * The following four fields contain names to which the base directory is eventually
+ * prepended:
+ *   - TARGETS:            In constructor
+ *   - DEP:                In instantiate()
+ *   - PLACED_NAME_INPUT:  In instantiate()
+ */
 {
 public:
-	// TODO rename targets
-	std::vector <shared_ptr <const Plain_Dep> > targets_unbased;
+	std::vector <shared_ptr <const Plain_Dep> > targets_x;
+	// TODO rm '_x'
 	/* The targets of the rule, in the order specified in the rule.  Contains at least
 	 * one element.  Each element contains all parameters of the rule, and therefore
 	 * should be used for iterating over all parameters.  The place in each target is
 	 * used when referring to a target specifically.  The targets may or may not be
 	 * canonicalized. */
 
-	// TODO rename unbased
-	std::vector <shared_ptr <const Dep> > deps_unbased;
+	std::vector <shared_ptr <const Dep> > deps_x;
+	// TODO rm '_x'
 	/* The dependencies in order of declaration.  Dependencies are included multiple
 	 * times if they appear multiple times in the source.  Any parameter occuring in
 	 * a dependency must occur in every target. */
@@ -42,7 +50,8 @@ public:
 	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For content
 	 * rules, the content of the file (not optional). */
 
-	const Placed_Name placed_name_input_unbased;
+	const Placed_Name placed_name_input_x;
+	// TODO remove _x from name
 	/* Unparametrized. When !is_copy:  The name of the file from which input should be
 	 * read; must be one of the file dependencies.  Empty for no input redirection.
 	 * When is_copy: the file from which to copy; never empty. */
@@ -60,21 +69,10 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
 	 * filename. */
 
-	const string base_dir;
+	const string base_dir_x;
+	// TODO rm '_x'
+	/* The base directory is also contained in TARGETS and DEPS */
 	
-	Rule(
-		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
-		std::vector <shared_ptr <const Dep> > &&deps_,
-		const Place &place_,
-		const shared_ptr <const Command> &command_,
-		const Placed_Name &placed_name_input_,
-		bool is_content_,
-		Target_Index output_target_index_,
-		bool is_copy_,
-		string base_dir);
-	/* Direct constructor that specifies everything; no checks, initialization or
-	 * canonicalization is performed. */
-
 	Rule(
 		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
 		const std::vector <shared_ptr <const Dep> > &deps_,
@@ -93,10 +91,7 @@ public:
 		string base_dir);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
-	/* Whether the rule is parametrized */
-	bool is_parametrized() const {
-		return targets_unbased.front()->placed_target.placed_name.get_n() != 0;
-	}
+	bool is_parametrized() const;
 
 	/* A rule in which the targets must exist */
 	bool must_exist() const {
@@ -112,27 +107,35 @@ public:
 	/* Print error message and throw a logical error when DEP contains parameters */
 
 	void check_duplicate_target() const;
-
-	const std::vector <string> &get_parameters() const
-	{
-		assert(targets_unbased.size() != 0);
-		return targets_unbased.front()->placed_target.placed_name.get_parameters();
-	}
+	const std::vector <string> &get_parameters() const;
 
 	void canonicalize();
 	/* In-place canonicalization of the rule.  This applies to the targets of the
-	 * rule.  Called by Rule_Set::add(). */
+	 * rule. */
 
-	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
-		return ::base(d, base_dir);
-	}
-	
 	static shared_ptr <const Rule> instantiate(
 		shared_ptr <const Rule> rule,
 		const std::map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been replaced by the
 	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  Must be a parametrized rule. */
+private:
+	Rule(
+		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
+		std::vector <shared_ptr <const Dep> > &&deps_,
+		const Place &place_,
+		const shared_ptr <const Command> &command_,
+		const Placed_Name &placed_name_input_,
+		bool is_content_,
+		Target_Index output_target_index_,
+		bool is_copy_,
+		string base_dir);
+	/* Direct constructor that specifies everything; no checks, initialization or
+	 * canonicalization is performed. */
+
+	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
+		return ::base(d, base_dir_x);
+	}
 };
 
 void render(shared_ptr <const Rule>, Parts &, Rendering= 0);

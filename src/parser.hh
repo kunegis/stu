@@ -123,7 +123,6 @@ private:
 	std::vector <shared_ptr <Token> > &tokens;
 	std::vector <shared_ptr <Token> > ::iterator &iter;
 	Base_Stack base_stack;
-//	std::vector <string> cd_stack;
 	const Place place_end;
 
 	Parser(std::vector <shared_ptr <Token> > &tokens_,

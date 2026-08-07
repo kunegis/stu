@@ -2,48 +2,27 @@
 
 Rule::Rule(
 	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
-	std::vector <shared_ptr <const Dep> > &&deps_,
-	const Place &place_,
-	const shared_ptr <const Command> &command_,
-	const Placed_Name &placed_name_input_,
-	bool is_content_,
-	Target_Index output_target_index_,
-	bool is_copy_,
-	string base_dir_)
-	: targets(targets_),
-	  deps(deps_),
-	  place(place_),
-	  command(command_),
-	  placed_name_input(placed_name_input_),
-	  output_target_index(output_target_index_),
-	  is_content(is_content_),
-	  is_copy(is_copy_),
-	  base_dir(base_dir_)
-{ }
-
-Rule::Rule(
-	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
 	bool is_content_,
 	Target_Index output_target_index_,
 	const Placed_Name &placed_name_input_,
 	string base_dir_)
-	: targets(targets_),
-	  deps(deps_),
+	: targets_x(targets_),
+	  deps_x(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
-	  placed_name_input(placed_name_input_),
+	  placed_name_input_x(placed_name_input_),
 	  output_target_index(output_target_index_),
 	  is_content(is_content_),
 	  is_copy(false),
-	  base_dir(base_dir_)
+	  base_dir_x(base_dir_)
 {
-	assert(targets.size() != 0);
+	assert(targets_x.size() != 0);
 	assert(output_target_index == TARGET_INDEX_NONE ||
-		output_target_index < targets.size());
+		output_target_index < targets_x.size());
 	if (output_target_index != TARGET_INDEX_NONE) {
-		assert((targets[output_target_index]->flags.get_flags()
+		assert((targets_x[output_target_index]->flags.get_flags()
 			& F_TARGET_PHONY) == 0);
 	}
 
@@ -55,10 +34,12 @@ Rule::Rule(
 	}
 
 	/* Check that only valid parameters are used */
-	for (const auto &d: deps) {
+	for (const auto &d: deps_x) {
 		d->check();
 		check_unparametrized(d, parameters);
 	}
+
+	... prepend base dir to targets;
 }
 
 Rule::Rule(
@@ -75,6 +56,8 @@ Rule::Rule(
 	  is_copy(true),
 	  base_dir(base_dir_)
 {
+	... prepend base dir to targets;
+
 	auto dep= std::make_shared <Plain_Dep>
 		(Placed_Target(0, *placed_name_source_));
 
@@ -88,11 +71,18 @@ Rule::Rule(
 	deps.push_back(dep);
 }
 
+bool Rule::is_parametrized() const
+{
+	return targets_x.front()->placed_target.placed_name.get_n() != 0;
+}
+
 shared_ptr <const Rule> Rule::instantiate(
 	shared_ptr <const Rule> rule,
 	const std::map <string, string> &mapping)
 {
 	assert(rule->get_parameters().size() != 0);
+
+	... prepend base_dir to DEPS and PLACE_NAME_INPUT;
 
 	std::vector <shared_ptr <const Plain_Dep> >
 		placed_targets(rule->targets.size());
@@ -118,6 +108,27 @@ shared_ptr <const Rule> Rule::instantiate(
 		rule->is_copy,
 		rule->base_dir);
 }
+
+Rule::Rule(
+	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
+	std::vector <shared_ptr <const Dep> > &&deps_,
+	const Place &place_,
+	const shared_ptr <const Command> &command_,
+	const Placed_Name &placed_name_input_,
+	bool is_content_,
+	Target_Index output_target_index_,
+	bool is_copy_,
+	string base_dir_)
+	: targets_x(targets_),
+	  deps_x(deps_),
+	  place(place_),
+	  command(command_),
+	  placed_name_input_x(placed_name_input_),
+	  output_target_index(output_target_index_),
+	  is_content(is_content_),
+	  is_copy(is_copy_),
+	  base_dir_x(base_dir_)
+{ }
 
 void Rule::render(Parts &parts, Rendering rendering) const
 {
@@ -204,6 +215,12 @@ void Rule::check_duplicate_target() const
 			throw ERR_LOGICAL;
 		}
 	}
+}
+
+const std::vector <string> &Rule::get_parameters() const
+{
+	assert(targets_x.size() != 0);
+	return targets_x.front()->placed_target.placed_name.get_parameters();
 }
 
 void Rule::canonicalize()

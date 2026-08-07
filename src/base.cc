@@ -1,6 +1,7 @@
 #include "base.hh"
 
 string Base_Stack::get_base_dir() const
+// TODO the result should be cached.
 {
 	if (dirs.empty()) return "";
 	size_t i= dirs.size() - 1;

@@ -1,6 +1,6 @@
 %cd aaa # 2.19-0000
 %cd -
-%cd in dynamic dependency: error
+%cd inside dynamic dependency: error
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
 %cd aaa/bbb
@@ -24,7 +24,7 @@
 * Check that "%cd X" works even if X doe snot exist -- the error will come later when
   building or matching a file that starts with "X/".
 %cd list.dir %include main.stu %cd - # Like future %include -d list.dir
-* Dynamic dependency in cd mode
+* Dynamic dependency in %cd mode
 * Phony in cd mode (gets prefix too?)
 %cd a <RULE> %cd -
 %cd a %cd - <RULE>
@@ -75,6 +75,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 %cd dir/./
 %cd dir/./.
 %cd ./dir
+%cd list.dir A: nonexistingfile # The error message lists 'list.dir/nonexistingfile' as not found, not 'nonexistingfile'
 
 #
 # %include -d

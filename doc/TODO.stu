@@ -75,6 +75,8 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 %cd ./dir
 %cd list.dir A: nonexistingfile # The error message lists 'list.dir/nonexistingfile' as not found, not 'nonexistingfile'
 * -P option with %cd rules 
+%cd      - # With many spaces
+%cd   \<newline>   - # With actual newline
 
 #
 # %include -d

@@ -16,6 +16,7 @@ typedef unsigned Target_Index;
 inline constexpr Target_Index TARGET_INDEX_NONE= std::numeric_limits <Target_Index> ::max();
 
 class Rule
+	: public std::enable_shared_from_this <Rule>
 /* 
  * The class Rule allows parameters; there is no "unparametrized rule" class. 
  *
@@ -93,7 +94,7 @@ public:
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
 	Rule(
-		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
+		std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 		std::vector <shared_ptr <const Dep> > &&deps_,
 		const Place &place_,
 		const shared_ptr <const Command> &command_,
@@ -102,6 +103,7 @@ public:
 		Target_Index output_target_index_,
 		bool is_copy_,
 		string base_dir);
+	// TODO order of args should correspond to field declarations.
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 
@@ -127,6 +129,9 @@ public:
 	/* In-place canonicalization of the rule.  This applies to the targets of the
 	 * rule. */
 
+	shared_ptr <const Rule> rebase() const;
+
+	// TODO make non-static using shared_from_this.
 	static shared_ptr <const Rule> instantiate(
 		shared_ptr <const Rule> rule,
 		const std::map <string, string> &mapping);
@@ -134,6 +139,7 @@ public:
 	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  Must be a parametrized rule. */
 private:
+	// TODO rename rebase
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
 		return ::base(d, base_dir_x);
 	}

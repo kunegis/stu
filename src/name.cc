@@ -351,6 +351,8 @@ bool Name::equals_same_length(const Name &that) const
 
 void Name::prepend_text(string text)
 {
+	TRACE_FUNCTION();
+	TRACE("text= '%s'", text);
 	texts[0] = text + texts[0];
 }
 
@@ -383,4 +385,17 @@ bool Name::operator<(const Name &that) const
 		if (r > 0) return false;
 	}
 	return false;
+}
+
+void Placed_Name::append_parameter(string parameter, const Place &place_parameter)
+{
+	Name::append_parameter(parameter);
+	places.push_back(place_parameter);
+}
+
+shared_ptr <Placed_Name>
+Placed_Name::instantiate(const std::map <string, string> &mapping) const
+{
+	string name= Name::instantiate(mapping);
+	return std::make_shared <Placed_Name> (name, place);
 }

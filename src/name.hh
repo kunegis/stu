@@ -152,19 +152,12 @@ public:
 		return places;
 	}
 
-	void append_parameter(string parameter, const Place &place_parameter)
+	void append_parameter(string parameter, const Place &place_parameter);
 	/* Append the given PARAMETER and an empty text */
-	{
-		Name::append_parameter(parameter);
-		places.push_back(place_parameter);
-	}
 
-	shared_ptr <Placed_Name> instantiate(const std::map <string, string> &mapping) const
+	shared_ptr <Placed_Name> instantiate(
+		const std::map <string, string> &mapping) const;
 	/* In the returned object, the PLACES vector is empty */
-	{
-		string name= Name::instantiate(mapping);
-		return std::make_shared <Placed_Name> (name, place);
-	}
 };
 
 #endif /* ! NAME_HH */

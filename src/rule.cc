@@ -77,6 +77,27 @@ Rule::Rule(
 	deps_x.push_back(dep);
 }
 
+Rule::Rule(
+	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
+	std::vector <shared_ptr <const Dep> > &&deps_,
+	const Place &place_,
+	const shared_ptr <const Command> &command_,
+	const Placed_Name &placed_name_input_,
+	bool is_content_,
+	Target_Index output_target_index_,
+	bool is_copy_,
+	string base_dir_)
+	: targets_x(targets_),
+	  deps_x(deps_),
+	  place(place_),
+	  command(command_),
+	  placed_name_input_x(placed_name_input_),
+	  output_target_index(output_target_index_),
+	  is_content(is_content_),
+	  is_copy(is_copy_),
+	  base_dir_x(base_dir_)
+{ }
+
 bool Rule::is_parametrized() const
 {
 	return targets_x.front()->placed_target.placed_name.get_n() != 0;
@@ -99,18 +120,12 @@ shared_ptr <const Rule> Rule::instantiate(
 
 	std::vector <shared_ptr <const Dep> > deps;
 	for (auto &dep: rule->deps_x) {
-		deps.push_back(rule->base(dep->instantiate(mapping)));
+		deps.push_back(dep->instantiate(mapping));
 	}
 
 	shared_ptr <Placed_Name> placed_name_input=
 		rule->placed_name_input_x.instantiate(mapping);
 
-	if (! rule->base_dir_x.empty() && ! is_absolute_for_base(*placed_name_input)) {
-		bool end_in_slash= rule->base_dir_x[rule->base_dir_x.size()-1] == '/';
-		string sep= end_in_slash ? "" : "/";
-		placed_name_input->prepend_text(rule->base_dir_x + sep);
-	}
-	
 	return std::make_shared <Rule> (
 		move(placed_targets),
 		move(deps), rule->place, rule->command,
@@ -119,27 +134,6 @@ shared_ptr <const Rule> Rule::instantiate(
 		rule->is_copy,
 		rule->base_dir_x);
 }
-
-Rule::Rule(
-	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
-	std::vector <shared_ptr <const Dep> > &&deps_,
-	const Place &place_,
-	const shared_ptr <const Command> &command_,
-	const Placed_Name &placed_name_input_,
-	bool is_content_,
-	Target_Index output_target_index_,
-	bool is_copy_,
-	string base_dir_)
-	: targets_x(targets_),
-	  deps_x(deps_),
-	  place(place_),
-	  command(command_),
-	  placed_name_input_x(placed_name_input_),
-	  output_target_index(output_target_index_),
-	  is_content(is_content_),
-	  is_copy(is_copy_),
-	  base_dir_x(base_dir_)
-{ }
 
 void Rule::render(Parts &parts, Rendering rendering) const
 {
@@ -245,6 +239,42 @@ void Rule::canonicalize()
 	}
 }
 
+shared_ptr <const Rule> Rule::rebase() const
+{
+	TRACE_FUNCTION();
+	if (base_dir_x.empty()) return shared_from_this();
+
+	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets_x;
+
+	std::vector <shared_ptr <const Dep> > new_deps;
+	for (size_t i= 0; i < deps_x.size(); ++i)
+		new_deps.push_back(base(deps_x[i]));
+
+	Placed_Name new_placed_name_input= placed_name_input_x;
+	if (! new_placed_name_input.empty() &&
+		! base_dir_x.empty() &&
+		! is_absolute_for_base(new_placed_name_input))
+	{
+		TRACE("Rebase input");
+		bool end_in_slash= base_dir_x[base_dir_x.size()-1] == '/';
+		string sep= end_in_slash ? "" : "/";
+		new_placed_name_input.prepend_text(base_dir_x + sep);
+	}
+	
+	shared_ptr <Rule> ret= std::make_shared <Rule> (
+		std::move(new_targets),
+		std::move(new_deps),
+		place,
+		command,
+		new_placed_name_input,
+		is_content,
+		output_target_index,
+		is_copy,
+		base_dir_x);
+	
+	return ret;
+}
+
 void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering)
 {
 	rule->render(parts, rendering);
@@ -304,7 +334,7 @@ shared_ptr <const Rule> Rule_Set::get(
 		param_rule= rule;
 		target_plain_dep= rule->targets_x[target_index];
 		TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
-		return rule;
+		return rule->rebase();
 	}
 
 	/*
@@ -352,7 +382,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	target_plain_dep= best_rule_finder.best().target;
 	target_index= best_rule_finder.best().target_index;
 	TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
-	return ret;
+	return ret->rebase();
 }
 
 void Rule_Set::print_for_option_P() const

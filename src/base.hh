@@ -21,6 +21,7 @@ private:
 	 * - Components only end in slash if they consist only of slashes */
 };
 
+// TODO rename 'rebase'
 shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir);
 
 bool is_absolute_for_base(const Name &);

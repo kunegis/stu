@@ -1,4 +1,3 @@
-%cd aaa # 2.19-0000
 %cd -
 %cd inside dynamic dependency: error
 * Manpage

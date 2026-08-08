@@ -1,9 +1,9 @@
-A: @prep list.dir/A
+A: prep.data list.dir/A
 {
 	cp list.dir/A A
 }
 
-@prep
+>prep.data
 {
 	mkdir list.dir
 }

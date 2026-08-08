@@ -755,6 +755,22 @@ details):
     %set VARIABLE value
     %unset VARIABLE
 
+Directives to change directories:
+
+    %cd DIRECTORY
+    %cd -
+
+The \fI%cd\fR changes to the given directory.  Directories form a stack, with \fI%cd\fI
+and \fI%cd i\fR used to push and pop from the stack.
+
+Directory changes are processed at parsing time.  Each rule will be interpreted relative
+to the current \fI%cd\fR directory.  This includes targets, dependencies, and the command
+itself.  The Stu process itself will not change directory -- only the commands are
+executed in a different directory.
+
+\fI%cd\fR can only be used between rules, not in the middle of a rule.  It cannot be used
+in a dynamic dependency.
+
 .SH "TOKENIZATION"
 
 Unquoted names in Stu may contain the following ASCII characters:

@@ -852,6 +852,23 @@ DIRECTIVES
            %set VARIABLE value
            %unset VARIABLE
 
+       Directives to change directories:
+
+           %cd DIRECTORY
+           %cd -
+
+       The %cd changes to the given directory.  Directories form a stack, with
+       %cd and %cd i used to push and pop from the stack.
+
+       Directory changes are processed at parsing time.  Each rule will be in‐
+       terpreted  relative  to  the current %cd directory.  This includes tar‐
+       gets, dependencies, and the command itself.   The  Stu  process  itself
+       will  not  change directory -- only the commands are executed in a dif‐
+       ferent directory.
+
+       %cd can only be used between rules, not in the middle of  a  rule.   It
+       cannot be used in a dynamic dependency.
+
 TOKENIZATION
        Unquoted names in Stu may contain the following ASCII characters:
 

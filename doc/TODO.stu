@@ -1,5 +1,3 @@
-* TODO in sh/test
-* Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
 %cd aaa/bbb
 % cd DIR # With space between % and cd
@@ -8,7 +6,7 @@
 %cd aaa ; %cd /bin ; %cd - # Same as %cd aaa
 %cd /bin ; %cd aaa # Same as $cd /bin/aaa
 %cd /
-%cd in the middle of a rule:  Only the next rule is affected.
+%cd in the middle of a rule:  An error is produced.
 %cd <EOF> #Error
 %cd <EOL> aaa
 %cd "aaa"
@@ -19,7 +17,7 @@
 %cd '' # Error
 %cd -X # Error (can be parsed as flag later)
 %cd <A # Error (dir missing)
-* Check that "%cd X" works even if X doe snot exist -- the error will come later when
+* Check that "%cd X" works even if X does not exist -- the error will come later when
   building or matching a file that starts with "X/".
 %cd list.dir %include main.stu %cd - # Like future %include -d list.dir
 * Dynamic dependency in %cd mode
@@ -78,6 +76,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 %cd      - # With many spaces
 %cd   \<newline>   - # With actual newline
 * "%cd -" inside dynamic dependency
+%cd- # Does this work?
 
 #
 # %include -d

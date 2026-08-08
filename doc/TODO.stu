@@ -1,3 +1,4 @@
+* TODO in sh/test
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb
 %cd aaa/bbb

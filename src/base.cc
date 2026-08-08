@@ -10,7 +10,7 @@ string Base_Stack::get_base_dir() const
 	while (i && dirs[i][0] != '/') --i;
 	string ret= dirs[i];
 	for (size_t j= i + 1; j < dirs.size(); ++j) {
-		ret += '/' + dirs[i];
+		ret += '/' + dirs[j];
 	}
 	return ret;
 }
@@ -29,6 +29,7 @@ void Base_Stack::push(string dir)
 	} else {
 		if (dir[0] != '/') dir.resize(1);
 	}
+	TRACE("After canonicalization: dir= '%s'", dir);
 	assert(! dir.empty());
 	dirs.push_back(dir);
 }

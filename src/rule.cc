@@ -18,6 +18,9 @@ Rule::Rule(
 	  is_copy(false),
 	  base_dir_x(base_dir_)
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show(targets_[0]));
+	TRACE("base_dir= '%s'", base_dir_);
 	assert(targets_x.size() != 0);
 	assert(output_target_index == TARGET_INDEX_NONE ||
 		output_target_index < targets_x.size());

@@ -1019,7 +1019,7 @@ void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
 {
 	TRACE_FUNCTION();
 	if (cd_token->is_push()) {
-		TRACE("Push");
+		TRACE("Push dir='%s'", cd_token->dir);
 		base_stack.push(cd_token->dir);
 	} else {
 		TRACE("Pop");

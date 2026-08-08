@@ -1,0 +1,24 @@
+A: list.dir C
+{
+	[ ! -e B ]
+	cp C A
+}
+
+-p list.dir
+{
+	mkdir -p list.dir
+}
+
+%cd list.dir
+
+B
+{
+	echo CORRECT >B
+}
+
+%cd -
+
+C: list.dir/B
+{
+	cp list.dir/B C
+}

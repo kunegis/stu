@@ -1,5 +1,7 @@
 #include "base.hh"
 
+#include "trace.hh"
+
 string Base_Stack::get_base_dir() const
 // TODO the result should be cached.
 {
@@ -15,6 +17,8 @@ string Base_Stack::get_base_dir() const
 
 void Base_Stack::push(string dir)
 {
+	TRACE_FUNCTION();
+	TRACE("dir= '%s'", dir);
 	assert(dir != "");
 	size_t i= dir.size() - 1;
 	for (; i; --i) {
@@ -31,6 +35,7 @@ void Base_Stack::push(string dir)
 
 void Base_Stack::pop()
 {
+	TRACE_FUNCTION();
 	assert(! dirs.empty());
 	dirs.pop_back();
 }

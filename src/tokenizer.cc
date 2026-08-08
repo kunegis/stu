@@ -1531,7 +1531,16 @@ void Tokenizer::parse_cd_directive(
 	skip_space(skipped_space);
 	if (skipped_space) environment_= E_WHITESPACE;
 	Place place_name= current_place();
-	shared_ptr <Placed_Name> name= parse_name(true);
+
+	if (*p == '-') {
+		++p;
+		tokens.push_back(std::make_shared <CD_Token> (
+			environment_,
+			place_percent));
+		return;
+	}
+	
+	shared_ptr <Placed_Name> name= parse_name(false);
 
 	if (!name) {
 		current_place() <<

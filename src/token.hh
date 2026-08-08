@@ -146,7 +146,8 @@ public:
 
 	Place place;
 
-	CD_Token(Environment, const Place &, string dir_);
+	CD_Token(Environment, const Place &, string dir_); /* Push */
+	CD_Token(Environment, const Place &); /* Pop */
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;

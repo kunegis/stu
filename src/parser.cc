@@ -1017,9 +1017,12 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 
 void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
 {
+	TRACE_FUNCTION();
 	if (cd_token->is_push()) {
+		TRACE("Push");
 		base_stack.push(cd_token->dir);
 	} else {
+		TRACE("Pop");
 		if (base_stack.empty()) {
 			cd_token->get_place() << fmt(
 				"no previous directory to %s into",

@@ -112,10 +112,18 @@ CD_Token::CD_Token(
 	string dir_)
 	: Token(environment_), dir(dir_), place(place_)
 {
+	assert(! dir.empty());
+}
+
+CD_Token::CD_Token(
+	Environment environment_,
+	const Place &place_)
+	: Token(environment_), place(place_)
+{
+	assert(dir.empty());
 }
 
 void CD_Token::render(Parts &parts, Rendering) const
 {
 	parts.append_operator("%cd");
 }
-

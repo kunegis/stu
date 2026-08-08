@@ -1,4 +1,3 @@
-%cd -
 %cd inside dynamic dependency: error
 * Manpage
 %cd aaa ; % cd bbb # Same as %cd aaa/bbb

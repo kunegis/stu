@@ -1062,7 +1062,8 @@ bool File_Executor::start(
 	if (rule->is_copy()) {
 		assert(rule->targets_x.size() == 1);
 		assert(! (rule->targets_x.front()->placed_target.flags & F_TARGET_PHONY));
-		string source= rule->name_input.unparametrized();
+		string source= rule->copy_src.unparametrized();
+//		string source= rule->name_input.unparametrized();
 //		string source= rule->placed_name_input_x.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up

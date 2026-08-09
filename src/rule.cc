@@ -61,10 +61,9 @@ Rule::Rule(
 	  is_content(false),
 	  copy_src(*copy_src_),
 	  copy_dst(target_->placed_target.placed_name),
-//	  output_target_index(TARGET_INDEX_NONE),
-//	  is_copy(true),
 	  base_dir_x(base_dir_)
 {
+	assert(! copy_src.empty());
 //	for (size_t i= 0; i < targets_x.size(); ++i) {
 	targets_x[0]= to <const Plain_Dep> (base(targets_x[0]));
 	assert(targets_x[0]);

@@ -510,7 +510,7 @@ A/B = {c} # Does 'mkdir -p A' first
 # 'B' is built and executed in current directory, not in dir/:
 A: -X B;
 %cd dir
-B {...} 
+B {...}
 
 #
 # $(PWD)/ should be the same as ./

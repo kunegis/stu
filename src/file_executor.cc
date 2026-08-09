@@ -256,10 +256,8 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		}
 
 		if (! param_rule->is_copy()) {
-//		if (! param_rule->is_copy) {
 			Hash_Dep hash_dep= parents.begin()->second->get_target();
-			param_rule->command->place <<
-				fmt("command for %s %s",
+			param_rule->command->place << fmt("command for %s %s",
 				    show(hash_dep), reason);
 		} else {
 			/* Copy rule */
@@ -607,11 +605,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
-//	if (rule->has_output()) {
-//	if (rule->output_target_index != TARGET_INDEX_NONE)
-//		assert(! (rule->targets_x[rule->output_target_index]->placed_target.flags
-//				& F_TARGET_PHONY));
-//	}
 	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override

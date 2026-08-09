@@ -790,7 +790,7 @@ void Tokenizer::parse_home(Placed_Name &name)
 		(isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin)))
 	{
 		++p;
-	}	
+	}
 
 	if (p == begin) {
 		TRACE("Standalone ~");
@@ -1543,7 +1543,7 @@ void Tokenizer::parse_cd_directive(
 			place_percent));
 		return;
 	}
-	
+
 	shared_ptr <Placed_Name> name= parse_name(false);
 
 	if (!name) {

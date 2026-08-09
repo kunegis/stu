@@ -38,7 +38,7 @@ public:
 		const Place &place_output,
 		const Place &place_input);
 	// TODO reorder args to always put input before output */
-	// TODO replace String+Place by Placed_Name 
+	// TODO replace String+Place by Placed_Name
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
 	 * redirect output and input; either can be empty to denote no redirection.  On
@@ -90,7 +90,7 @@ private:
 		const char *shell_shortname,
 		string &command,
 		string &argv0);
-	
+
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);

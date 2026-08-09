@@ -48,7 +48,7 @@ public:
 	}
 
 	void prepend_text(string text);
-	
+
 	void append_text(string text)
 	/* Append the given text to the last text element */
 	{

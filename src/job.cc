@@ -133,7 +133,7 @@ pid_t Job::start_copy(
 		in_child= 1;
 
 		perform_cd(base_dir);
-		
+
 		/* We don't set $STU_STATUS for copy jobs */
 		const char *cp_shortname;
 		const char *cp= get_cp(cp_shortname);

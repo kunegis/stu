@@ -153,7 +153,7 @@ shared_ptr <Rule> Parser::parse_rule(
 			== 0);
 
 		name_output= targets[output_target_index]->object.name;
-		
+
 		if (command == nullptr) {
 			place_output << fmt("output redirection using %s cannot be used",
 				show(Operator_View('>')));
@@ -199,7 +199,6 @@ shared_ptr <Rule> Parser::parse_rule(
 		command,
 		base_stack.get_base_dir(),
 		is_content,
-//		output_target_index,
 		name_input,
 		name_output);
 }

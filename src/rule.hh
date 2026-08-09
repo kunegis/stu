@@ -17,8 +17,8 @@ inline constexpr Target_Index TARGET_INDEX_NONE= std::numeric_limits <Target_Ind
 
 class Rule
 	: public std::enable_shared_from_this <Rule>
-/* 
- * The class Rule allows parameters; there is no "unparametrized rule" class. 
+/*
+ * The class Rule allows parameters; there is no "unparametrized rule" class.
  *
  * The following four fields contain names to which the base directory is eventually
  * prepended:
@@ -66,7 +66,7 @@ public:
 
 	const Placed_Name copy_src, copy_dst;
 	/* Empty if not a copy rule.  Not rebased. */
-	
+
 	Rule(
 		std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 		const std::vector <shared_ptr <const Dep> > &deps_,

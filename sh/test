@@ -262,7 +262,7 @@ preload_prefix()
 File_List()
 # List files that should not be changed by tests.
 {
-	ls -ld sh/test tests tests/*/* conf/CXX src/*.cc src/*.hh || {
+	ls -ld tests tests/*/* || {
 		echo >&2 "Error creating file list"
 		exit 1
 	}

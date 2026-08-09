@@ -14,7 +14,7 @@ public:
 	bool empty() const { return dirs.empty(); }
 	void push(string dir);
 	void pop();
-	
+
 private:
 	std::vector <string> dirs;
 	/* - Components are not ""

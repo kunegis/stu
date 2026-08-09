@@ -88,10 +88,7 @@ public:
 	void render(Parts &, Rendering) const;
 
 	shared_ptr <Placed_Object> instantiate(
-		const std::map <string, string> &mapping) const {
-		return std::make_shared <Placed_Object>
-			(flags, *name.instantiate(mapping), place);
-	}
+		const std::map <string, string> &mapping) const;
 
 	Hash_Dep unparametrized() const {
 		return Hash_Dep(flags, name.unparametrized());

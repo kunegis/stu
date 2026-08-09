@@ -121,8 +121,7 @@ public:
 	void check() const { }
 #endif
 
-	virtual shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const= 0;
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const= 0;
 	virtual bool find_parameter(
 		string &parameter_name, Place &parameter_place) const= 0;
 
@@ -214,8 +213,7 @@ public:
 		  variable_name(plain_dep.variable_name) { }
 
 	const Place &get_place() const override { return place; }
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	void render(Parts &, Rendering= 0) const override;
@@ -270,8 +268,7 @@ public:
 		assert(dep_ != nullptr);
 	}
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 
 	const Place &get_place() const override
@@ -328,8 +325,7 @@ public:
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override;
@@ -407,8 +403,7 @@ public:
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
-	shared_ptr <const Dep> instantiate(
-		const std::map <string, string> &mapping) const override;
+	shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;

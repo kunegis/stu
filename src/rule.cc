@@ -102,7 +102,6 @@ shared_ptr <const Rule> Rule::instantiate(
 	const std::map <string, string> &mapping) const
 {
 	assert(is_parametrized());
-//	assert(get_parameters().size() != 0);
 
 	std::vector <shared_ptr <const Plain_Dep> > new_targets(targets.size());
 	for (size_t i= 0; i < targets.size(); ++i) {

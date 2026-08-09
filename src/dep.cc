@@ -303,9 +303,8 @@ shared_ptr <const Dep> Concat_Dep::instantiate(
 	ret->index= index;
 	ret->top= top;
 
-	for (const shared_ptr <const Dep> &d: deps) {
+	for (const shared_ptr <const Dep> &d: deps)
 		ret->push_back(d->instantiate(mapping));
-	}
 
 	return ret;
 }
@@ -537,7 +536,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	assert(a);
 	assert(b);
 
-	/* Parametrized dependencies are instantiated first before they are concatenated */
+	/* Parametrized dependencies are instantiated before they are concatenated */
 	assert(! a->object.name.is_parametrized());
 	assert(! b->object.name.is_parametrized());
 
@@ -592,8 +591,7 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(
 shared_ptr <const Dep> Compound_Dep::instantiate(
 	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep> (
-		flags, place);
+	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep> (flags, place);
 	ret->index= index;
 	ret->top= top;
 	for (const shared_ptr <const Dep> &d: deps)

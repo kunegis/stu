@@ -19,3 +19,9 @@ void render(
 {
 	return object.render(parts, rendering);
 }
+
+shared_ptr <Placed_Object> Placed_Object::instantiate(
+	const std::map <string, string> &mapping) const
+{
+	return std::make_shared <Placed_Object> (flags, *name.instantiate(mapping), place);
+}

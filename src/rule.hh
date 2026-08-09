@@ -123,8 +123,8 @@ public:
 	 * rule. */
 
 	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
-	// TODO check whether it's better to make it check and return THIS when not parametrized
 	shared_ptr <const Rule> rebase() const;
+
 private:
 	// TODO rename rebase
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {

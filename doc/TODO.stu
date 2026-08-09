@@ -1,4 +1,3 @@
-%cd aaa/bbb
 % cd DIR # With space between % and cd
 %cd /bin # Directory starts with /
 %cd aaa ; %cd /bin # Same as %cd /bin

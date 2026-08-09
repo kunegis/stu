@@ -1,7 +1,10 @@
 #include "token.hh"
 
-Command::Command(string command_, const Place &place_,
-		 const Place &place_start_, Environment environment_)
+Command::Command(
+	string command_,
+	Environment environment_,
+	const Place &place_,
+	const Place &place_start_)
 	: Token(environment_), command(command_),
 	  place(place_), place_start(place_start_)
 { }
@@ -78,10 +81,10 @@ void Operator::render(Parts &parts, Rendering) const
 }
 
 Flag_Token::Flag_Token(
+	char flag_char_,
 	Environment environment_,
 	const Place &place_dash_,
 	const Place &place_letter_,
-	char flag_char_,
 	string name_)
 	: Token(environment_),
 	  place_dash(place_dash_),

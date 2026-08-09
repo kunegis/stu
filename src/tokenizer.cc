@@ -262,21 +262,21 @@ void Tokenizer::parse_tokens_arg(
 	while (*p) {
 		if (allow_at && *p == '@') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
 		} else if (*p == '[') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= true;
 			allow_at= true;
 			environment= 0;
 		} else if (*p == ']') {
 			tokens.push_back(std::make_shared <Operator>
-				(*p, place, environment));
+				(*p, environment, place));
 			++p;
 			allow_dash= false;
 			allow_at= false;
@@ -301,7 +301,7 @@ void Tokenizer::parse_tokens_arg(
 				throw ERR_LOGICAL;
 			}
 			tokens.push_back(std::make_shared <Flag_Token> (
-				environment, place, place, *p));
+				*p, environment, place, place));
 			++p;
 			allow_dash= true;
 			allow_at= true;
@@ -316,8 +316,7 @@ void Tokenizer::parse_tokens_arg(
 			}
 			assert(p > q);
 			Placed_Name name(string(q, p-q), place);
-			tokens.push_back(std::make_shared <Name_Token>
-				(name, environment));
+			tokens.push_back(std::make_shared <Name_Token> (name, environment));
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
@@ -432,8 +431,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 						place_base.text,
 						line_command, column_command);
 					return std::make_shared <Command> (
-						command, place_command, place_open,
-						environment);
+						command, environment,
+						place_command, place_open);
 				} else {
 					++p;
 				}
@@ -639,7 +638,7 @@ void Tokenizer::parse_flag()
 		p= q;
 		char flag_char= flag_chars[index];
 		shared_ptr <Flag_Token> token= std::make_shared <Flag_Token> (
-			environment, place_dash, place_name, flag_char, name);
+			flag_char, environment, place_dash, place_name, name);
 		tokens.push_back(token);
 		return;
 	}
@@ -664,7 +663,7 @@ void Tokenizer::parse_flag()
 			throw ERR_LOGICAL;
 		}
 		token= std::make_shared <Flag_Token> (
-			environment, place_dash, place_name, flag_char);
+			flag_char, environment, place_dash, place_name);
 		tokens.push_back(token);
 		++p;
 	} while (p < p_end && isalnum(*p));
@@ -1083,7 +1082,8 @@ void Tokenizer::parse_tokens(
 		/* Operators except '$' */
 		if (is_operator_char(*p)) {
 			Place place= current_place();
-			tokens.push_back(std::make_shared <Operator> (*p, place, environment));
+			tokens.push_back(std::make_shared <Operator> (
+				*p, environment, place));
 			++p;
 		}
 
@@ -1093,9 +1093,9 @@ void Tokenizer::parse_tokens(
 			Place place_lbracket(place_base.type, (Place::Bits)0,
 				place_base.text, line, p + 1 - p_line);
 			tokens.push_back(std::make_shared <Operator>
-				('$', place_dollar, environment));
+				('$', environment, place_dollar));
 			tokens.push_back(std::make_shared <Operator>
-				('[', place_lbracket, environment));
+				('[', environment, place_lbracket));
 			p += 2;
 		}
 

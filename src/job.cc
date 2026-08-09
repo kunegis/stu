@@ -412,7 +412,7 @@ void Job::perform_cd(string base_dir)
 
 	int r= chdir(base_dir.c_str());
 	if (r) {
-		print_errno("chdir");
+		print_errno("chdir", base_dir);
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}

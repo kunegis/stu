@@ -27,14 +27,14 @@
 A=B;%cd DIR <RULE> # No whitespace before %%
 %cd .
 %cd ..
-%cd aaa//bbb # double slash is preserved
-%cd //bin # double slash is preserved
-%cd aaa///bbb # Triple slash is preserved
+%cd aaa//bbb # double slash is preserved (or not)
+%cd //bin # double slash is preserved (or not)
+%cd aaa///bbb # Triple slash is preserved (or not)
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa
 %cd // # Stays as-is
-%cd /// # Stays as-is
-%cd ////// # Stays as-is
+%cd /// # Stays as-is (or not)
+%cd ////// # Stays as-is (or not)
 * Multitarget rule in %cd mode
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}

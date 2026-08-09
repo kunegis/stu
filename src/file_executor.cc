@@ -47,7 +47,7 @@ File_Executor::File_Executor(
 		for (auto t: rule->targets_x) {
 //			shared_ptr <const Dep> d= rule->base(t);
 //			auto t2= t->placed_target;
-			Hash_Dep hd= t->placed_target.unparametrized();
+			Hash_Dep hd= t->target.unparametrized();
 			hd.get_front_word_nondynamic() |=
 				t->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
@@ -94,7 +94,7 @@ File_Executor::File_Executor(
 	{
 		Place place_target;
 		for (auto &t: rule->targets_x) {
-			if (t->placed_target.placed_name.unparametrized() ==
+			if (t->target.name.unparametrized() ==
 				hash_dep_.get_name_nondynamic())
 			{
 				place_target= t->place;
@@ -124,7 +124,7 @@ File_Executor::File_Executor(
 	{
 		Place place_target;
 		for (auto &t: rule->targets_x) {
-			if (t->placed_target.placed_name.unparametrized() ==
+			if (t->target.name.unparametrized() ==
 				hash_dep_.get_name_nondynamic()) {
 				place_target= t->place;
 				break;
@@ -693,7 +693,7 @@ bool File_Executor::check_file_target(
 	TRACE("target= \"%s\"", target.get_name_c_str_nondynamic());
 	assert(target.is_file());
 	Flags flags= target.get_front_word_nondynamic();
-	if (to <Plain_Dep> (dep_link)->placed_target.placed_name.unparametrized()
+	if (to <Plain_Dep> (dep_link)->target.name.unparametrized()
 		== target.get_name_c_str_nondynamic())
 	{
 		Flags dep_flags= dep_link->flags.get_flags();
@@ -856,18 +856,18 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (!file) {
 		if (errno == ENOENT) {
 			Hash_Dep hash_dep_variable=
-				to <Plain_Dep> (dep)->placed_target.unparametrized();
+				to <Plain_Dep> (dep)->target.unparametrized();
 			if (rule == nullptr) {
 				dep->get_place() <<
 					fmt("file %s was up to date but cannot be found now",
 						show(hash_dep_variable));
 			} else {
 				for (auto const &i: rule->targets_x) {
-					if (i->placed_target.unparametrized()
+					if (i->target.unparametrized()
 						== hash_dep_variable) {
 						i->place << fmt(
 							"generated file %s was built but cannot be found now",
-							show(i->placed_target));
+							show(i->target));
 						break;
 					}
 				}
@@ -923,7 +923,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 	if (dep_link->flags.get_flags() & F_OPTIONAL
 		&& to <Plain_Dep> (dep_link)
-		&& ! (to <Plain_Dep> (dep_link)->placed_target.flags & F_TARGET_PHONY))
+		&& ! (to <Plain_Dep> (dep_link)->target.flags & F_TARGET_PHONY))
 	{
 		TRACE("Is optional file target");
 
@@ -935,7 +935,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		TRACE("File not known to be missing");
 
 		const char *name= to <Plain_Dep> (dep_link)
-			->placed_target.placed_name.unparametrized().c_str();
+			->target.name.unparametrized().c_str();
 		TRACE("name= '%s'", name);
 		TRACE("flags= %s",
 			show(Flags_View(to <Plain_Dep> (dep_link)->flags.get_flags())));
@@ -950,7 +950,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			state &= ~State::EXISTING;
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
-				to <Plain_Dep> (dep_link)->placed_target.place <<
+				to <Plain_Dep> (dep_link)->target.place <<
 					format_errno("fstatat", name);
 				raise(ERR_BUILD);
 				done |= Done::from_flags(dep_link->flags.get_flags());
@@ -1061,7 +1061,7 @@ bool File_Executor::start(
 {
 	if (rule->is_copy()) {
 		assert(rule->targets_x.size() == 1);
-		assert(! (rule->targets_x.front()->placed_target.flags & F_TARGET_PHONY));
+		assert(! (rule->targets_x.front()->target.flags & F_TARGET_PHONY));
 		string source= rule->copy_src.unparametrized();
 //		string source= rule->name_input.unparametrized();
 //		string source= rule->placed_name_input_x.unparametrized();
@@ -1091,7 +1091,7 @@ bool File_Executor::start(
 		}
 
 		pid= job.start_copy(
-			rule->targets_x[0]->placed_target.placed_name.unparametrized(),
+			rule->targets_x[0]->target.name.unparametrized(),
 			source,
 			rule->base_dir_x,
 			rule->targets_x[0]->place);
@@ -1101,10 +1101,6 @@ bool File_Executor::start(
 			mapping,
 			rule->name_output.unparametrized(),
 			rule->name_input.unparametrized(),
-//			rule->output_target_index == TARGET_INDEX_NONE ? "" :
-//				rule->targets_x[rule->output_target_index]
-//				->placed_target.placed_name.unparametrized(),
-//			rule->placed_name_input_x.unparametrized(),
 			rule->base_dir_x,
 			rule->command->place,
 			rule->name_output.place,

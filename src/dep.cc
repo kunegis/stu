@@ -156,10 +156,10 @@ void Dep::check() const
 		/* The F_TARGET_PHONY flag is always set in the dependency flags, even
 		 * though that is redundant. */
 		assert((plain_this->flags.get_flags() & F_TARGET_PHONY)
-		       == (plain_this->placed_target.flags));
+		       == (plain_this->target.flags));
 
 		if (! plain_this->variable_name.empty()) {
-			assert((plain_this->placed_target.flags & F_TARGET_PHONY) == 0);
+			assert((plain_this->target.flags & F_TARGET_PHONY) == 0);
 			assert(plain_this->flags.get_flags() & F_VARIABLE);
 		}
 	}
@@ -185,16 +185,16 @@ void Dep::check() const
 shared_ptr <const Dep> Plain_Dep::instantiate(
 	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Placed_Target> ret_target= placed_target.instantiate(mapping);
+	shared_ptr <Placed_Target> ret_target= target.instantiate(mapping);
 
 	shared_ptr <Dep> ret= std::make_shared <Plain_Dep> (
 		flags, *ret_target, place, variable_name);
 	ret->index= index;
 	ret->top= top;
 
-	assert(ret_target->placed_name.get_n() == 0);
+	assert(ret_target->name.get_n() == 0);
 
-	string this_name= ret_target->placed_name.unparametrized();
+	string this_name= ret_target->name.unparametrized();
 	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_PHONY) == 0);
 		place << fmt(
@@ -210,17 +210,17 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 bool Plain_Dep::find_parameter(
 	string &parameter_name, Place &parameter_place) const
 {
-	if (placed_target.placed_name.get_n() == 0)
+	if (target.name.get_n() == 0)
 		return false;
 
-	parameter_name= placed_target.placed_name.get_parameters()[0];
-	parameter_place= placed_target.placed_name.places[0];
+	parameter_name= target.name.get_parameters()[0];
+	parameter_place= target.name.places[0];
 	return true;
 }
 
 Hash_Dep Plain_Dep::get_target() const
 {
-	Hash_Dep ret= placed_target.unparametrized();
+	Hash_Dep ret= target.unparametrized();
 	ret.get_front_word_nondynamic() |= (word_t)(flags.get_flags() & F_WORD);
 	return ret;
 }
@@ -236,7 +236,7 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_marker("$[");
 	if (flags.get_flags() & F_INPUT && rendering & R_SHOW_INPUT)
 		parts.append_marker("<");
-	placed_target.render(parts, rendering);
+	target.render(parts, rendering);
 	if (flags.get_flags() & F_VARIABLE)
 		parts.append_marker("]");
 #ifndef NDEBUG
@@ -263,7 +263,7 @@ Hash_Dep Dynamic_Dep::get_target() const
 	assert(!(sin->flags.get_flags() & F_TARGET_DYNAMIC));
 	Flags f= sin->flags.get_flags() & F_WORD;
 	text += Hash_Dep::string_from_word(f);
-	text += sin->placed_target.unparametrized().get_name_nondynamic();
+	text += sin->target.unparametrized().get_name_nondynamic();
 
 	return Hash_Dep(text);
 }
@@ -538,8 +538,8 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	assert(b);
 
 	/* Parametrized dependencies are instantiated first before they are concatenated */
-	assert(! a->placed_target.placed_name.is_parametrized());
-	assert(! b->placed_target.placed_name.is_parametrized());
+	assert(! a->target.name.is_parametrized());
+	assert(! b->target.name.is_parametrized());
 
 	/*
 	 * Combine
@@ -549,14 +549,14 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	flags_combined.add(b->flags);
 
 	Placed_Name placed_name_combined(
-		a->placed_target.placed_name.unparametrized() +
-		b->placed_target.placed_name.unparametrized(),
-		a->placed_target.placed_name.place);
+		a->target.name.unparametrized() +
+		b->target.name.unparametrized(),
+		a->target.name.place);
 
 	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep> (
 		flags_combined,
 		Placed_Target(flags_combined.get_flags() & F_TARGET_PHONY,
-			placed_name_combined, a->placed_target.place),
+			placed_name_combined, a->target.place),
 		a->place, "");
 	ret->top= a->top;
 	if (! ret->top)

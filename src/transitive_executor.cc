@@ -16,7 +16,7 @@ Transitive_Executor::Transitive_Executor(
 	assert(to <Plain_Dep> (dep_link));
 	shared_ptr <const Plain_Dep> plain_dep= to <Plain_Dep> (dep_link);
 
-	Hash_Dep hash_dep= plain_dep->placed_target.unparametrized();
+	Hash_Dep hash_dep= plain_dep->target.unparametrized();
 	assert(hash_dep.is_phony());
 
 	if (rule == nullptr)
@@ -43,7 +43,7 @@ Transitive_Executor::Transitive_Executor(
 	}
 
 	for (auto &t: rule->targets_x)
-		hash_deps.push_back(t->placed_target.unparametrized());
+		hash_deps.push_back(t->target.unparametrized());
 	assert(hash_deps.size());
 
 	assert((param_rule == nullptr) == (rule == nullptr));

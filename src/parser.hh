@@ -57,7 +57,7 @@ public:
 	 * whether something was read or not.  On syntax errors, ERR_LOGICAL is thrown. */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACED_NAME_INPUT.  If PLACED_NAME_INPUT is already non-empty, throw an error if
+	 * NAME_INPUT.  If NAME_INPUT is already non-empty, throw an error if
 	 * a second input filename is specified. PLACE_INPUT is the place of the '<' input
 	 * redirection operator. */
 
@@ -140,7 +140,7 @@ private:
 
 	bool parse_expression_list(
 		std::vector <shared_ptr <const Dep> > &ret,
-		Placed_Name &placed_name_input,
+		Placed_Name &name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* RET is filled.  RET is empty when called. */
@@ -156,31 +156,31 @@ private:
 
 	bool parse_target(
 		Place &place_output,
-		std::vector <shared_ptr <const Plain_Dep> > &placed_targets,
+		std::vector <shared_ptr <const Plain_Dep> > &targets,
 		Target_Index &output_target_index,
 		shared_ptr <const Plain_Dep> &target_first);
 
 	bool parse_expression(
 		shared_ptr <const Dep> &ret,
-		Placed_Name &placed_name_input, Place &place_input,
+		Placed_Name &name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* Write the parsed expression into RET. RET must be empty when called.  Return
 	 * whether an expression was parsed.  TARGETS is passed to construct error
 	 * messages. */
 
 	shared_ptr <const Dep> parse_compound_dep(
-		Placed_Name &placed_name_input,
+		Placed_Name &name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	shared_ptr <const Dep> parse_dynamic_dep(
-		Placed_Name &placed_name_input,
+		Placed_Name &name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	shared_ptr <const Dep> parse_variable_dep(
-		Placed_Name &placed_name_input, Place &place_input,
+		Placed_Name &name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	shared_ptr <const Dep> parse_redirect_dep(
-		Placed_Name &placed_name_input, Place &place_input,
+		Placed_Name &name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	void handle_cd(shared_ptr <CD_Token>);
 	

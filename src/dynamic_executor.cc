@@ -21,8 +21,8 @@ Dynamic_Executor::Dynamic_Executor(
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-		Hash_Dep hash_dep_base(inner_plain_dep->placed_target.flags,
-			inner_plain_dep->placed_target.placed_name.unparametrized());
+		Hash_Dep hash_dep_base(inner_plain_dep->target.flags,
+			inner_plain_dep->target.name.unparametrized());
 		Hash_Dep hash_dep= dep->get_target();
 		Target_Index target_index;
 		TRACE("hash_dep= %s", show(hash_dep));

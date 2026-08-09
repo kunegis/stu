@@ -35,8 +35,8 @@ void Executor::read_dynamic(
 {
 	try {
 		const Placed_Target &placed_target=
-			to <Plain_Dep> (dep_target)->placed_target;
-		assert(placed_target.placed_name.get_n() == 0);
+			to <Plain_Dep> (dep_target)->target;
+		assert(placed_target.name.get_n() == 0);
 		const Hash_Dep hash_dep= placed_target.unparametrized();
 		assert(deps.empty());
 
@@ -829,7 +829,7 @@ bool Executor::check_clash_without_target_flags(
 		place_variable << fmt(
 			"variable dependency %s must not be declared as optional dependency",
 			show(Dynamic_Variable_View(
-			plain_dep_child->placed_target.placed_name.unparametrized())));
+			plain_dep_child->target.name.unparametrized())));
 		place_flag << fmt("using %s",
 			show(Flag_View(dep_child->flags, I_OPTIONAL)));
 		*this << "";
@@ -965,8 +965,7 @@ bool Executor::same_dependency_for_print(
 		p2= to <Plain_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
 	if (! (p1 && p2))
 		return false;
-	return p1->placed_target.unparametrized()
-		== p2->placed_target.unparametrized();
+	return p1->target.unparametrized() == p2->target.unparametrized();
 }
 
 void Executor::check_unparametrized(

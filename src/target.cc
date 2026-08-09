@@ -4,12 +4,12 @@ void Placed_Target::render(Parts &parts, Rendering rendering) const
 {
 	if (flags & F_TARGET_PHONY)
 		parts.append_marker("@");
-	placed_name.render(parts, rendering);
+	name.render(parts, rendering);
 }
 
 void Placed_Target::canonicalize()
 {
-	placed_name.canonicalize();
+	name.canonicalize();
 }
 
 void render(

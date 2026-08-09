@@ -25,8 +25,7 @@ shared_ptr <Rule> Parser::parse_rule(
 
 	/* Check that all targets have the same set of parameters */
 	std::set <string> parameters_0;
-	for (const string &parameter: targets[0]->placed_target
-		     .placed_name.get_parameters()) {
+	for (const string &parameter: targets[0]->target.name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
 	TRACE("parameters_0.size= %s", frmt("%zu", parameters_0.size()));
@@ -35,8 +34,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	for (size_t i= 1; i < targets.size(); ++i) {
 		TRACE("i= %s", frmt("%zu", i));
 		std::set <string> parameters_i;
-		for (const string &parameter:
-			     targets[i]->placed_target.placed_name.get_parameters()) {
+		for (const string &parameter: targets[i]->target.name.get_parameters()) {
 			parameters_i.insert(parameter);
 		}
 		TRACE("parameters_i.size= %s", frmt("%zu", parameters_i.size()));
@@ -154,7 +152,7 @@ shared_ptr <Rule> Parser::parse_rule(
 		assert((targets[output_target_index]->flags.get_flags() & F_TARGET_PHONY)
 			== 0);
 
-		name_output= targets[output_target_index]->placed_target.placed_name;
+		name_output= targets[output_target_index]->target.name;
 		
 		if (command == nullptr) {
 			place_output << fmt("output redirection using %s cannot be used",
@@ -253,8 +251,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	/* Check that the source file contains only parameters that also
 	 * appear in the target */
 	std::set <string> parameters;
-	for (auto &parameter: targets[0]->placed_target
-		     .placed_name.get_parameters()) {
+	for (auto &parameter: targets[0]->target.name.get_parameters()) {
 		parameters.insert(parameter);
 	}
 	for (size_t jj= 0; jj < name_copy_src->get_n(); ++jj) {
@@ -325,7 +322,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	assert(targets.size() == 1);
 
 	/* Append target name when source ends in slash */
-	append_copy(*name_copy_src, targets[0]->placed_target.placed_name);
+	append_copy(*name_copy_src, targets[0]->target.name);
 
 	return std::make_shared <Rule> (
 		targets[0], name_copy_src,
@@ -334,7 +331,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 
 bool Parser::parse_target(
 	Place &place_output,
-	std::vector <shared_ptr <const Plain_Dep> > &placed_targets,
+	std::vector <shared_ptr <const Plain_Dep> > &targets,
 	Target_Index &output_target_index,
 	shared_ptr <const Plain_Dep> &target_first)
 {
@@ -478,20 +475,19 @@ bool Parser::parse_target(
 				"there cannot be a second output redirection %s",
 				show(Prefix_View(">", target)));
 			assert(output_target_index != TARGET_INDEX_NONE);
-			assert(placed_targets[output_target_index]
-				->placed_target.placed_name.get_n() == 0);
-			assert((placed_targets[output_target_index]->flags.get_flags()
+			assert(targets[output_target_index]->target.name.get_n() == 0);
+			assert((targets[output_target_index]->flags.get_flags()
 					& F_TARGET_PHONY) == 0);
 			place_output << fmt(
 				"shadowing previous output redirection %s",
-				show(Prefix_View(">", placed_targets[output_target_index]
-					->placed_target
+				show(Prefix_View(">", targets[output_target_index]
+					->target
 					.unparametrized().get_name_nondynamic())));
 			throw ERR_LOGICAL;
 		}
 		place_output= place_output_new;
 		assert(! place_output.empty());
-		output_target_index= placed_targets.size();
+		output_target_index= targets.size();
 	}
 
 	if (placed_flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {
@@ -504,13 +500,13 @@ bool Parser::parse_target(
 	if (target_first == nullptr)
 		target_first= target;
 
-	placed_targets.push_back(target);
+	targets.push_back(target);
 	return true;
 }
 
 bool Parser::parse_expression_list(
 	std::vector <shared_ptr <const Dep> > &ret,
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -518,8 +514,7 @@ bool Parser::parse_expression_list(
 
 	while (iter != tokens.end()) {
 		shared_ptr <const Dep> ret_new;
-		bool r= parse_expression(ret_new, placed_name_input,
-					 place_input, targets);
+		bool r= parse_expression(ret_new, name_input, place_input, targets);
 		if (!r) {
 			assert(ret_new == nullptr);
 			return ! ret.empty();
@@ -533,7 +528,7 @@ bool Parser::parse_expression_list(
 
 bool Parser::parse_expression(
 	shared_ptr <const Dep> &ret,
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -541,11 +536,11 @@ bool Parser::parse_expression(
 	assert(ret == nullptr);
 
 	/* '(' expression* ')' */
-	if (ret= parse_compound_dep(placed_name_input, place_input, targets))
+	if (ret= parse_compound_dep(name_input, place_input, targets))
 		return true;
 
 	/* '[' expression* ']' */
-	if (ret= parse_dynamic_dep(placed_name_input, place_input, targets))
+	if (ret= parse_dynamic_dep(name_input, place_input, targets))
 		return true;
 
 	/* flag expression */
@@ -571,7 +566,7 @@ bool Parser::parse_expression(
 
 		++iter;
 
-		if (! parse_expression(ret, placed_name_input, place_input, targets)) {
+		if (! parse_expression(ret, name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 			} else {
@@ -586,7 +581,7 @@ bool Parser::parse_expression(
 		/* A dependency must not be an input dependency and optional at the same
 		 * time.  Note: Input redirection must not appear in dynamic dependencies,
 		 * and therefore it is sufficient to check this here. */
-		if (! placed_name_input.place.empty() &&
+		if (! name_input.place.empty() &&
 			flag_token.flag_char == flag_chars[I_OPTIONAL])
 		{
 			place_input << fmt("input redirection using %s cannot be used",
@@ -611,11 +606,11 @@ bool Parser::parse_expression(
 	}
 
 	/* '$' ; variable dependency */
-	if (ret= parse_variable_dep(placed_name_input, place_input, targets))
+	if (ret= parse_variable_dep(name_input, place_input, targets))
 		return true;
 
 	/* Redirect dependency */
-	if (ret= parse_redirect_dep(placed_name_input, place_input, targets))
+	if (ret= parse_redirect_dep(name_input, place_input, targets))
 		return true;
 
 	return false;

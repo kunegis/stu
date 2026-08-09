@@ -45,11 +45,11 @@ shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
 {
 	if (base_dir.empty()) return d;
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
-		if (is_absolute_for_base(e->placed_target.placed_name)) return d;
+		if (is_absolute_for_base(e->target.name)) return d;
 		bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
-		f->placed_target.placed_name.prepend_text(base_dir + sep);
+		f->target.name.prepend_text(base_dir + sep);
 		return f;
 	} else if (shared_ptr <const Dynamic_Dep> e2= to <const Dynamic_Dep> (d)) {
 		shared_ptr <Dynamic_Dep> f= to <Dynamic_Dep> (e2->clone());

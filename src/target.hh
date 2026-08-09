@@ -51,7 +51,7 @@ class Placed_Target
 {
 public:
 	Flags flags;  /* Only F_TARGET_PHONY is used */
-	Placed_Name placed_name; // TODO rename 'name'
+	Placed_Name name;
 
 	Place place;
 	/* The place of the target as a whole.  The PLACED_NAME variable additionally
@@ -59,7 +59,7 @@ public:
 
 	Placed_Target(Flags flags_,
 		const Placed_Name &name_)
-		: flags(flags_), placed_name(name_), place(name_.place)
+		: flags(flags_), name(name_), place(name_.place)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
@@ -67,21 +67,21 @@ public:
 	Placed_Target(Flags flags_,
 		const Placed_Name &name_,
 		const Place &place_)
-		: flags(flags_), placed_name(name_), place(place_)
+		: flags(flags_), name(name_), place(place_)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
 	Placed_Target(const Placed_Target &that)
 		: flags(that.flags),
-		  placed_name(that.placed_name),
+		  name(that.name),
 		  place(that.place) { }
 
 	bool equals_same_length(const Placed_Target &that) const
 	/* Compare, assuming same length */
 	{
 		return this->flags == that.flags &&
-			this->placed_name.equals_same_length(that.placed_name);
+			this->name.equals_same_length(that.name);
 	}
 
 	void render(Parts &, Rendering) const;
@@ -89,15 +89,15 @@ public:
 	shared_ptr <Placed_Target> instantiate(
 		const std::map <string, string> &mapping) const {
 		return std::make_shared <Placed_Target>
-			(flags, *placed_name.instantiate(mapping), place);
+			(flags, *name.instantiate(mapping), place);
 	}
 
 	Hash_Dep unparametrized() const {
-		return Hash_Dep(flags, placed_name.unparametrized());
+		return Hash_Dep(flags, name.unparametrized());
 	}
 
 	Target get_target() const {
-		return Target(flags, placed_name);
+		return Target(flags, name);
 	}
 
 	void canonicalize();  /* In-place */

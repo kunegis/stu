@@ -22,9 +22,8 @@ class Rule
  *
  * The following four fields contain names to which the base directory is eventually
  * prepended:
- *   - TARGETS:            In constructor
- *   - DEP:                In instantiate()
- *   - PLACED_NAME_INPUT:  In instantiate()
+ *   - TARGETS:       In constructor
+ *   - DEPS:          In instantiate()
  */
 {
 public:
@@ -58,11 +57,6 @@ public:
 
 	const Placed_Name name_output;
 	/* Unpametrized.  Not rebased.  Empty for no output redirection. */
-
-//	const Target_Index output_target_index;
-//	/* Index within PLACED_TARGETS of the target to which output redirection is
-//	 * applied.  TARGET_INDEX_NONE if no output redirection is used. The target with
-//	 * that index is a file target. */
 
 	const bool is_content;
 	/* The rule is content rule; i.e., the command represents the content, not an
@@ -110,8 +104,6 @@ public:
 		bool is_content_,
 		const Placed_Name &copy_src_,
 		const Placed_Name &copy_dst_,
-//		Target_Index output_target_index_,
-//		bool is_copy_,
 		string base_dir_);
 	// TODO order of args should correspond to field declarations.
 	/* Direct constructor that specifies everything; no checks, initialization or

@@ -179,7 +179,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 			exit(ERR_FATAL);
 		}
-		if (target_first->placed_target.placed_name.is_parametrized()) {
+		if (target_first->target.name.is_parametrized()) {
 			target_first->place << fmt(
 				"the first target %s must not be parametrized if no target is given",
 				show(target_first));

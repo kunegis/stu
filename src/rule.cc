@@ -4,18 +4,18 @@ Rule::Rule(
 	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
+	string base_dir_,
 	bool is_content_,
 	const Placed_Name &name_input_,
-	const Placed_Name &name_output_,
-	string base_dir_)
+	const Placed_Name &name_output_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
+	  base_dir(base_dir_),
 	  name_input(name_input_),
 	  name_output(name_output_),
-	  is_content(is_content_),
-	  base_dir(base_dir_)
+	  is_content(is_content_)
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show(targets_[0]));
@@ -44,15 +44,15 @@ Rule::Rule(
 Rule::Rule(
 	shared_ptr <const Plain_Dep> target_,
 	shared_ptr <const Placed_Name> copy_src_,
+	string base_dir_,
 	const Place &place_persistent,
-	const Place &place_optional,
-	string base_dir_)
+	const Place &place_optional)
 	: targets{target_},
 	  place(target_->place),
+	  base_dir(base_dir_),
 	  is_content(false),
 	  copy_src(*copy_src_),
-	  copy_dst(target_->object.name),
-	  base_dir(base_dir_)
+	  copy_dst(target_->object.name)
 {
 	assert(! copy_src.empty());
 	targets[0]= to <const Plain_Dep> (base(targets[0]));
@@ -75,22 +75,22 @@ Rule::Rule(
 	std::vector <shared_ptr <const Dep> > &&deps_,
 	const Place &place_,
 	const shared_ptr <const Command> &command_,
+	string base_dir_,
 	const Placed_Name &name_input_,
 	const Placed_Name &name_output_,
 	bool is_content_,
 	const Placed_Name &copy_src_,
-	const Placed_Name &copy_dst_,
-	string base_dir_)
+	const Placed_Name &copy_dst_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(place_),
 	  command(command_),
+	  base_dir(base_dir_),
 	  name_input(name_input_),
 	  name_output(name_output_),
 	  is_content(is_content_),
 	  copy_src(copy_src_),
-	  copy_dst(copy_dst_),
-	  base_dir(base_dir_)
+	  copy_dst(copy_dst_)
 { }
 
 bool Rule::is_parametrized() const
@@ -132,12 +132,12 @@ shared_ptr <const Rule> Rule::instantiate(
 		move(deps),
 		rule->place,
 		rule->command,
+		rule->base_dir,
 		*name_input,
 		*name_output,
 		rule->is_content,
 		*copy_src,
-		*copy_dst,
-		rule->base_dir);
+		*copy_dst);
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const
@@ -259,12 +259,12 @@ shared_ptr <const Rule> Rule::rebase() const
 		std::move(new_deps),
 		place,
 		command,
+		base_dir,
 		name_input,
 		name_output,
 		is_content,
 		copy_src,
-		copy_dst,
-		base_dir);
+		copy_dst);
 	
 	return ret;
 }

@@ -48,6 +48,10 @@ public:
 	 * does not have a command, i.e., ends in a semicolon ';'.  For content rules, the
 	 * content of the file (not optional). */
 
+	const string base_dir;
+	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
+	 * needed. */
+	
 	const Placed_Name name_input;
 	/* Unparametrized.  Not rebased.  When !is_copy: The name of the file from which
 	 * input should be read; must be one of the file dependencies.  Empty for no input
@@ -63,27 +67,22 @@ public:
 	const Placed_Name copy_src, copy_dst;
 	/* Empty if not a copy rule.  Not rebased. */
 	
-	const string base_dir;
-	// TODO place further up in struct and argument lists.
-	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
-	 * needed. */
-	
 	Rule(
 		std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 		const std::vector <shared_ptr <const Dep> > &deps_,
 		shared_ptr <const Command> command_,
+		string base_dir,
 		bool is_content_,
 		const Placed_Name &name_input_,
-		const Placed_Name &name_output_,
-		string base_dir);
+		const Placed_Name &name_output_);
 	/* Regular rule:  all cases except copy rules */
 
 	Rule(
 		shared_ptr <const Plain_Dep> target_,
 		shared_ptr <const Placed_Name> copy_src_,
+		string base_dir,
 		const Place &place_persistent,
-		const Place &place_optional,
-		string base_dir);
+		const Place &place_optional);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
 	Rule(
@@ -91,13 +90,12 @@ public:
 		std::vector <shared_ptr <const Dep> > &&deps_,
 		const Place &place_,
 		const shared_ptr <const Command> &command_,
+		string base_dir_,
 		const Placed_Name &name_input_,
 		const Placed_Name &name_output_,
 		bool is_content_,
 		const Placed_Name &copy_src_,
-		const Placed_Name &copy_dst_,
-		string base_dir_);
-	// TODO order of args should correspond to field declarations.
+		const Placed_Name &copy_dst_);
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 

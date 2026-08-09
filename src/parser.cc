@@ -197,11 +197,11 @@ shared_ptr <Rule> Parser::parse_rule(
 		move(targets),
 		deps,
 		command,
+		base_stack.get_base_dir(),
 		is_content,
 //		output_target_index,
 		name_input,
-		name_output,
-		base_stack.get_base_dir());
+		name_output);
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -325,8 +325,11 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	append_copy(*name_copy_src, targets[0]->object.name);
 
 	return std::make_shared <Rule> (
-		targets[0], name_copy_src,
-		place_flag_persistent, place_flag_optional, base_stack.get_base_dir());
+		targets[0],
+		name_copy_src,
+		base_stack.get_base_dir(),
+		place_flag_persistent,
+		place_flag_optional);
 }
 
 bool Parser::parse_target(

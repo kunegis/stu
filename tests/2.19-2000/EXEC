@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+{
+	printf '%%cd'
+} >list.stu
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ]
+grep -q -F -x -e 'list.stu:1:4: expected a variable name' list.err
+grep -q -F -x -e 'list.stu:1:1: after %cd' list.err

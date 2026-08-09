@@ -126,8 +126,7 @@ public:
 	shared_ptr <const Rule> rebase() const;
 
 private:
-	// TODO rename rebase
-	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
+	shared_ptr <const Dep> rebase(shared_ptr <const Dep> d) const {
 		return ::rebase(d, base_dir);
 	}
 };

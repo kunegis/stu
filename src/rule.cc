@@ -36,7 +36,7 @@ Rule::Rule(
 	}
 
 	for (size_t i= 0; i < targets.size(); ++i) {
-		targets[i]= to <const Plain_Dep> (base(targets[i]));
+		targets[i]= to <const Plain_Dep> (rebase(targets[i]));
 		assert(targets[i]);
 	}
 }
@@ -55,7 +55,7 @@ Rule::Rule(
 	  copy_dst(target_->object.name)
 {
 	assert(! copy_src.empty());
-	targets[0]= to <const Plain_Dep> (base(targets[0]));
+	targets[0]= to <const Plain_Dep> (rebase(targets[0]));
 	assert(targets[0]);
 
 	auto dep= std::make_shared <Plain_Dep> (Placed_Object(0, *copy_src_));
@@ -143,7 +143,7 @@ shared_ptr <const Rule> Rule::rebase() const
 
 	std::vector <shared_ptr <const Dep> > new_deps;
 	for (size_t i= 0; i < deps.size(); ++i)
-		new_deps.push_back(base(deps[i]));
+		new_deps.push_back(rebase(deps[i]));
 
 	shared_ptr <Rule> ret= std::make_shared <Rule> (
 		std::move(new_targets),

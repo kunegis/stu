@@ -76,6 +76,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 * "%cd -" inside dynamic dependency
 %cd- # Does this work?
 %cd -X # Error, not just '%cd -' followed by 'X' (keep syntax for future extension)
+* Rename all variables 'placed_*' to remove the 'placed_'
 
 #
 # %include -d

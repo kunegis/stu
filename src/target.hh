@@ -58,16 +58,16 @@ public:
 	 * contains a place for the name itself, as well as for individual parameters. */
 
 	Placed_Target(Flags flags_,
-		const Placed_Name &placed_name_)
-		: flags(flags_), placed_name(placed_name_), place(placed_name_.place)
+		const Placed_Name &name_)
+		: flags(flags_), placed_name(name_), place(name_.place)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
 	Placed_Target(Flags flags_,
-		const Placed_Name &placed_name_,
+		const Placed_Name &name_,
 		const Place &place_)
-		: flags(flags_), placed_name(placed_name_), place(place_)
+		: flags(flags_), placed_name(name_), place(place_)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}

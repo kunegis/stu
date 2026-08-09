@@ -154,7 +154,7 @@ class Plain_Dep
 {
 public:
 	Placed_Target placed_target;
-	// TODO rename 'target'.
+	// TODO rename 'target'/'object'.
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 
@@ -164,19 +164,19 @@ public:
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
 	explicit
-	Plain_Dep(const Placed_Target &placed_target_)
-		: placed_target(placed_target_),
-		  place(placed_target_.place)
+	Plain_Dep(const Placed_Target &target_)
+		: placed_target(target_),
+		  place(target_.place)
 	{
-		flags.add_unplaced_flags(placed_target_.flags);
+		flags.add_unplaced_flags(target_.flags);
 		check();
 	}
 
-	Plain_Dep(const Placed_Flags &placed_flags_, const Placed_Target &placed_target_)
+	Plain_Dep(const Placed_Flags &flags_, const Placed_Target &target_)
 		/* Take the dependency place from the target place */
-		: Dep(placed_flags_),
-		  placed_target(placed_target_),
-		  place(placed_target_.place)
+		: Dep(flags_),
+		  placed_target(target_),
+		  place(target_.place)
 	{
 		check();
 	}

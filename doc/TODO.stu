@@ -1,4 +1,3 @@
-%cd /bin # Directory starts with /
 %cd aaa ; %cd /bin # Same as %cd /bin
 %cd aaa ; %cd /bin ; %cd - # Same as %cd aaa
 %cd /bin ; %cd aaa # Same as $cd /bin/aaa

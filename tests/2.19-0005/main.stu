@@ -1,0 +1,13 @@
+>A: list.dir /bin/sh
+{
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd /bin
+
+sh
+{
+	# Never executed because 'sh' already exists
+	exit 77
+}

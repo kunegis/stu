@@ -1,0 +1,11 @@
+>A: @/bin/exec
+{
+}
+
+%cd aaa
+%cd /bin
+
+@exec
+{
+	[ -e sh ]
+}

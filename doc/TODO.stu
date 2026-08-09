@@ -1,4 +1,4 @@
-%cd aaa ; %cd /bin # Same as %cd /bin
+* Phony in cd mode (gets prefix too)
 %cd aaa ; %cd /bin ; %cd - # Same as %cd aaa
 %cd /bin ; %cd aaa # Same as $cd /bin/aaa
 %cd /
@@ -17,7 +17,6 @@
   building or matching a file that starts with "X/".
 %cd list.dir %include main.stu %cd - # Like future %include -d list.dir
 * Dynamic dependency in %cd mode
-* Phony in cd mode (gets prefix too?)
 %cd a <RULE> %cd -
 %cd a %cd - <RULE>
 * Copy rule in cd mode
@@ -75,6 +74,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 %cd- # Does this work?
 %cd -X # Error, not just '%cd -' followed by 'X' (keep syntax for future extension)
 * Rename all variables 'placed_*' to remove the 'placed_'
+* 10 times "%cd aaa" followed by 10 times "%cd -"
 
 #
 # %include -d

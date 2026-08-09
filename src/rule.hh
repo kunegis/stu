@@ -122,15 +122,9 @@ public:
 	/* In-place canonicalization of the rule.  This applies to the targets of the
 	 * rule. */
 
+	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
+	// TODO check whether it's better to make it check and return THIS when not parametrized
 	shared_ptr <const Rule> rebase() const;
-
-	// TODO make non-static using shared_from_this. (And move next to rebase().)
-	static shared_ptr <const Rule> instantiate(
-		shared_ptr <const Rule> rule,
-		const std::map <string, string> &mapping);
-	/* Return the same rule as RULE, but with parameters having been replaced by the
-	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
-	 * itself when it is unparametrized.  Must be a parametrized rule. */
 private:
 	// TODO rename rebase
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {

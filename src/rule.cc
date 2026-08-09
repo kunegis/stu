@@ -99,45 +99,66 @@ bool Rule::is_parametrized() const
 }
 
 shared_ptr <const Rule> Rule::instantiate(
-	shared_ptr <const Rule> rule,
-	const std::map <string, string> &mapping)
+	const std::map <string, string> &mapping) const
 {
-	assert(rule->get_parameters().size() != 0);
+	assert(is_parametrized());
+//	assert(get_parameters().size() != 0);
 
-	std::vector <shared_ptr <const Plain_Dep> >
-		targets(rule->targets.size());
-	for (size_t i= 0; i < rule->targets.size(); ++i) {
+	std::vector <shared_ptr <const Plain_Dep> > new_targets(targets.size());
+	for (size_t i= 0; i < targets.size(); ++i) {
 		shared_ptr <const Plain_Dep> instantiated=
-			to <Plain_Dep> (rule->targets[i]->instantiate(mapping));
+			to <Plain_Dep> (targets[i]->instantiate(mapping));
 		assert(instantiated);
-		targets[i]= instantiated;
+		new_targets[i]= instantiated;
 	}
 
-	std::vector <shared_ptr <const Dep> > deps;
-	for (auto &dep: rule->deps) {
-		deps.push_back(dep->instantiate(mapping));
+	std::vector <shared_ptr <const Dep> > new_deps;
+	for (auto &dep: deps) {
+		new_deps.push_back(dep->instantiate(mapping));
 	}
 
-	shared_ptr <Placed_Name> name_input=
-		rule->name_input.instantiate(mapping);
-	shared_ptr <Placed_Name> name_output=
-		rule->name_output.instantiate(mapping);
-	shared_ptr <Placed_Name> copy_src=
-		rule->copy_src.instantiate(mapping);
-	shared_ptr <Placed_Name> copy_dst=
-		rule->copy_dst.instantiate(mapping);
+	shared_ptr <Placed_Name> new_name_input= name_input.instantiate(mapping);
+	shared_ptr <Placed_Name> new_name_output= name_output.instantiate(mapping);
+	shared_ptr <Placed_Name> new_copy_src= copy_src.instantiate(mapping);
+	shared_ptr <Placed_Name> new_copy_dst= copy_dst.instantiate(mapping);
 
 	return std::make_shared <Rule> (
-		move(targets),
-		move(deps),
-		rule->place,
-		rule->command,
-		rule->base_dir,
-		*name_input,
-		*name_output,
-		rule->is_content,
-		*copy_src,
-		*copy_dst);
+		move(new_targets),
+		move(new_deps),
+		place,
+		command,
+		base_dir,
+		*new_name_input,
+		*new_name_output,
+		is_content,
+		*new_copy_src,
+		*new_copy_dst);
+}
+
+shared_ptr <const Rule> Rule::rebase() const
+{
+	TRACE_FUNCTION();
+	if (base_dir.empty()) return shared_from_this();
+
+	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets;
+
+	std::vector <shared_ptr <const Dep> > new_deps;
+	for (size_t i= 0; i < deps.size(); ++i)
+		new_deps.push_back(base(deps[i]));
+
+	shared_ptr <Rule> ret= std::make_shared <Rule> (
+		std::move(new_targets),
+		std::move(new_deps),
+		place,
+		command,
+		base_dir,
+		name_input,
+		name_output,
+		is_content,
+		copy_src,
+		copy_dst);
+
+	return ret;
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const
@@ -243,32 +264,6 @@ void Rule::canonicalize()
 	}
 }
 
-shared_ptr <const Rule> Rule::rebase() const
-{
-	TRACE_FUNCTION();
-	if (base_dir.empty()) return shared_from_this();
-
-	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets;
-
-	std::vector <shared_ptr <const Dep> > new_deps;
-	for (size_t i= 0; i < deps.size(); ++i)
-		new_deps.push_back(base(deps[i]));
-
-	shared_ptr <Rule> ret= std::make_shared <Rule> (
-		std::move(new_targets),
-		std::move(new_deps),
-		place,
-		command,
-		base_dir,
-		name_input,
-		name_output,
-		is_content,
-		copy_src,
-		copy_dst);
-
-	return ret;
-}
-
 void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering)
 {
 	rule->render(parts, rendering);
@@ -371,7 +366,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	/* Instantiate the rule */
 	shared_ptr <const Rule> rule_best= best_rule_finder.best().rule;
 	mapping_parameter= best_rule_finder.best().mapping;
-	shared_ptr <const Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
+	shared_ptr <const Rule> ret= rule_best->instantiate(mapping_parameter);
 	param_rule= rule_best;
 	target_plain_dep= best_rule_finder.best().target;
 	target_index= best_rule_finder.best().target_index;

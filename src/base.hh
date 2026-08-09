@@ -19,6 +19,8 @@ private:
 	std::vector <string> dirs;
 	/* - Components are not ""
 	 * - Components only end in slash if they consist only of slashes */
+
+	mutable string base_dir;
 };
 
 // TODO rename 'rebase'

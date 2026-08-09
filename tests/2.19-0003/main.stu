@@ -1,0 +1,17 @@
+A: list.directory/info list.directory/info/file
+{
+	cp list.directory/info/file A
+}
+
+-p list.directory/info
+{
+	mkdir -p list.directory
+	mkdir -p list.directory/info
+}
+
+%cd list.directory/info
+
+>file
+{
+	echo CORRECT
+}

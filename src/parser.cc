@@ -64,13 +64,14 @@ shared_ptr <Rule> Parser::parse_rule(
 	bool had_colon= false;
 
 	/* Empty at first */
-	Placed_Name filename_input;
+	Placed_Name name_input;
 	Place place_input;
+	Placed_Name name_output;
 
 	if (is_operator(':')) {
 		had_colon= true;
 		++iter;
-		parse_expression_list(deps, filename_input, place_input, targets);
+		parse_expression_list(deps, name_input, place_input, targets);
 	}
 
 	/* Command */
@@ -153,6 +154,8 @@ shared_ptr <Rule> Parser::parse_rule(
 		assert((targets[output_target_index]->flags.get_flags() & F_TARGET_PHONY)
 			== 0);
 
+		name_output= targets[output_target_index]->placed_target.placed_name;
+		
 		if (command == nullptr) {
 			place_output << fmt("output redirection using %s cannot be used",
 				show(Operator_View('>')));
@@ -171,7 +174,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	}
 
 	/* Cases where input redirection is not possible */
-	if (! filename_input.empty()) {
+	if (! name_input.empty()) {
 		if (command == nullptr) {
 			place_input << fmt("input redirection using %s cannot be used",
 				show(Operator_View('<')));
@@ -193,8 +196,14 @@ shared_ptr <Rule> Parser::parse_rule(
 	}
 
 	return std::make_shared <Rule> (
-		move(targets), deps, command, is_content, output_target_index,
-		filename_input, base_stack.get_base_dir());
+		move(targets),
+		deps,
+		command,
+		is_content,
+//		output_target_index,
+		name_input,
+		name_output,
+		base_stack.get_base_dir());
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(

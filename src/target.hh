@@ -51,7 +51,7 @@ class Placed_Target
 {
 public:
 	Flags flags;  /* Only F_TARGET_PHONY is used */
-	Placed_Name placed_name;
+	Placed_Name placed_name; // TODO rename 'name'
 
 	Place place;
 	/* The place of the target as a whole.  The PLACED_NAME variable additionally

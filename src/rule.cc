@@ -5,29 +5,31 @@ Rule::Rule(
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
 	bool is_content_,
-	Target_Index output_target_index_,
-	const Placed_Name &placed_name_input_,
+//	Target_Index output_target_index_,
+	const Placed_Name &name_input_,
+	const Placed_Name &name_output_,
 	string base_dir_)
 	: targets_x(targets_),
 	  deps_x(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
-	  placed_name_input_x(placed_name_input_),
-	  output_target_index(output_target_index_),
+	  name_input(name_input_),
+	  name_output(name_output_),
+//	  output_target_index(output_target_index_),
 	  is_content(is_content_),
-	  is_copy(false),
+//	  is_copy(false),
 	  base_dir_x(base_dir_)
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show(targets_[0]));
 	TRACE("base_dir= '%s'", base_dir_);
 	assert(targets_x.size() != 0);
-	assert(output_target_index == TARGET_INDEX_NONE ||
-		output_target_index < targets_x.size());
-	if (output_target_index != TARGET_INDEX_NONE) {
-		assert((targets_x[output_target_index]->flags.get_flags()
-			& F_TARGET_PHONY) == 0);
-	}
+//	assert(output_target_index == TARGET_INDEX_NONE ||
+//		output_target_index < targets_x.size());
+//	if (output_target_index != TARGET_INDEX_NONE) {
+//		assert((targets_x[output_target_index]->flags.get_flags()
+//			& F_TARGET_PHONY) == 0);
+//	}
 
 	/* Check that all dependencies only include
 	 * parameters from the target */
@@ -50,25 +52,25 @@ Rule::Rule(
 
 Rule::Rule(
 	shared_ptr <const Plain_Dep> target_,
-	shared_ptr <const Placed_Name> placed_name_source_,
+	shared_ptr <const Placed_Name> copy_src_,
 	const Place &place_persistent,
 	const Place &place_optional,
 	string base_dir_)
 	: targets_x{target_},
 	  place(target_->place),
-	  placed_name_input_x(*placed_name_source_),
-	  output_target_index(TARGET_INDEX_NONE),
 	  is_content(false),
-	  is_copy(true),
+	  copy_src(*copy_src_),
+	  copy_dst(target_->placed_target.placed_name),
+//	  output_target_index(TARGET_INDEX_NONE),
+//	  is_copy(true),
 	  base_dir_x(base_dir_)
 {
-	for (size_t i= 0; i < targets_x.size(); ++i) {
-		targets_x[i]= to <const Plain_Dep> (base(targets_x[i]));
-		assert(targets_x[i]);
-	}
+//	for (size_t i= 0; i < targets_x.size(); ++i) {
+	targets_x[0]= to <const Plain_Dep> (base(targets_x[0]));
+	assert(targets_x[0]);
+//	}
 
-	auto dep= std::make_shared <Plain_Dep>
-		(Placed_Target(0, *placed_name_source_));
+	auto dep= std::make_shared <Plain_Dep> (Placed_Target(0, *copy_src_));
 
 	if (! place_persistent.empty()) {
 		dep->flags.add_placed_index(I_PERSISTENT, place_persistent);
@@ -85,19 +87,25 @@ Rule::Rule(
 	std::vector <shared_ptr <const Dep> > &&deps_,
 	const Place &place_,
 	const shared_ptr <const Command> &command_,
-	const Placed_Name &placed_name_input_,
+	const Placed_Name &name_input_,
+	const Placed_Name &name_output_,
 	bool is_content_,
-	Target_Index output_target_index_,
-	bool is_copy_,
+	const Placed_Name &copy_src_,
+	const Placed_Name &copy_dst_,
+//	Target_Index output_target_index_,
+//	bool is_copy_,
 	string base_dir_)
 	: targets_x(targets_),
 	  deps_x(deps_),
 	  place(place_),
 	  command(command_),
-	  placed_name_input_x(placed_name_input_),
-	  output_target_index(output_target_index_),
+	  name_input(name_input_),
+	  name_output(name_output_),
+//	  output_target_index(output_target_index_),
 	  is_content(is_content_),
-	  is_copy(is_copy_),
+	  copy_src(copy_src_),
+	  copy_dst(copy_dst_),
+//	  is_copy(is_copy_),
 	  base_dir_x(base_dir_)
 { }
 
@@ -126,15 +134,27 @@ shared_ptr <const Rule> Rule::instantiate(
 		deps.push_back(dep->instantiate(mapping));
 	}
 
-	shared_ptr <Placed_Name> placed_name_input=
-		rule->placed_name_input_x.instantiate(mapping);
+	shared_ptr <Placed_Name> name_input=
+		rule->name_input.instantiate(mapping);
+	shared_ptr <Placed_Name> name_output=
+		rule->name_output.instantiate(mapping);
+	shared_ptr <Placed_Name> copy_src=
+		rule->copy_src.instantiate(mapping);
+	shared_ptr <Placed_Name> copy_dst=
+		rule->copy_dst.instantiate(mapping);
 
 	return std::make_shared <Rule> (
 		move(placed_targets),
-		move(deps), rule->place, rule->command,
-		*placed_name_input,
-		rule->is_content, rule->output_target_index,
-		rule->is_copy,
+		move(deps),
+		rule->place,
+		rule->command,
+		*name_input,
+		*name_output,
+		rule->is_content,
+		*copy_src,
+		*copy_dst,
+//		rule->output_target_index,
+//		rule->is_copy,
 		rule->base_dir_x);
 }
 
@@ -253,26 +273,18 @@ shared_ptr <const Rule> Rule::rebase() const
 	for (size_t i= 0; i < deps_x.size(); ++i)
 		new_deps.push_back(base(deps_x[i]));
 
-	Placed_Name new_placed_name_input= placed_name_input_x;
-	if (! new_placed_name_input.empty() &&
-		! base_dir_x.empty() &&
-		! is_absolute_for_base(new_placed_name_input))
-	{
-		TRACE("Rebase input");
-		bool end_in_slash= base_dir_x[base_dir_x.size()-1] == '/';
-		string sep= end_in_slash ? "" : "/";
-		new_placed_name_input.prepend_text(base_dir_x + sep);
-	}
-	
 	shared_ptr <Rule> ret= std::make_shared <Rule> (
 		std::move(new_targets),
 		std::move(new_deps),
 		place,
 		command,
-		new_placed_name_input,
+		name_input,
+		name_output,
 		is_content,
-		output_target_index,
-		is_copy,
+		copy_src,
+		copy_dst,
+//		output_target_index,
+//		is_copy,
 		base_dir_x);
 	
 	return ret;

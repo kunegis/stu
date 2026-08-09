@@ -222,7 +222,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	if (job.waited(status, pid)) {
 		state |=  State::EXISTING;
 		state &= ~State::MISSING;
-		/* Subsequently set to State::MISSING if at least one target file is missing */
+		/* Later set to State::MISSING if at least one target file is missing */
 
 		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
@@ -257,7 +257,8 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 				     Color::highlight_off[CH_ERR]);
 		}
 
-		if (! param_rule->is_copy) {
+		if (! param_rule->is_copy()) {
+//		if (! param_rule->is_copy) {
 			Hash_Dep hash_dep= parents.begin()->second->get_target();
 			param_rule->command->place <<
 				fmt("command for %s %s",
@@ -401,10 +402,16 @@ void File_Executor::print_command() const
 		return;
 	}
 
-	if (rule->is_copy) {
+	if (rule->is_copy()) {
 		assert(rule->targets_x.size() == 1);
-		string cp_target= show(rule->targets_x[0]->placed_target.placed_name, S_NORMAL);
-		string cp_source= show(rule->placed_name_input_x.unparametrized(), S_NORMAL);
+		string cp_target= show(
+			rule->copy_dst.unparametrized()
+//			rule->targets_x[0]->placed_target.placed_name
+			, S_NORMAL);
+		string cp_source= show(
+			rule->copy_src.unparametrized()
+//			rule->placed_name_input_x.unparametrized()
+			, S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -426,10 +433,12 @@ void File_Executor::print_command() const
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */
 
-	string filename_output= rule->output_target_index == TARGET_INDEX_NONE ? "" :
-		rule->targets_x[rule->output_target_index]->placed_target
-		.placed_name.unparametrized();
-	string filename_input= rule->placed_name_input_x.unparametrized();
+	string filename_input= rule->name_input.unparametrized();
+	string filename_output= rule->name_output.unparametrized();
+//	string filename_output= rule->output_target_index == TARGET_INDEX_NONE ? "" :
+//		rule->targets_x[rule->output_target_index]->placed_target
+//		.placed_name.unparametrized();
+//	string filename_input= rule->placed_name_input_x.unparametrized();
 
 	/* Redirections */
 	if (! filename_output.empty()) {
@@ -504,7 +513,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	 */
 
 	/* A target for which no execution has to be done */
-	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
+	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy();
 	TRACE("no_execution= %s", frmt("%d", no_execution));
 
 	if (! (state & State::CHECKED)) {
@@ -610,9 +619,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
-	if (rule->output_target_index != TARGET_INDEX_NONE)
-		assert(! (rule->targets_x[rule->output_target_index]->placed_target.flags
-				& F_TARGET_PHONY));
+//	if (rule->has_output()) {
+//	if (rule->output_target_index != TARGET_INDEX_NONE)
+//		assert(! (rule->targets_x[rule->output_target_index]->placed_target.flags
+//				& F_TARGET_PHONY));
+//	}
 	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override
@@ -1048,10 +1059,11 @@ bool File_Executor::start(
 	pid_t &pid,
 	const std::map <string, string> &mapping)
 {
-	if (rule->is_copy) {
+	if (rule->is_copy()) {
 		assert(rule->targets_x.size() == 1);
 		assert(! (rule->targets_x.front()->placed_target.flags & F_TARGET_PHONY));
-		string source= rule->placed_name_input_x.unparametrized();
+		string source= rule->name_input.unparametrized();
+//		string source= rule->placed_name_input_x.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up
 		 * whether the source exists in the cache */
@@ -1065,9 +1077,9 @@ bool File_Executor::start(
 			if (executor_source->state & State::MISSING) {
 				/* Neither the source file nor the target file exist:  an
 				 * error. */
-				rule->deps_x.at(0)->get_place()
-					<< fmt("source file %s in optional copy rule must exist",
-						::show(source));
+				rule->deps_x.at(0)->get_place() << fmt(
+					"source file %s in optional copy rule must exist",
+					::show(source));
 				*this << fmt("when target file %s does not exist",
 					show(hash_deps.at(0)));
 				explain_missing_optional_copy_source();
@@ -1086,15 +1098,20 @@ bool File_Executor::start(
 		pid= job.start(
 			rule->command->command,
 			mapping,
-			rule->output_target_index == TARGET_INDEX_NONE ? "" :
-				rule->targets_x[rule->output_target_index]
-				->placed_target.placed_name.unparametrized(),
-			rule->placed_name_input_x.unparametrized(),
+			rule->name_output.unparametrized(),
+			rule->name_input.unparametrized(),
+//			rule->output_target_index == TARGET_INDEX_NONE ? "" :
+//				rule->targets_x[rule->output_target_index]
+//				->placed_target.placed_name.unparametrized(),
+//			rule->placed_name_input_x.unparametrized(),
 			rule->base_dir_x,
 			rule->command->place,
-			rule->output_target_index == TARGET_INDEX_NONE ? Place() :
-				rule->targets_x[rule->output_target_index]->place,
-			rule->placed_name_input_x.place);
+			rule->name_output.place,
+//			rule->output_target_index == TARGET_INDEX_NONE ? Place() :
+//				rule->targets_x[rule->output_target_index]->place,
+			rule->name_input.place
+//			rule->placed_name_input_x.place
+			       );
 	}
 	return false;
 }

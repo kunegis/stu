@@ -154,6 +154,7 @@ class Plain_Dep
 {
 public:
 	Placed_Target placed_target;
+	// TODO rename 'target'.
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 

@@ -47,47 +47,54 @@ public:
 	 * (but could be different, in principle). */
 
 	const shared_ptr <const Command> command;
-	/* The command (optional).  Contains its own place, as it is a token.  Null when
-	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For content
-	 * rules, the content of the file (not optional). */
+	/* The command.  Contains its own place, as it is a token.  Null when the rule
+	 * does not have a command, i.e., ends in a semicolon ';'.  For content rules, the
+	 * content of the file (not optional). */
 
-	const Placed_Name placed_name_input_x;
-	// TODO remove _x from name
-	/* Unparametrized. When !is_copy:  The name of the file from which input should be
-	 * read; must be one of the file dependencies.  Empty for no input redirection.
-	 * When is_copy: the file from which to copy; never empty. */
+	const Placed_Name name_input;
+	/* Unparametrized.  Not rebased.  When !is_copy: The name of the file from which
+	 * input should be read; must be one of the file dependencies.  Empty for no input
+	 * redirection.  When is_copy: the file from which to copy; never empty. */
 
-	const Target_Index output_target_index;
-	/* Index within PLACED_TARGETS of the target to which output redirection is
-	 * applied.  TARGET_INDEX_NONE if no output redirection is used. The target with
-	 * that index is a file target. */
+	const Placed_Name name_output;
+	/* Unpametrized.  Not rebased.  Empty for no output redirection. */
+
+//	const Target_Index output_target_index;
+//	/* Index within PLACED_TARGETS of the target to which output redirection is
+//	 * applied.  TARGET_INDEX_NONE if no output redirection is used. The target with
+//	 * that index is a file target. */
 
 	const bool is_content;
 	/* The rule is content rule; i.e., the command represents the content, not an
 	 * actual command. */
 
-	const bool is_copy;
-	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
-	 * filename. */
+	const Placed_Name copy_src, copy_dst;
+	/* Empty if not a copy rule.  Not rebased. */
+	
+//	const bool is_copy;
+//	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
+//	 * filename. */
 
 	const string base_dir_x;
 	// TODO rm '_x'
+	// TODO place further up in struct and argument lists.
 	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
 	 * needed. */
 	
 	Rule(
-		std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
+		std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 		const std::vector <shared_ptr <const Dep> > &deps_,
 		shared_ptr <const Command> command_,
 		bool is_content_,
-		Target_Index output_target_index_,
-		const Placed_Name &placed_name_input_,
+//		Target_Index output_target_index_,
+		const Placed_Name &name_input_,
+		const Placed_Name &name_output_,
 		string base_dir);
 	/* Regular rule:  all cases except copy rules */
 
 	Rule(
-		shared_ptr <const Plain_Dep> placed_target_,
-		shared_ptr <const Placed_Name> placed_name_source_,
+		shared_ptr <const Plain_Dep> target_,
+		shared_ptr <const Placed_Name> copy_src_,
 		const Place &place_persistent,
 		const Place &place_optional,
 		string base_dir);
@@ -98,20 +105,24 @@ public:
 		std::vector <shared_ptr <const Dep> > &&deps_,
 		const Place &place_,
 		const shared_ptr <const Command> &command_,
-		const Placed_Name &placed_name_input_,
+		const Placed_Name &name_input_,
+		const Placed_Name &name_output_,
 		bool is_content_,
-		Target_Index output_target_index_,
-		bool is_copy_,
-		string base_dir);
+		const Placed_Name &copy_src_,
+		const Placed_Name &copy_dst_,
+//		Target_Index output_target_index_,
+//		bool is_copy_,
+		string base_dir_);
 	// TODO order of args should correspond to field declarations.
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 
 	bool is_parametrized() const;
+	bool is_copy() const { return ! copy_src.empty(); }
 
 	/* A rule in which the targets must exist */
 	bool must_exist() const {
-		return command == nullptr && !is_content && !is_copy;
+		return command == nullptr && ! is_content && ! is_copy();
 	}
 
 	void render(Parts &, Rendering= 0) const;
@@ -131,7 +142,7 @@ public:
 
 	shared_ptr <const Rule> rebase() const;
 
-	// TODO make non-static using shared_from_this.
+	// TODO make non-static using shared_from_this. (And move next to rebase().)
 	static shared_ptr <const Rule> instantiate(
 		shared_ptr <const Rule> rule,
 		const std::map <string, string> &mapping);

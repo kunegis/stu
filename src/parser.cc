@@ -336,7 +336,7 @@ bool Parser::parse_target(
 	shared_ptr <const Plain_Dep> &target_first)
 {
 	Place place_output_new;
-	Placed_Flags placed_flags;
+	Placed_Flags flags;
 	shared_ptr <Flag_Token> flag_token;
 
 	while (is <Flag_Token> ()) {
@@ -356,7 +356,7 @@ bool Parser::parse_target(
 			explain_target_flags();
 			throw ERR_LOGICAL;
 		}
-		placed_flags.add_placed_index(
+		flags.add_placed_index(
 			flag_index,
 			flag_token->get_place());
 	}
@@ -386,7 +386,7 @@ bool Parser::parse_target(
 			place_at << fmt("after %s", show(Operator_View('@')));
 			throw ERR_LOGICAL;
 		}
-		placed_flags.add_unplaced_flags(F_TARGET_PHONY);
+		flags.add_unplaced_flags(F_TARGET_PHONY);
 	}
 
 	if (! is <Name_Token> ()) {
@@ -440,11 +440,11 @@ bool Parser::parse_target(
 	}
 
 	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
-		(placed_flags, Placed_Target(placed_flags.get_flags() & F_TARGET_PHONY,
+		(flags, Placed_Target(flags.get_flags() & F_TARGET_PHONY,
 			*target_name, place_of_target));
 
-	if (placed_flags.get_flags() & F_TARGET_PHONY) {
-		for (const Placed_Flag &flag: placed_flags.get()) {
+	if (flags.get_flags() & F_TARGET_PHONY) {
+		for (const Placed_Flag &flag: flags.get()) {
 			if (! ((1 << flag.index) & F_PLACED_TARGET_PHONY)) {
 				string possible;
 				for (Flags f= F_PLACED_TARGET_PHONY, i= 0; f; f >>= 1, ++i) {
@@ -460,10 +460,10 @@ bool Parser::parse_target(
 		}
 	}
 
-	if (! place_output_new.empty() && placed_flags.get_flags() & F_NO_FOLLOW) {
+	if (! place_output_new.empty() && flags.get_flags() & F_NO_FOLLOW) {
 		place_output_new << fmt("output redirection using %s cannot be used",
 			show(Operator_View('>')));
-		placed_flags.place_by_index(I_NO_FOLLOW) << fmt(
+		flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"before target with flag %s (no-follow)",
 			show(Operator_View(frmt("-%c", flag_chars[I_NO_FOLLOW]))));
 		throw ERR_LOGICAL;
@@ -490,7 +490,7 @@ bool Parser::parse_target(
 		output_target_index= targets.size();
 	}
 
-	if (placed_flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {
+	if (flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {
 		target->place << fmt("phony target %s is invalid",
 			show(target));
 		place_output_new << fmt("after output redirection using %s",
@@ -617,7 +617,7 @@ bool Parser::parse_expression(
 }
 
 shared_ptr <const Dep> Parser::parse_compound_dep(
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -629,7 +629,7 @@ shared_ptr <const Dep> Parser::parse_compound_dep(
 	Place place_paren= (*iter)->get_place();
 	++iter;
 	std::vector <shared_ptr <const Dep> > r;
-	if (parse_expression_list(r, placed_name_input, place_input, targets)) {
+	if (parse_expression_list(r, name_input, place_input, targets)) {
 		assert(r.size() >= 1);
 		if (r.size() > 1) {
 			ret= std::make_shared <Compound_Dep> (move(r), place_paren);
@@ -658,7 +658,7 @@ shared_ptr <const Dep> Parser::parse_compound_dep(
 
 	if (next_concatenates()) {
 		shared_ptr <const Dep> next;
-		bool rr= parse_expression(next, placed_name_input, place_input, targets);
+		bool rr= parse_expression(next, name_input, place_input, targets);
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {
@@ -674,7 +674,7 @@ shared_ptr <const Dep> Parser::parse_compound_dep(
 }
 
 shared_ptr <const Dep> Parser::parse_dynamic_dep(
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -684,7 +684,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	Place place_bracket= (*iter)->get_place();
 	++iter;
 	std::vector <shared_ptr <const Dep> > content;
-	parse_expression_list(content, placed_name_input, place_input, targets);
+	parse_expression_list(content, name_input, place_input, targets);
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected a dependency or %s", show(Operator_View(']')));
@@ -715,7 +715,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 
 	if (next_concatenates()) {
 		shared_ptr <const Dep> next;
-		bool rr= parse_expression(next, placed_name_input, place_input, targets);
+		bool rr= parse_expression(next, name_input, place_input, targets);
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {
@@ -732,7 +732,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 }
 
 shared_ptr <const Dep> Parser::parse_variable_dep(
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -753,8 +753,8 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	++iter;
 
 	/* Flags */
-	Placed_Flags placed_flags;
-	placed_flags.add_unplaced_index(I_VARIABLE);
+	Placed_Flags flags;
+	flags.add_unplaced_index(I_VARIABLE);
 	Place place_flag_last;
 	shared_ptr <Flag_Token> flag_token_last;
 	while (is_flag(flag_chars[I_PERSISTENT]) ||
@@ -764,7 +764,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		flag_token_last= is <Flag_Token> ();
 		place_flag_last= (*iter)->get_place();
 		if (is_flag(flag_chars[I_PERSISTENT])) {
-			placed_flags.add_placed_index(I_PERSISTENT,
+			flags.add_placed_index(I_PERSISTENT,
 				place_flag_last);
 		} else if (is_flag(flag_chars[I_OPTIONAL])) {
 			if (! option_g) {
@@ -776,8 +776,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 			}
 		} else if (is_flag(flag_chars[I_TRIVIAL])) {
 			if (! option_a) {
-				placed_flags.add_placed_index(
-					I_TRIVIAL, place_flag_last);
+				flags.add_placed_index(I_TRIVIAL, place_flag_last);
 			}
 		} else {
 			unreachable();
@@ -789,7 +788,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	if (is_operator('<')) {
 		has_input= true;
 		place_input= (*iter)->get_place();
-		placed_flags.add_unplaced_index(I_INPUT);
+		flags.add_unplaced_index(I_INPUT);
 		++iter;
 	}
 
@@ -810,15 +809,15 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		}
 		throw ERR_LOGICAL;
 	}
-	shared_ptr <Placed_Name> placed_name= is <Name_Token> ();
+	shared_ptr <Placed_Name> name= is <Name_Token> ();
 	++iter;
 
 	/* Check that the name does not contain '=' */
-	for (auto &j: placed_name->get_texts()) {
+	for (auto &j: name->get_texts()) {
 		if (j.find('=') != string::npos) {
-			placed_name->place << fmt(
+			name->place << fmt(
 				"name of variable dependency %s must not contain %s",
-				show(*placed_name), show(Operator_View('=')));
+				show(*name), show(Operator_View('=')));
 			explain_variable_equal();
 			throw ERR_LOGICAL;
 		}
@@ -832,7 +831,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		if (iter == tokens.end()) {
 			place_end << "expected a filename";
 			place_equal << fmt("after %s in variable dependency %s",
-				show(Operator_View('=')), show(*placed_name));
+				show(Operator_View('=')), show(*name));
 			throw ERR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
@@ -840,19 +839,19 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 				fmt("expected a filename, not %s",
 				    show(*iter));
 			place_equal << fmt("after %s in variable dependency %s",
-				show(Operator_View('=')), show(*placed_name));
+				show(Operator_View('=')), show(*name));
 			throw ERR_LOGICAL;
 		}
 
-		if (placed_name->get_n() != 0) {
-			placed_name->place << fmt(
+		if (name->get_n() != 0) {
+			name->place << fmt(
 				"variable name %s must be unparametrized",
-				show(*placed_name));
+				show(*name));
 			throw ERR_LOGICAL;
 		}
 
-		variable_name= placed_name->unparametrized();
-		placed_name= is <Name_Token> ();
+		variable_name= name->unparametrized();
+		name= is <Name_Token> ();
 		++iter;
 	}
 
@@ -874,16 +873,16 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 
 	/* The place of the variable dependency as a whole is set on the name contained in
 	 * it.  It would be conceivable to also set it on the dollar sign. */
-	ret= std::make_shared <Plain_Dep> (placed_flags,
-		Placed_Target(0, *placed_name, placed_name->place), variable_name);
+	ret= std::make_shared <Plain_Dep> (flags,
+		Placed_Target(0, *name, name->place), variable_name);
 
-	if (has_input && ! placed_name_input.empty()) {
-		placed_name->place <<
+	if (has_input && ! name_input.empty()) {
+		name->place <<
 			fmt("there cannot be a second input redirection %s",
 			    show(ret, S_DEFAULT, R_SHOW_INPUT));
-		placed_name_input.place << fmt(
+		name_input.place << fmt(
 			"shadowing previous input redirection %s",
-			show(Prefix_View("<", placed_name_input)));
+			show(Prefix_View("<", name_input)));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", show(targets.front()));
@@ -894,12 +893,12 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		throw ERR_LOGICAL;
 	}
 	if (has_input)
-		placed_name_input= *placed_name;
+		name_input= *name;
 	return ret;
 }
 
 shared_ptr <const Dep> Parser::parse_redirect_dep(
-	Placed_Name &placed_name_input,
+	Placed_Name &name_input,
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
@@ -965,30 +964,30 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter;
 
-	Placed_Flags placed_flags;
+	Placed_Flags flags;
 	if (has_input) {
-		placed_flags.add_unplaced_index(I_INPUT);
+		flags.add_unplaced_index(I_INPUT);
 	}
 
-	if (! placed_name_input.empty())
+	if (! name_input.empty())
 		assert(! place_input.empty());
 
 	if (has_phony) {
-		placed_flags.add_unplaced_index(I_TARGET_PHONY);
+		flags.add_unplaced_index(I_TARGET_PHONY);
 	}
 	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep> (
-		placed_flags,
+		flags,
 		Placed_Target(phony_bit, *name_token,
 			has_phony ? place_at : name_token->place));
 
-	if (has_input && ! placed_name_input.empty()) {
+	if (has_input && ! name_input.empty()) {
 		name_token->place << fmt(
 			"there cannot be a second input redirection %s",
 			show(ret, S_DEFAULT, R_SHOW_INPUT));
-		placed_name_input.place << fmt(
+		name_input.place << fmt(
 			"shadowing previous input redirection %s",
-			show(Prefix_View("<", placed_name_input)));
+			show(Prefix_View("<", name_input)));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", show(targets.front()));
@@ -1000,11 +999,11 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	}
 
 	if (has_input)
-		placed_name_input= *name_token;
+		name_input= *name_token;
 
 	if (next_concatenates()) {
 		shared_ptr <const Dep> next;
-		bool rr= parse_expression(next, placed_name_input, place_input, targets);
+		bool rr= parse_expression(next, name_input, place_input, targets);
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {

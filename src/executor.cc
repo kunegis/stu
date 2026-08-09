@@ -34,10 +34,9 @@ void Executor::read_dynamic(
 	Executor *dynamic_executor)
 {
 	try {
-		const Placed_Target &placed_target=
-			to <Plain_Dep> (dep_target)->target;
-		assert(placed_target.name.get_n() == 0);
-		const Hash_Dep hash_dep= placed_target.unparametrized();
+		const Placed_Target &target= to <Plain_Dep> (dep_target)->target;
+		assert(target.name.get_n() == 0);
+		const Hash_Dep hash_dep= target.unparametrized();
 		assert(deps.empty());
 
 		/* Check:  variable dependencies are not allowed in multiply dynamic
@@ -50,7 +49,7 @@ void Executor::read_dynamic(
 				::show(dep));
 			raise(ERR_LOGICAL);
 		}
-		if (placed_target.flags & F_TARGET_PHONY)
+		if (target.flags & F_TARGET_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
@@ -71,7 +70,7 @@ void Executor::read_dynamic(
 			Tokenizer::parse_tokens_file(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
-				placed_target.place, -1,
+				target.place, -1,
 				allow_enoent, false);
 			Placed_Name input;
 			Place place_input;
@@ -109,7 +108,7 @@ void Executor::read_dynamic(
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
-					placed_target.place,
+					target.place,
 					dep_target->flags.place_by_index(index),
 					c, index,
 					*dynamic_executor, allow_enoent);

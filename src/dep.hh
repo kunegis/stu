@@ -348,7 +348,7 @@ public:
 	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
 							    shared_ptr <const Dep> b);
 
-	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
+ 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     std::vector <shared_ptr <const Dep> > &deps,
 				     int &error);
 	/* Normalize DEP's dependencies into a list of individual dependencies.

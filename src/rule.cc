@@ -5,7 +5,6 @@ Rule::Rule(
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
 	bool is_content_,
-//	Target_Index output_target_index_,
 	const Placed_Name &name_input_,
 	const Placed_Name &name_output_,
 	string base_dir_)
@@ -91,8 +90,6 @@ Rule::Rule(
 	bool is_content_,
 	const Placed_Name &copy_src_,
 	const Placed_Name &copy_dst_,
-//	Target_Index output_target_index_,
-//	bool is_copy_,
 	string base_dir_)
 	: targets_x(targets_),
 	  deps_x(deps_),
@@ -119,12 +116,12 @@ shared_ptr <const Rule> Rule::instantiate(
 	assert(rule->get_parameters().size() != 0);
 
 	std::vector <shared_ptr <const Plain_Dep> >
-		placed_targets(rule->targets_x.size());
+		targets(rule->targets_x.size());
 	for (size_t i= 0; i < rule->targets_x.size(); ++i) {
 		shared_ptr <const Plain_Dep> instantiated=
 			to <Plain_Dep> (rule->targets_x[i]->instantiate(mapping));
 		assert(instantiated);
-		placed_targets[i]= instantiated;
+		targets[i]= instantiated;
 	}
 
 	std::vector <shared_ptr <const Dep> > deps;
@@ -142,7 +139,7 @@ shared_ptr <const Rule> Rule::instantiate(
 		rule->copy_dst.instantiate(mapping);
 
 	return std::make_shared <Rule> (
-		move(placed_targets),
+		move(targets),
 		move(deps),
 		rule->place,
 		rule->command,

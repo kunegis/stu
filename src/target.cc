@@ -13,9 +13,9 @@ void Placed_Target::canonicalize()
 }
 
 void render(
-	const Placed_Target &placed_target,
+	const Placed_Target &target,
 	Parts &parts,
 	Rendering rendering)
 {
-	return placed_target.render(parts, rendering);
+	return target.render(parts, rendering);
 }

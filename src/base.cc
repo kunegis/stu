@@ -73,8 +73,6 @@ shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
 bool is_absolute_for_base(const Name &name)
 /* Starts with '/' text, or with param followed by '/' text */
 {
-//	const Name &name= d->placed_target.placed_name;
-
 	return
 		(name.get_texts()[0].size() != 0 && name.get_texts()[0][0] == '/') ||
 		(name.get_texts()[0].empty() &&

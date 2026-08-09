@@ -94,9 +94,9 @@ class Name_Token
 	: public Token, public Placed_Name
 {
 public:
-	Name_Token(const Placed_Name &placed_name_, bool environment_)
+	Name_Token(const Placed_Name &name_, bool environment_)
 		: Token(environment_),
-		  Placed_Name(placed_name_)
+		  Placed_Name(name_)
 	{}
 
 	const Place &get_place() const override { return Placed_Name::place; }

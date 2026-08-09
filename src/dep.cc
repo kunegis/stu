@@ -548,7 +548,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	Placed_Flags flags_combined= a->flags;
 	flags_combined.add(b->flags);
 
-	Placed_Name placed_name_combined(
+	Placed_Name name_combined(
 		a->target.name.unparametrized() +
 		b->target.name.unparametrized(),
 		a->target.name.place);
@@ -556,7 +556,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep> (
 		flags_combined,
 		Placed_Target(flags_combined.get_flags() & F_TARGET_PHONY,
-			placed_name_combined, a->target.place),
+			name_combined, a->target.place),
 		a->place, "");
 	ret->top= a->top;
 	if (! ret->top)

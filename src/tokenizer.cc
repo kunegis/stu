@@ -315,9 +315,9 @@ void Tokenizer::parse_tokens_arg(
 				++p;
 			}
 			assert(p > q);
-			Placed_Name placed_name(string(q, p-q), place);
+			Placed_Name name(string(q, p-q), place);
 			tokens.push_back(std::make_shared <Name_Token>
-				(placed_name, environment));
+				(name, environment));
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
@@ -572,8 +572,8 @@ void Tokenizer::parse_flag_or_name()
 		return;
 	}
 
-	shared_ptr <Placed_Name> placed_name= parse_name(allow_special);
-	if (placed_name == nullptr) {
+	shared_ptr <Placed_Name> name= parse_name(allow_special);
+	if (name == nullptr) {
 		if (*p == '!') {
 			current_place() << fmt(
 				"character %s is invalid for persistent dependencies; use %s instead",
@@ -597,8 +597,8 @@ void Tokenizer::parse_flag_or_name()
 		}
 		throw ERR_LOGICAL;
 	}
-	assert(! placed_name->empty());
-	tokens.push_back(std::make_shared <Name_Token> (*placed_name, environment));
+	assert(! name->empty());
+	tokens.push_back(std::make_shared <Name_Token> (*name, environment));
 }
 
 void Tokenizer::parse_flag()
@@ -737,11 +737,11 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(
 	return ret;
 }
 
-void Tokenizer::parse_dollar(Placed_Name &placed_name)
+void Tokenizer::parse_dollar(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
-	string name;
+	string key;
 	Place place_dollar= current_place();
 
 	if (p + 1 == p_end || p[1] == '\n') {
@@ -761,24 +761,24 @@ void Tokenizer::parse_dollar(Placed_Name &placed_name)
 	}
 
 	if (p[1] == '(') {
-		parse_environment_variable(name);
-		TRACE("name= %s", show(name));
-		assert(name.size() > 0);
-		const char *value= getenv(name.c_str());
-		TRACE("name= %s", value ? show(value) : "<null>");
+		parse_environment_variable(key);
+		TRACE("key= %s", show(key));
+		assert(key.size() > 0);
+		const char *value= getenv(key.c_str());
+		TRACE("value= %s", value ? show(value) : "<null>");
 		if (!value) {
 			place_dollar << fmt("expected environment variable %s to be set",
-				show(Environment_Variable_View(name)));
+				show(Environment_Variable_View(key)));
 			throw ERR_LOGICAL;
 		}
-		placed_name.append_text(value);
+		name.append_text(value);
 	} else {
-		parse_parameter(name);
-		placed_name.append_parameter(name, place_dollar);
+		parse_parameter(key);
+		name.append_parameter(key, place_dollar);
 	}
 }
 
-void Tokenizer::parse_home(Placed_Name &placed_name)
+void Tokenizer::parse_home(Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '~');
@@ -787,12 +787,16 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 	++p;
 	const char *begin= p;
 
-	while (p < p_end && (isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin))) ++p;
+	while (p < p_end &&
+		(isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin)))
+	{
+		++p;
+	}	
 
 	if (p == begin) {
 		TRACE("Standalone ~");
 		if (! (p == p_end || is_tilde_char(*p))) {
-			placed_name.append_text("~");
+			name.append_text("~");
 			return;
 		}
 		const char *home= getenv(ENV_HOME);
@@ -805,14 +809,14 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 					"cannot determine home directory of user by UID";
 				throw ERR_BUILD;
 			}
-			placed_name.append_text(info->pw_dir);
+			name.append_text(info->pw_dir);
 		} else {
-			placed_name.append_text(home);
+			name.append_text(home);
 		}
 	} else {
 		TRACE("Specific user's home directory");
 		if (! (p == p_end || is_tilde_char(*p))) {
-			placed_name.append_text(string(tilde, p - tilde));
+			name.append_text(string(tilde, p - tilde));
 			return;
 		}
 		string username= string(begin, p - begin);
@@ -823,7 +827,7 @@ void Tokenizer::parse_home(Placed_Name &placed_name)
 				show(username));
 			throw ERR_BUILD;
 		}
-		placed_name.append_text(info->pw_dir);
+		name.append_text(info->pw_dir);
 	}
 }
 
@@ -1366,9 +1370,9 @@ void Tokenizer::parse_include_directive(
 		throw ERR_LOGICAL;
 	}
 
-	shared_ptr <Placed_Name> placed_name= parse_name(false);
+	shared_ptr <Placed_Name> name= parse_name(false);
 
-	if (placed_name == nullptr) {
+	if (name == nullptr) {
 		current_place() <<
 			(p == p_end
 				? "expected a filename"
@@ -1377,16 +1381,16 @@ void Tokenizer::parse_include_directive(
 		place_percent << fmt("after %s", show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
-	if (placed_name->get_n() != 0) {
-		placed_name->place << fmt("name %s must not be parametrized",
-			show(*placed_name));
+	if (name->get_n() != 0) {
+		name->place << fmt("name %s must not be parametrized",
+			show(*name));
 		place_percent << fmt("after %s",
 			show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
 
-	const string filename_include= placed_name->unparametrized();
-	Backtrace backtrace_stack(placed_name->place,
+	const string filename_include= name->unparametrized();
+	Backtrace backtrace_stack(name->place,
 		fmt("%s is included from here", show(filename_include)));
 	backtraces.push_back(backtrace_stack);
 	filenames.push_back(place_base.text);

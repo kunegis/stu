@@ -45,8 +45,6 @@ File_Executor::File_Executor(
 	if (rule) {
 		hash_deps.clear();
 		for (auto t: rule->targets_x) {
-//			shared_ptr <const Dep> d= rule->base(t);
-//			auto t2= t->placed_target;
 			Hash_Dep hd= t->target.unparametrized();
 			hd.get_front_word_nondynamic() |=
 				t->flags.get_flags() & F_WORD;
@@ -404,14 +402,8 @@ void File_Executor::print_command() const
 
 	if (rule->is_copy()) {
 		assert(rule->targets_x.size() == 1);
-		string cp_target= show(
-			rule->copy_dst.unparametrized()
-//			rule->targets_x[0]->placed_target.placed_name
-			, S_NORMAL);
-		string cp_source= show(
-			rule->copy_src.unparametrized()
-//			rule->placed_name_input_x.unparametrized()
-			, S_NORMAL);
+		string cp_target= show(rule->copy_dst.unparametrized(), S_NORMAL);
+		string cp_source= show(rule->copy_src.unparametrized(), S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -435,10 +427,6 @@ void File_Executor::print_command() const
 
 	string filename_input= rule->name_input.unparametrized();
 	string filename_output= rule->name_output.unparametrized();
-//	string filename_output= rule->output_target_index == TARGET_INDEX_NONE ? "" :
-//		rule->targets_x[rule->output_target_index]->placed_target
-//		.placed_name.unparametrized();
-//	string filename_input= rule->placed_name_input_x.unparametrized();
 
 	/* Redirections */
 	if (! filename_output.empty()) {

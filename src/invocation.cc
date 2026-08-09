@@ -62,11 +62,11 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERR_FATAL);
 			}
-			Placed_Flags placed_flags;
-			placed_flags.add_placed_index(flag_get_index(c), place);
+			Placed_Flags flags;
+			flags.add_placed_index(flag_get_index(c), place);
 			deps.push_back(std::make_shared <Dynamic_Dep> (
 				std::make_shared <Plain_Dep> (
-					placed_flags,
+					flags,
 					Placed_Target(0, Placed_Name(optarg, place)))));
 			break;
 		}

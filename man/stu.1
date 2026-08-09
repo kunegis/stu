@@ -769,6 +769,14 @@ to the current \fI%cd\fR directory.  This includes targets, dependencies, and th
 itself.  The Stu process itself will not change directory -- only the commands are
 executed in a different directory.
 
+Phony targets are also interpreted relative to the current \fI%cd\fR directory.  For
+instance,
+
+    %cd dir
+    @do { ... }
+
+will create a rule for the target \fI@dir/do\fR.
+
 \fI%cd\fR can only be used between rules, not in the middle of a rule.  It cannot be used
 in a dynamic dependency.
 

@@ -1,0 +1,13 @@
+A: list.dir @list.dir/do
+{
+	cp list.dir/B A
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+@do
+{
+	touch B
+}

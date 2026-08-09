@@ -1,5 +1,4 @@
 * Rename all variables 'placed_*' to remove the 'placed_'
-* Phony in cd mode (gets prefix too)
 %cd aaa ; %cd /bin ; %cd - # Same as %cd aaa
 %cd /bin ; %cd aaa # Same as $cd /bin/aaa
 %cd /
@@ -75,6 +74,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 %cd- # Does this work?
 %cd -X # Error, not just '%cd -' followed by 'X' (keep syntax for future extension)
 * 10 times "%cd aaa" followed by 10 times "%cd -"
+$ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
 
 #
 # %include -d

@@ -1,4 +1,3 @@
-%cd <EOL> aaa
 %cd "aaa"
 %cd 'bbb'
 %cd $(VAR)

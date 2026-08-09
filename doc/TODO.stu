@@ -1,4 +1,3 @@
-%cd $(VAR)
 %cd aaa/ ; %cd bbb # Same as %cd aaa/bbb (without double slash)
 %cd "" # Error
 %cd '' # Error
@@ -67,6 +66,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 * 10 times "%cd aaa" followed by 10 times "%cd -"
 $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
 $ stu -F '%cd' # Error
+%cd $(VAR) # when $VAR starts with a dash
 
 #
 # %include -d

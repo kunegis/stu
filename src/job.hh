@@ -37,7 +37,7 @@ public:
 		const Place &place_command,
 		const Place &place_output,
 		const Place &place_input);
-	// TODO reorder args to always put input before output */
+	// TODO reorder args to always put input before output
 	// TODO replace String+Place by Placed_Name
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to

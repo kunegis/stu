@@ -51,7 +51,7 @@ public:
 	const string base_dir;
 	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
 	 * needed. */
-	
+
 	const Placed_Name name_input;
 	/* Unparametrized.  Not rebased.  When !is_copy: The name of the file from which
 	 * input should be read; must be one of the file dependencies.  Empty for no input

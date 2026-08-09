@@ -27,16 +27,14 @@ class Rule
  */
 {
 public:
-	std::vector <shared_ptr <const Plain_Dep> > targets_x;
-	// TODO rm '_x'
+	std::vector <shared_ptr <const Plain_Dep> > targets;
 	/* The targets of the rule, in the order specified in the rule.  Contains at least
 	 * one element.  Each element contains all parameters of the rule, and therefore
 	 * should be used for iterating over all parameters.  The place in each target is
 	 * used when referring to a target specifically.  The targets may or may not be
 	 * canonicalized. */
 
-	std::vector <shared_ptr <const Dep> > deps_x;
-	// TODO rm '_x'
+	std::vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are included multiple
 	 * times if they appear multiple times in the source.  Any parameter occuring in
 	 * a dependency must occur in every target. */
@@ -65,12 +63,7 @@ public:
 	const Placed_Name copy_src, copy_dst;
 	/* Empty if not a copy rule.  Not rebased. */
 	
-//	const bool is_copy;
-//	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
-//	 * filename. */
-
-	const string base_dir_x;
-	// TODO rm '_x'
+	const string base_dir;
 	// TODO place further up in struct and argument lists.
 	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
 	 * needed. */
@@ -80,7 +73,6 @@ public:
 		const std::vector <shared_ptr <const Dep> > &deps_,
 		shared_ptr <const Command> command_,
 		bool is_content_,
-//		Target_Index output_target_index_,
 		const Placed_Name &name_input_,
 		const Placed_Name &name_output_,
 		string base_dir);
@@ -144,7 +136,7 @@ public:
 private:
 	// TODO rename rebase
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
-		return ::rebase(d, base_dir_x);
+		return ::rebase(d, base_dir);
 	}
 };
 

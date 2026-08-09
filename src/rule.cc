@@ -8,27 +8,19 @@ Rule::Rule(
 	const Placed_Name &name_input_,
 	const Placed_Name &name_output_,
 	string base_dir_)
-	: targets_x(targets_),
-	  deps_x(deps_),
+	: targets(targets_),
+	  deps(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
 	  name_input(name_input_),
 	  name_output(name_output_),
-//	  output_target_index(output_target_index_),
 	  is_content(is_content_),
-//	  is_copy(false),
-	  base_dir_x(base_dir_)
+	  base_dir(base_dir_)
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show(targets_[0]));
 	TRACE("base_dir= '%s'", base_dir_);
-	assert(targets_x.size() != 0);
-//	assert(output_target_index == TARGET_INDEX_NONE ||
-//		output_target_index < targets_x.size());
-//	if (output_target_index != TARGET_INDEX_NONE) {
-//		assert((targets_x[output_target_index]->flags.get_flags()
-//			& F_TARGET_PHONY) == 0);
-//	}
+	assert(targets.size() != 0);
 
 	/* Check that all dependencies only include
 	 * parameters from the target */
@@ -38,14 +30,14 @@ Rule::Rule(
 	}
 
 	/* Check that only valid parameters are used */
-	for (const auto &d: deps_x) {
+	for (const auto &d: deps) {
 		d->check();
 		check_unparametrized(d, parameters);
 	}
 
-	for (size_t i= 0; i < targets_x.size(); ++i) {
-		targets_x[i]= to <const Plain_Dep> (base(targets_x[i]));
-		assert(targets_x[i]);
+	for (size_t i= 0; i < targets.size(); ++i) {
+		targets[i]= to <const Plain_Dep> (base(targets[i]));
+		assert(targets[i]);
 	}
 }
 
@@ -55,16 +47,16 @@ Rule::Rule(
 	const Place &place_persistent,
 	const Place &place_optional,
 	string base_dir_)
-	: targets_x{target_},
+	: targets{target_},
 	  place(target_->place),
 	  is_content(false),
 	  copy_src(*copy_src_),
 	  copy_dst(target_->object.name),
-	  base_dir_x(base_dir_)
+	  base_dir(base_dir_)
 {
 	assert(! copy_src.empty());
-	targets_x[0]= to <const Plain_Dep> (base(targets_x[0]));
-	assert(targets_x[0]);
+	targets[0]= to <const Plain_Dep> (base(targets[0]));
+	assert(targets[0]);
 
 	auto dep= std::make_shared <Plain_Dep> (Placed_Object(0, *copy_src_));
 
@@ -75,7 +67,7 @@ Rule::Rule(
 		dep->flags.add_placed_index(I_OPTIONAL, place_optional);
 	}
 
-	deps_x.push_back(dep);
+	deps.push_back(dep);
 }
 
 Rule::Rule(
@@ -89,22 +81,21 @@ Rule::Rule(
 	const Placed_Name &copy_src_,
 	const Placed_Name &copy_dst_,
 	string base_dir_)
-	: targets_x(targets_),
-	  deps_x(deps_),
+	: targets(targets_),
+	  deps(deps_),
 	  place(place_),
 	  command(command_),
 	  name_input(name_input_),
 	  name_output(name_output_),
-//	  output_target_index(output_target_index_),
 	  is_content(is_content_),
 	  copy_src(copy_src_),
 	  copy_dst(copy_dst_),
-	  base_dir_x(base_dir_)
+	  base_dir(base_dir_)
 { }
 
 bool Rule::is_parametrized() const
 {
-	return targets_x.front()->object.name.get_n() != 0;
+	return targets.front()->object.name.get_n() != 0;
 }
 
 shared_ptr <const Rule> Rule::instantiate(
@@ -114,16 +105,16 @@ shared_ptr <const Rule> Rule::instantiate(
 	assert(rule->get_parameters().size() != 0);
 
 	std::vector <shared_ptr <const Plain_Dep> >
-		targets(rule->targets_x.size());
-	for (size_t i= 0; i < rule->targets_x.size(); ++i) {
+		targets(rule->targets.size());
+	for (size_t i= 0; i < rule->targets.size(); ++i) {
 		shared_ptr <const Plain_Dep> instantiated=
-			to <Plain_Dep> (rule->targets_x[i]->instantiate(mapping));
+			to <Plain_Dep> (rule->targets[i]->instantiate(mapping));
 		assert(instantiated);
 		targets[i]= instantiated;
 	}
 
 	std::vector <shared_ptr <const Dep> > deps;
-	for (auto &dep: rule->deps_x) {
+	for (auto &dep: rule->deps) {
 		deps.push_back(dep->instantiate(mapping));
 	}
 
@@ -146,9 +137,7 @@ shared_ptr <const Rule> Rule::instantiate(
 		rule->is_content,
 		*copy_src,
 		*copy_dst,
-//		rule->output_target_index,
-//		rule->is_copy,
-		rule->base_dir_x);
+		rule->base_dir);
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const
@@ -156,7 +145,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 	parts.append_operator("Rule(");
 
 	bool first= true;
-	for (auto t: targets_x) {
+	for (auto t: targets) {
 		if (first)
 			first= false;
 		else
@@ -164,12 +153,12 @@ void Rule::render(Parts &parts, Rendering rendering) const
 		t->render(parts, rendering);
 	}
 
-	if (deps_x.size() != 0) {
+	if (deps.size() != 0) {
 		parts.append_operator(":");
 		parts.append_space();
 	}
-	for (auto i= deps_x.begin(); i != deps_x.end(); ++i) {
-		if (i != deps_x.begin()) {
+	for (auto i= deps.begin(); i != deps.end(); ++i) {
+		if (i != deps.begin()) {
 			parts.append_space();
 		}
 		(*i)->render(parts, rendering);
@@ -203,14 +192,14 @@ void Rule::check_unparametrized(
 				"parameter %s cannot appear in dependency %s",
 				show(Prefix_View("$", parameter)),
 				show(plain_dep->object));
-			if (targets_x.size() == 1) {
-				targets_x[0]->place <<
+			if (targets.size() == 1) {
+				targets[0]->place <<
 					fmt("because it does not appear in target %s",
-						show(targets_x[0]));
+						show(targets[0]));
 			} else {
 				place << fmt(
 					"because it does not appear in any of the targets %s... of the rule",
-					show(targets_x[0]));
+					show(targets[0]));
 			}
 			throw ERR_LOGICAL;
 		}
@@ -221,17 +210,17 @@ void Rule::check_unparametrized(
 
 void Rule::check_duplicate_target() const
 {
-	for (size_t i= 0; i < targets_x.size(); ++i) {
+	for (size_t i= 0; i < targets.size(); ++i) {
 		for (size_t j= 0; j < i; ++j) {
-			if (! targets_x[i]->object
-				.equals_same_length(targets_x[j]->object))
+			if (! targets[i]->object
+				.equals_same_length(targets[j]->object))
 				continue;
-			targets_x[i]->place <<
+			targets[i]->place <<
 				fmt("there cannot be a target %s",
-					show(targets_x[i]));
-			targets_x[j]->place <<
+					show(targets[i]));
+			targets[j]->place <<
 				fmt("shadowing target %s of the same rule",
-					show(targets_x[j]));
+					show(targets[j]));
 			throw ERR_LOGICAL;
 		}
 	}
@@ -239,31 +228,31 @@ void Rule::check_duplicate_target() const
 
 const std::vector <string> &Rule::get_parameters() const
 {
-	assert(targets_x.size() != 0);
-	return targets_x.front()->object.name.get_parameters();
+	assert(targets.size() != 0);
+	return targets.front()->object.name.get_parameters();
 }
 
 void Rule::canonicalize()
 {
-	for (size_t i= 0; i < targets_x.size(); ++i) {
-		shared_ptr <Dep> d= targets_x[i]->clone();
+	for (size_t i= 0; i < targets.size(); ++i) {
+		shared_ptr <Dep> d= targets[i]->clone();
 		shared_ptr <Plain_Dep> e= to <Plain_Dep> (d);
 		assert(e);
 		e->object.canonicalize();
-		targets_x[i]= e;
+		targets[i]= e;
 	}
 }
 
 shared_ptr <const Rule> Rule::rebase() const
 {
 	TRACE_FUNCTION();
-	if (base_dir_x.empty()) return shared_from_this();
+	if (base_dir.empty()) return shared_from_this();
 
-	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets_x;
+	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets;
 
 	std::vector <shared_ptr <const Dep> > new_deps;
-	for (size_t i= 0; i < deps_x.size(); ++i)
-		new_deps.push_back(base(deps_x[i]));
+	for (size_t i= 0; i < deps.size(); ++i)
+		new_deps.push_back(base(deps[i]));
 
 	shared_ptr <Rule> ret= std::make_shared <Rule> (
 		std::move(new_targets),
@@ -275,9 +264,7 @@ shared_ptr <const Rule> Rule::rebase() const
 		is_content,
 		copy_src,
 		copy_dst,
-//		output_target_index,
-//		is_copy,
-		base_dir_x);
+		base_dir);
 	
 	return ret;
 }
@@ -326,11 +313,11 @@ shared_ptr <const Rule> Rule_Set::get(
 		target_index= i->second.first;
 		shared_ptr <const Rule> rule= i->second.second;
 		assert(rule != nullptr);
-		assert(rule->targets_x.front()->object.name.get_n() == 0);
+		assert(rule->targets.front()->object.name.get_n() == 0);
 #ifndef NDEBUG
 		/* Check that the target is a target of the found rule */
 		bool found= false;
-		for (auto ta: rule->targets_x) {
+		for (auto ta: rule->targets) {
 			Hash_Dep t= ta->object.unparametrized();
 			t.canonicalize();
 			if (t == hash_dep)
@@ -339,7 +326,7 @@ shared_ptr <const Rule> Rule_Set::get(
 		assert(found);
 #endif /* ! NDEBUG */
 		param_rule= rule;
-		target_plain_dep= rule->targets_x[target_index];
+		target_plain_dep= rule->targets[target_index];
 		TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
 		return rule->rebase();
 	}
@@ -414,7 +401,7 @@ void Rule_Set::print_for_option_I() const
 		const Rule &rule= * i.second.second;
 		if (rule.must_exist())
 			continue;
-		for (auto target: rule.targets_x) {
+		for (auto target: rule.targets) {
 			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
@@ -424,7 +411,7 @@ void Rule_Set::print_for_option_I() const
 	for (auto rule: rules_param)  {
 		if (rule->must_exist())
 			continue;
-		for (auto target: rule->targets_x) {
+		for (auto target: rule->targets) {
 			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
@@ -438,15 +425,15 @@ void Rule_Set::print_for_option_I() const
 
 void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 {
-	for (size_t i= 0; i < rule->targets_x.size(); ++i) {
-		auto &t= rule->targets_x[i];
+	for (size_t i= 0; i < rule->targets.size(); ++i) {
+		auto &t= rule->targets[i];
 		Hash_Dep hash_dep= t->object.unparametrized();
 		if (rules_unparam.count(hash_dep)) {
 			t->place <<
 				fmt("there cannot be a second rule for target %s",
 					show(hash_dep));
 			auto rule_2= rules_unparam.at(hash_dep);
-			for (auto t2: rule_2.second->targets_x) {
+			for (auto t2: rule_2.second->targets) {
 				assert(t2->object.name.get_n() == 0);
 				if (t2->object.unparametrized() == hash_dep) {
 					t2->place <<
@@ -467,8 +454,8 @@ void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 	TRACE("rule= %s", show(rule));
 	rules_param.insert(rule);
 
-	for (Target_Index ti= 0; ti < rule->targets_x.size(); ++ti) {
-		auto target= rule->targets_x[ti];
+	for (Target_Index ti= 0; ti < rule->targets.size(); ++ti) {
+		auto target= rule->targets[ti];
 		const Name &name= target->object.name;
 		assert(name.is_parametrized());
 		const string prefix= name.get_texts()[0];
@@ -514,7 +501,7 @@ void Best_Rule_Finder::check(
 	TRACE("hash_dep= %s", show(hash_dep));
 	TRACE("rule= %s", show(rule));
 	TRACE("target_index= %s", frmt("%u", target_index));
-	shared_ptr <const Plain_Dep> t= rule->targets_x[target_index];
+	shared_ptr <const Plain_Dep> t= rule->targets[target_index];
 
 	assert(t->object.name.get_n() > 0);
 	std::map <string, string> mapping;

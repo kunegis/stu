@@ -59,16 +59,14 @@ Rule::Rule(
 	  place(target_->place),
 	  is_content(false),
 	  copy_src(*copy_src_),
-	  copy_dst(target_->target.name),
+	  copy_dst(target_->object.name),
 	  base_dir_x(base_dir_)
 {
 	assert(! copy_src.empty());
-//	for (size_t i= 0; i < targets_x.size(); ++i) {
 	targets_x[0]= to <const Plain_Dep> (base(targets_x[0]));
 	assert(targets_x[0]);
-//	}
 
-	auto dep= std::make_shared <Plain_Dep> (Placed_Target(0, *copy_src_));
+	auto dep= std::make_shared <Plain_Dep> (Placed_Object(0, *copy_src_));
 
 	if (! place_persistent.empty()) {
 		dep->flags.add_placed_index(I_PERSISTENT, place_persistent);
@@ -106,7 +104,7 @@ Rule::Rule(
 
 bool Rule::is_parametrized() const
 {
-	return targets_x.front()->target.name.get_n() != 0;
+	return targets_x.front()->object.name.get_n() != 0;
 }
 
 shared_ptr <const Rule> Rule::instantiate(
@@ -197,14 +195,14 @@ void Rule::check_unparametrized(
 			check_unparametrized(d, parameters);
 		}
 	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {
-		for (size_t jj= 0; jj < plain_dep->target.name.get_n(); ++jj) {
-			string parameter= plain_dep->target.name.get_parameters()[jj];
+		for (size_t jj= 0; jj < plain_dep->object.name.get_n(); ++jj) {
+			string parameter= plain_dep->object.name.get_parameters()[jj];
 			if (parameters.count(parameter) != 0) continue;
 
-			plain_dep->target.name.get_places()[jj] << fmt(
+			plain_dep->object.name.get_places()[jj] << fmt(
 				"parameter %s cannot appear in dependency %s",
 				show(Prefix_View("$", parameter)),
-				show(plain_dep->target));
+				show(plain_dep->object));
 			if (targets_x.size() == 1) {
 				targets_x[0]->place <<
 					fmt("because it does not appear in target %s",
@@ -225,8 +223,8 @@ void Rule::check_duplicate_target() const
 {
 	for (size_t i= 0; i < targets_x.size(); ++i) {
 		for (size_t j= 0; j < i; ++j) {
-			if (! targets_x[i]->target
-				.equals_same_length(targets_x[j]->target))
+			if (! targets_x[i]->object
+				.equals_same_length(targets_x[j]->object))
 				continue;
 			targets_x[i]->place <<
 				fmt("there cannot be a target %s",
@@ -242,7 +240,7 @@ void Rule::check_duplicate_target() const
 const std::vector <string> &Rule::get_parameters() const
 {
 	assert(targets_x.size() != 0);
-	return targets_x.front()->target.name.get_parameters();
+	return targets_x.front()->object.name.get_parameters();
 }
 
 void Rule::canonicalize()
@@ -251,7 +249,7 @@ void Rule::canonicalize()
 		shared_ptr <Dep> d= targets_x[i]->clone();
 		shared_ptr <Plain_Dep> e= to <Plain_Dep> (d);
 		assert(e);
-		e->target.canonicalize();
+		e->object.canonicalize();
 		targets_x[i]= e;
 	}
 }
@@ -328,12 +326,12 @@ shared_ptr <const Rule> Rule_Set::get(
 		target_index= i->second.first;
 		shared_ptr <const Rule> rule= i->second.second;
 		assert(rule != nullptr);
-		assert(rule->targets_x.front()->target.name.get_n() == 0);
+		assert(rule->targets_x.front()->object.name.get_n() == 0);
 #ifndef NDEBUG
 		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto ta: rule->targets_x) {
-			Hash_Dep t= ta->target.unparametrized();
+			Hash_Dep t= ta->object.unparametrized();
 			t.canonicalize();
 			if (t == hash_dep)
 				found= true;
@@ -420,7 +418,7 @@ void Rule_Set::print_for_option_I() const
 			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
-				show(target->target.name, S_OPTION_I, R_GLOB));
+				show(target->object.name, S_OPTION_I, R_GLOB));
 		}
 	}
 	for (auto rule: rules_param)  {
@@ -430,7 +428,7 @@ void Rule_Set::print_for_option_I() const
 			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
-				show(target->target.name, S_OPTION_I, R_GLOB));
+				show(target->object.name, S_OPTION_I, R_GLOB));
 		}
 	}
 	for (const string &filename: filenames) {
@@ -442,15 +440,15 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 {
 	for (size_t i= 0; i < rule->targets_x.size(); ++i) {
 		auto &t= rule->targets_x[i];
-		Hash_Dep hash_dep= t->target.unparametrized();
+		Hash_Dep hash_dep= t->object.unparametrized();
 		if (rules_unparam.count(hash_dep)) {
 			t->place <<
 				fmt("there cannot be a second rule for target %s",
 					show(hash_dep));
 			auto rule_2= rules_unparam.at(hash_dep);
 			for (auto t2: rule_2.second->targets_x) {
-				assert(t2->target.name.get_n() == 0);
-				if (t2->target.unparametrized() == hash_dep) {
+				assert(t2->object.name.get_n() == 0);
+				if (t2->object.unparametrized() == hash_dep) {
 					t2->place <<
 						fmt("shadowing previous rule %s",
 							show(hash_dep));
@@ -471,7 +469,7 @@ void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 
 	for (Target_Index ti= 0; ti < rule->targets_x.size(); ++ti) {
 		auto target= rule->targets_x[ti];
-		const Name &name= target->target.name;
+		const Name &name= target->object.name;
 		assert(name.is_parametrized());
 		const string prefix= name.get_texts()[0];
 		const string suffix= name.get_texts()[name.get_n()];
@@ -499,9 +497,9 @@ void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 bool Found_Rule::operator<(const Found_Rule &that) const
 {
 	TRACE_FUNCTION();
-	if (target->target.name < that.target->target.name)
+	if (target->object.name < that.target->object.name)
 		return true;
-	if (target->target.name > that.target->target.name)
+	if (target->object.name > that.target->object.name)
 		return false;
 	bool ret= rule.get() < that.rule.get();
 	return ret;
@@ -518,7 +516,7 @@ void Best_Rule_Finder::check(
 	TRACE("target_index= %s", frmt("%u", target_index));
 	shared_ptr <const Plain_Dep> t= rule->targets_x[target_index];
 
-	assert(t->target.name.get_n() > 0);
+	assert(t->object.name.get_n() > 0);
 	std::map <string, string> mapping;
 	std::vector <size_t> anchoring;
 	int priority;
@@ -529,14 +527,14 @@ void Best_Rule_Finder::check(
 		return;
 
 	/* The parametrized rule does not match */
-	if (! t->target.name.match(
+	if (! t->object.name.match(
 		hash_dep.get_name_nondynamic(),
 		mapping, anchoring, priority))
 	{
 		return;
 	}
 
-	assert(anchoring.size() == 2 * t->target.name.get_n());
+	assert(anchoring.size() == 2 * t->object.name.get_n());
 
 	/* Check whether the rule is dominated by at least one other rule; also, avoid
 	 * inserting the same rule twice (which happens if the rule was found from both a

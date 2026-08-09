@@ -2,8 +2,8 @@
 #define TOKENIZER_HH
 
 #include "backtrace.hh"
+#include "object.hh"
 #include "place.hh"
-#include "target.hh"
 #include "token.hh"
 
 /*

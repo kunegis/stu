@@ -29,7 +29,7 @@
 #include <map>
 #include <memory>
 
-#include "target.hh"
+#include "object.hh"
 #include "flags.hh"
 #include "hints.hh"
 #include "options.hh"
@@ -153,7 +153,7 @@ class Plain_Dep
 	: public Dep
 {
 public:
-	Placed_Target target;
+	Placed_Object object;
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 
@@ -163,31 +163,31 @@ public:
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
 	explicit
-	Plain_Dep(const Placed_Target &target_)
-		: target(target_),
-		  place(target_.place)
+	Plain_Dep(const Placed_Object &object_)
+		: object(object_),
+		  place(object_.place)
 	{
-		flags.add_unplaced_flags(target_.flags);
+		flags.add_unplaced_flags(object_.flags);
 		check();
 	}
 
-	Plain_Dep(const Placed_Flags &flags_, const Placed_Target &target_)
+	Plain_Dep(const Placed_Flags &flags_, const Placed_Object &object_)
 		/* Take the dependency place from the target place */
 		: Dep(flags_),
-		  target(target_),
-		  place(target_.place)
+		  object(object_),
+		  place(object_.place)
 	{
 		check();
 	}
 
 	Plain_Dep(
 		const Placed_Flags &flags_,
-		const Placed_Target &target_,
+		const Placed_Object &object_,
 		const Place &place_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
 		: Dep(flags_),
-		  target(target_),
+		  object(object_),
 		  place(place_),
 		  variable_name(variable_name_)
 	{
@@ -196,12 +196,12 @@ public:
 
 	Plain_Dep(
 		const Placed_Flags &flags_,
-		const Placed_Target &target_,
+		const Placed_Object &object_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
 		: Dep(flags_),
-		  target(target_),
-		  place(target_.place),
+		  object(object_),
+		  place(object_.place),
 		  variable_name(variable_name_)
 	{
 		check();
@@ -209,7 +209,7 @@ public:
 
 	Plain_Dep(const Plain_Dep &plain_dep)
 		: Dep(plain_dep),
-		  target(plain_dep.target),
+		  object(plain_dep.object),
 		  place(plain_dep.place),
 		  variable_name(plain_dep.variable_name) { }
 

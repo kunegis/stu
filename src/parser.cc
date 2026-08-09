@@ -25,7 +25,7 @@ shared_ptr <Rule> Parser::parse_rule(
 
 	/* Check that all targets have the same set of parameters */
 	std::set <string> parameters_0;
-	for (const string &parameter: targets[0]->target.name.get_parameters()) {
+	for (const string &parameter: targets[0]->object.name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
 	TRACE("parameters_0.size= %s", frmt("%zu", parameters_0.size()));
@@ -34,7 +34,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	for (size_t i= 1; i < targets.size(); ++i) {
 		TRACE("i= %s", frmt("%zu", i));
 		std::set <string> parameters_i;
-		for (const string &parameter: targets[i]->target.name.get_parameters()) {
+		for (const string &parameter: targets[i]->object.name.get_parameters()) {
 			parameters_i.insert(parameter);
 		}
 		TRACE("parameters_i.size= %s", frmt("%zu", parameters_i.size()));
@@ -152,7 +152,7 @@ shared_ptr <Rule> Parser::parse_rule(
 		assert((targets[output_target_index]->flags.get_flags() & F_TARGET_PHONY)
 			== 0);
 
-		name_output= targets[output_target_index]->target.name;
+		name_output= targets[output_target_index]->object.name;
 		
 		if (command == nullptr) {
 			place_output << fmt("output redirection using %s cannot be used",
@@ -251,7 +251,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	/* Check that the source file contains only parameters that also
 	 * appear in the target */
 	std::set <string> parameters;
-	for (auto &parameter: targets[0]->target.name.get_parameters()) {
+	for (auto &parameter: targets[0]->object.name.get_parameters()) {
 		parameters.insert(parameter);
 	}
 	for (size_t jj= 0; jj < name_copy_src->get_n(); ++jj) {
@@ -322,7 +322,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	assert(targets.size() == 1);
 
 	/* Append target name when source ends in slash */
-	append_copy(*name_copy_src, targets[0]->target.name);
+	append_copy(*name_copy_src, targets[0]->object.name);
 
 	return std::make_shared <Rule> (
 		targets[0], name_copy_src,
@@ -440,7 +440,7 @@ bool Parser::parse_target(
 	}
 
 	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
-		(flags, Placed_Target(flags.get_flags() & F_TARGET_PHONY,
+		(flags, Placed_Object(flags.get_flags() & F_TARGET_PHONY,
 			*target_name, place_of_target));
 
 	if (flags.get_flags() & F_TARGET_PHONY) {
@@ -475,13 +475,13 @@ bool Parser::parse_target(
 				"there cannot be a second output redirection %s",
 				show(Prefix_View(">", target)));
 			assert(output_target_index != TARGET_INDEX_NONE);
-			assert(targets[output_target_index]->target.name.get_n() == 0);
+			assert(targets[output_target_index]->object.name.get_n() == 0);
 			assert((targets[output_target_index]->flags.get_flags()
 					& F_TARGET_PHONY) == 0);
 			place_output << fmt(
 				"shadowing previous output redirection %s",
 				show(Prefix_View(">", targets[output_target_index]
-					->target
+					->object
 					.unparametrized().get_name_nondynamic())));
 			throw ERR_LOGICAL;
 		}
@@ -874,7 +874,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	/* The place of the variable dependency as a whole is set on the name contained in
 	 * it.  It would be conceivable to also set it on the dollar sign. */
 	ret= std::make_shared <Plain_Dep> (flags,
-		Placed_Target(0, *name, name->place), variable_name);
+		Placed_Object(0, *name, name->place), variable_name);
 
 	if (has_input && ! name_input.empty()) {
 		name->place <<
@@ -978,7 +978,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep> (
 		flags,
-		Placed_Target(phony_bit, *name_token,
+		Placed_Object(phony_bit, *name_token,
 			has_phony ? place_at : name_token->place));
 
 	if (has_input && ! name_input.empty()) {
@@ -1174,7 +1174,7 @@ void Parser::get_expression_list_delim(
 		}
 
 		deps.push_back(std::make_shared <Plain_Dep> (
-			Placed_Target(0, Placed_Name(filename_dep, place))));
+			Placed_Object(0, Placed_Name(filename_dep, place))));
 	}
 	free(lineptr);
 	if (fclose(file)) {

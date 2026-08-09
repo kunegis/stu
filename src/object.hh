@@ -1,5 +1,5 @@
-#ifndef TARGET_HH
-#define TARGET_HH
+#ifndef OBJECT_HH
+#define OBJECT_HH
 
 /*
  * Targets are to be distinguished from the more general dependencies, which can
@@ -13,21 +13,20 @@
 #include "place.hh"
 #include "show.hh"
 
-class Target
+class Object
 /* A parametrized name for which it is saved what type it represents.  Non-dynamic. */
-// TODO rename:  Target -> Object
 {
 public:
 	Flags flags;  /* Only file/phony target info */
 	Name name;
 
-	Target(Flags flags_, const Name &name_)
+	Object(Flags flags_, const Name &name_)
 		: flags(flags_), name(name_)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
-	Target(Hash_Dep hash_dep)
+	Object(Hash_Dep hash_dep)
 	/* Unparametrized target. The passed TARGET must be non-dynamic. */
 		: flags(hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY),
 		  name(hash_dep.get_name_nondynamic())
@@ -46,7 +45,7 @@ public:
 	}
 };
 
-class Placed_Target
+class Placed_Object
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
@@ -57,14 +56,16 @@ public:
 	/* The place of the target as a whole.  The PLACED_NAME variable additionally
 	 * contains a place for the name itself, as well as for individual parameters. */
 
-	Placed_Target(Flags flags_,
+	Placed_Object(
+		Flags flags_,
 		const Placed_Name &name_)
 		: flags(flags_), name(name_), place(name_.place)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
-	Placed_Target(Flags flags_,
+	Placed_Object(
+		Flags flags_,
 		const Placed_Name &name_,
 		const Place &place_)
 		: flags(flags_), name(name_), place(place_)
@@ -72,12 +73,12 @@ public:
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
-	Placed_Target(const Placed_Target &that)
+	Placed_Object(const Placed_Object &that)
 		: flags(that.flags),
 		  name(that.name),
 		  place(that.place) { }
 
-	bool equals_same_length(const Placed_Target &that) const
+	bool equals_same_length(const Placed_Object &that) const
 	/* Compare, assuming same length */
 	{
 		return this->flags == that.flags &&
@@ -86,9 +87,9 @@ public:
 
 	void render(Parts &, Rendering) const;
 
-	shared_ptr <Placed_Target> instantiate(
+	shared_ptr <Placed_Object> instantiate(
 		const std::map <string, string> &mapping) const {
-		return std::make_shared <Placed_Target>
+		return std::make_shared <Placed_Object>
 			(flags, *name.instantiate(mapping), place);
 	}
 
@@ -96,13 +97,13 @@ public:
 		return Hash_Dep(flags, name.unparametrized());
 	}
 
-	Target get_target() const {
-		return Target(flags, name);
+	Object get_Object() const {
+		return Object(flags, name);
 	}
 
 	void canonicalize();  /* In-place */
 };
 
-void render(const Placed_Target &, Parts &, Rendering= 0);
+void render(const Placed_Object &, Parts &, Rendering= 0);
 
-#endif /* ! TARGET_HH */
+#endif /* ! OBJECT_HH */

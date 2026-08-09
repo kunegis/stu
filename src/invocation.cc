@@ -20,7 +20,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				exit(ERR_FATAL);
 			}
 			deps.push_back(std::make_shared <Plain_Dep> (
-				Placed_Target(0, Placed_Name(optarg, place))));
+				Placed_Object(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -67,7 +67,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			deps.push_back(std::make_shared <Dynamic_Dep> (
 				std::make_shared <Plain_Dep> (
 					flags,
-					Placed_Target(0, Placed_Name(optarg, place)))));
+					Placed_Object(0, Placed_Name(optarg, place)))));
 			break;
 		}
 
@@ -83,7 +83,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			Placed_Flags flags;
 			flags.add_placed_index(index, place);
 			deps.push_back(std::make_shared <Plain_Dep>
-				(flags, Placed_Target(0, Placed_Name(optarg, place))));
+				(flags, Placed_Object(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -120,7 +120,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			error |= ERR_LOGICAL;
 		} else if (option_J) {
 			deps.push_back(std::make_shared <Plain_Dep>
-				(Placed_Target(0, Placed_Name(argv[i], place))));
+				(Placed_Object(0, Placed_Name(argv[i], place))));
 		}
 	}
 
@@ -179,7 +179,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 			exit(ERR_FATAL);
 		}
-		if (target_first->target.name.is_parametrized()) {
+		if (target_first->object.name.is_parametrized()) {
 			target_first->place << fmt(
 				"the first target %s must not be parametrized if no target is given",
 				show(target_first));

@@ -34,9 +34,9 @@ void Executor::read_dynamic(
 	Executor *dynamic_executor)
 {
 	try {
-		const Placed_Target &target= to <Plain_Dep> (dep_target)->target;
-		assert(target.name.get_n() == 0);
-		const Hash_Dep hash_dep= target.unparametrized();
+		const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
+		assert(object.name.get_n() == 0);
+		const Hash_Dep hash_dep= object.unparametrized();
 		assert(deps.empty());
 
 		/* Check:  variable dependencies are not allowed in multiply dynamic
@@ -49,7 +49,7 @@ void Executor::read_dynamic(
 				::show(dep));
 			raise(ERR_LOGICAL);
 		}
-		if (target.flags & F_TARGET_PHONY)
+		if (object.flags & F_TARGET_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
@@ -70,7 +70,7 @@ void Executor::read_dynamic(
 			Tokenizer::parse_tokens_file(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
-				target.place, -1,
+				object.place, -1,
 				allow_enoent, false);
 			Placed_Name input;
 			Place place_input;
@@ -108,7 +108,7 @@ void Executor::read_dynamic(
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
-					target.place,
+					object.place,
 					dep_target->flags.place_by_index(index),
 					c, index,
 					*dynamic_executor, allow_enoent);
@@ -828,7 +828,7 @@ bool Executor::check_clash_without_target_flags(
 		place_variable << fmt(
 			"variable dependency %s must not be declared as optional dependency",
 			show(Dynamic_Variable_View(
-			plain_dep_child->target.name.unparametrized())));
+			plain_dep_child->object.name.unparametrized())));
 		place_flag << fmt("using %s",
 			show(Flag_View(dep_child->flags, I_OPTIONAL)));
 		*this << "";
@@ -964,7 +964,7 @@ bool Executor::same_dependency_for_print(
 		p2= to <Plain_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
 	if (! (p1 && p2))
 		return false;
-	return p1->target.unparametrized() == p2->target.unparametrized();
+	return p1->object.unparametrized() == p2->object.unparametrized();
 }
 
 void Executor::check_unparametrized(

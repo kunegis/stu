@@ -23,8 +23,7 @@ private:
 	mutable string base_dir;
 };
 
-// TODO rename 'rebase'
-shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir);
+shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir);
 
 bool is_absolute_for_base(const Name &);
 

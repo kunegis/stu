@@ -144,7 +144,7 @@ public:
 private:
 	// TODO rename rebase
 	shared_ptr <const Dep> base(shared_ptr <const Dep> d) const {
-		return ::base(d, base_dir_x);
+		return ::rebase(d, base_dir_x);
 	}
 };
 

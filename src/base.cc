@@ -46,7 +46,7 @@ void Base_Stack::pop()
 	dirs.pop_back();
 }
 
-shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
+shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 {
 	if (base_dir.empty()) return d;
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
@@ -58,17 +58,17 @@ shared_ptr <const Dep> base(shared_ptr <const Dep> d, string base_dir)
 		return f;
 	} else if (shared_ptr <const Dynamic_Dep> e2= to <const Dynamic_Dep> (d)) {
 		shared_ptr <Dynamic_Dep> f= to <Dynamic_Dep> (e2->clone());
-		f->dep= base(f->dep, base_dir);
+		f->dep= rebase(f->dep, base_dir);
 		return f;
 	} else if (shared_ptr <const Concat_Dep> e3= to <const Concat_Dep> (d)) {
 		shared_ptr <Concat_Dep> f= to <Concat_Dep> (e3->clone());
 		if (f->deps.size() != 0)
-			f->deps[0]= base(f->deps[0], base_dir);
+			f->deps[0]= rebase(f->deps[0], base_dir);
 		return f;
 	} else if (shared_ptr <const Compound_Dep> e4= to <const Compound_Dep> (d)) {
 		shared_ptr <Compound_Dep> f= to <Compound_Dep> (e4->clone());
 		for (size_t i= 0; i < f->deps.size(); ++i)
-			f->deps[i]= base(f->deps[i], base_dir);
+			f->deps[i]= rebase(f->deps[i], base_dir);
 		return f;
 	} else {
 		unreachable();

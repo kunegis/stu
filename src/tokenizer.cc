@@ -1526,11 +1526,13 @@ void Tokenizer::parse_cd_directive(
 {
 	TRACE_FUNCTION();
 	Environment environment_= 0;
+
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%cd")));
 		throw ERR_LOGICAL;
 	}
+
 	bool skipped_space;
 	skip_space(skipped_space);
 	if (skipped_space) environment_= E_WHITESPACE;
@@ -1538,6 +1540,11 @@ void Tokenizer::parse_cd_directive(
 
 	if (*p == '-') {
 		++p;
+		if (p < p_end && isalnum(*p)) {
+			place_percent << fmt("%s must not be followed by a flag",
+				show(Operator_View("%cd")));
+			throw ERR_LOGICAL;
+		}
 		tokens.push_back(std::make_shared <CD_Token> (
 			environment_,
 			place_percent));

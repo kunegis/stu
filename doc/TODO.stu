@@ -1,4 +1,3 @@
-%cd "" # Error
 %cd '' # Error
 %cd -X # Error (can be parsed as flag later)
 %cd <A # Error (dir missing)

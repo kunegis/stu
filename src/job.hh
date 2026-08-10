@@ -5,6 +5,7 @@
 #include <string>
 
 #include "error.hh"
+#include "name.hh"
 #include "place.hh"
 
 class Job
@@ -31,14 +32,14 @@ public:
 	pid_t start(
 		string command,
 		const std::map <string, string> &mapping,
-		string filename_output,
-		string filename_input,
+		const Placed_Name &input,
+		const Placed_Name &output,
+//		string filename_output,
+//		string filename_input,
 		string base_dir,
-		const Place &place_command,
-		const Place &place_output,
-		const Place &place_input);
-	// TODO reorder args to always put input before output
-	// TODO replace String+Place by Placed_Name
+		const Place &place_command);
+//		const Place &place_output,
+//		const Place &place_input);
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
 	 * redirect output and input; either can be empty to denote no redirection.  On
@@ -50,6 +51,7 @@ public:
 		string source,
 		string base_dir,
 		const Place &place);
+	// TODO Join target and place into single Placed_Name parameter
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
@@ -94,8 +96,14 @@ private:
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);
-	static void create_child_output_redirection(string filename_output, const Place &);
-	static void create_child_input_redirection(string filename_input, const Place &);
+	static void create_child_output_redirection(
+		const Placed_Name &
+//		string filename_output, const Place &
+						    );
+	static void create_child_input_redirection(
+		const Placed_Name &
+//		string filename_input, const Place &
+						   );
 };
 
 #endif /* ! JOB_HH */

@@ -1078,12 +1078,14 @@ bool File_Executor::start(
 		pid= job.start(
 			rule->command->command,
 			mapping,
-			rule->name_output.unparametrized(),
-			rule->name_input.unparametrized(),
+			rule->name_input,
+			rule->name_output,
+//			rule->name_output.unparametrized(),
+//			rule->name_input.unparametrized(),
 			rule->base_dir,
-			rule->command->place,
-			rule->name_output.place,
-			rule->name_input.place);
+			rule->command->place);
+//			rule->name_output.place,
+//			rule->name_input.place);
 	}
 	return false;
 }

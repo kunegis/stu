@@ -13,12 +13,14 @@ pid_t Job::pid_foreground= -1;
 pid_t Job::start(
 	string command,
 	const std::map <string, string> &mapping,
-	string filename_output,
-	string filename_input,
+	const Placed_Name &input,
+	const Placed_Name &output,
+//	string filename_output,
+//	string filename_input,
 	string base_dir,
-	const Place &place_command,
-	const Place &place_output,
-	const Place &place_input)
+	const Place &place_command)
+//	const Place &place_output,
+//	const Place &place_input)
 {
 	TRACE_FUNCTION();
 	assert(pid == -2);
@@ -74,8 +76,18 @@ pid_t Job::start(
 		string argv0;
 		const char **argv= create_child_argv(
 			place_command, shell_shortname, command, argv0);
-		create_child_output_redirection(filename_output, place_output);
-		create_child_input_redirection(filename_input, place_input);
+		create_child_output_redirection(
+			output
+//			output.unparametrized(),
+//			output.place
+//			filename_output, place_output
+						);
+		create_child_input_redirection(
+			input
+//			input.unparametrized(),
+//			input.place
+//			filename_input, place_input
+					       );
 
 		__gcov_pre_dump();
 		int r= execv(shell, (char *const *) argv);
@@ -553,24 +565,25 @@ const char *Job::get_shortname(const char *name)
 }
 
 void Job::create_child_output_redirection(
-	string filename_output,
-	const Place &place)
+	const Placed_Name &name)
+//	string filename_output,
+//	const Place &place)
 {
-	if (filename_output.empty()) return;
-
+	if (name.empty()) return;
+	string filename= name.unparametrized();
 	constexpr mode_t mode_0666=
 		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
-	int fd_output= open(filename_output.c_str(),
+	int fd_output= open(filename.c_str(),
 		O_CREAT|O_WRONLY|O_TRUNC|O_CLOEXEC, mode_0666);
 	if (fd_output < 0) {
-		place << format_errno("creat", filename_output.c_str());
+		name.place << format_errno("creat", filename.c_str());
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
 	assert(fd_output != 1);
 	int r= dup2(fd_output, 1);
 	if (r < 0) {
-		place << format_errno("dup2", filename_output.c_str());
+		name.place << format_errno("dup2", filename.c_str());
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
@@ -578,18 +591,20 @@ void Job::create_child_output_redirection(
 }
 
 void Job::create_child_input_redirection(
-	string filename_input,
-	const Place &place)
+	const Placed_Name &name)
+//	string filename_input,
+//	const Place &place)
 {
 	TRACE_FUNCTION();
-	if (filename_input.empty() && option_i) return;
-
-	const char *name= filename_input.empty()
+	if (name.empty() && option_i) return;
+	string n= name.unparametrized();
+	
+	const char *filename= n.empty()
 		? "/dev/null"
-		: filename_input.c_str();
-	int fd_input= open(name, O_RDONLY|O_CLOEXEC);
+		: n.c_str();
+	int fd_input= open(filename, O_RDONLY|O_CLOEXEC);
 	if (fd_input < 0) {
-		place << format_errno("open", name);
+		name.place << format_errno("open", filename);
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
@@ -597,7 +612,7 @@ void Job::create_child_input_redirection(
 	constexpr int fd_stdin= 0;
 	int r= dup2(fd_input, fd_stdin);
 	if (r < 0) {
-		place << format_errno("dup2", name);
+		name.place << format_errno("dup2", filename);
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}

@@ -1,4 +1,3 @@
-%cd '' # Error
 %cd -X # Error (can be parsed as flag later)
 %cd <A # Error (dir missing)
 * Check that "%cd X" works even if X does not exist -- the error will come later when

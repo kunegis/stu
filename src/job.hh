@@ -34,12 +34,8 @@ public:
 		const std::map <string, string> &mapping,
 		const Placed_Name &input,
 		const Placed_Name &output,
-//		string filename_output,
-//		string filename_input,
 		string base_dir,
 		const Place &place_command);
-//		const Place &place_output,
-//		const Place &place_input);
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
 	 * redirect output and input; either can be empty to denote no redirection.  On
@@ -47,11 +43,11 @@ public:
 	 * MAPPING contains the environment variables to set. */
 
 	pid_t start_copy(
-		string target,
+		const Placed_Name &target,
+//		string target,
 		string source,
-		string base_dir,
-		const Place &place);
-	// TODO Join target and place into single Placed_Name parameter
+		string base_dir);
+//		const Place &place);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);

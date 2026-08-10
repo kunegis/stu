@@ -113,10 +113,10 @@ pid_t Job::start(
 }
 
 pid_t Job::start_copy(
-	string target,
+	const Placed_Name &target,
+//	string target,
 	string source,
-	string base_dir,
-	const Place &place)
+	string base_dir)
 /* This function works analogously to start() with respect to invocation of fork() and
  * other system-related functions. */
 {
@@ -128,7 +128,7 @@ pid_t Job::start_copy(
 
 	pid= fork();
 	if (pid < 0) {
-		place << format_errno("fork");
+		target.place << format_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -153,8 +153,9 @@ pid_t Job::start_copy(
 		/* Using '--' as an argument guarantees that the two filenames will be
 		 * interpreted as filenames and not as options, in particular when they
 		 * begin with a dash. */
+		string target_filename= target.unparametrized();
 		const char *argv[]= {
-			cp_shortname, "--", source.c_str(), target.c_str(), nullptr};
+			cp_shortname, "--", source.c_str(), target_filename.c_str(), nullptr};
 		__gcov_pre_dump();
 		int r= execv(cp, (char *const *) argv);
 		assert(r == -1);

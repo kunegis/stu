@@ -1070,10 +1070,11 @@ bool File_Executor::start(
 		}
 
 		pid= job.start_copy(
-			rule->targets[0]->object.name.unparametrized(),
+			rule->copy_dst,
+//			rule->targets[0]->object.name.unparametrized(),
 			source,
-			rule->base_dir,
-			rule->targets[0]->place);
+			rule->base_dir);
+//			rule->targets[0]->place);
 	} else {
 		pid= job.start(
 			rule->command->command,

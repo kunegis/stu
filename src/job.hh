@@ -44,10 +44,8 @@ public:
 
 	pid_t start_copy(
 		const Placed_Name &target,
-//		string target,
 		string source,
 		string base_dir);
-//		const Place &place);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
@@ -92,14 +90,8 @@ private:
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);
-	static void create_child_output_redirection(
-		const Placed_Name &
-//		string filename_output, const Place &
-						    );
-	static void create_child_input_redirection(
-		const Placed_Name &
-//		string filename_input, const Place &
-						   );
+	static void create_child_output_redirection(const Placed_Name &);
+	static void create_child_input_redirection(const Placed_Name &);
 };
 
 #endif /* ! JOB_HH */

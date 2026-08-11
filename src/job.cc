@@ -15,12 +15,8 @@ pid_t Job::start(
 	const std::map <string, string> &mapping,
 	const Placed_Name &input,
 	const Placed_Name &output,
-//	string filename_output,
-//	string filename_input,
 	string base_dir,
 	const Place &place_command)
-//	const Place &place_output,
-//	const Place &place_input)
 {
 	TRACE_FUNCTION();
 	assert(pid == -2);
@@ -74,20 +70,9 @@ pid_t Job::start(
 		perform_cd(base_dir);
 		create_child_env(mapping);
 		string argv0;
-		const char **argv= create_child_argv(
-			place_command, shell_shortname, command, argv0);
-		create_child_output_redirection(
-			output
-//			output.unparametrized(),
-//			output.place
-//			filename_output, place_output
-						);
-		create_child_input_redirection(
-			input
-//			input.unparametrized(),
-//			input.place
-//			filename_input, place_input
-					       );
+		const char **argv= create_child_argv(place_command, shell_shortname, command, argv0);
+		create_child_output_redirection(output);
+		create_child_input_redirection(input);
 
 		__gcov_pre_dump();
 		int r= execv(shell, (char *const *) argv);
@@ -114,7 +99,6 @@ pid_t Job::start(
 
 pid_t Job::start_copy(
 	const Placed_Name &target,
-//	string target,
 	string source,
 	string base_dir)
 /* This function works analogously to start() with respect to invocation of fork() and
@@ -565,10 +549,7 @@ const char *Job::get_shortname(const char *name)
 	return slash && slash[1] ? slash+1 : name;
 }
 
-void Job::create_child_output_redirection(
-	const Placed_Name &name)
-//	string filename_output,
-//	const Place &place)
+void Job::create_child_output_redirection(const Placed_Name &name)
 {
 	if (name.empty()) return;
 	string filename= name.unparametrized();
@@ -591,10 +572,7 @@ void Job::create_child_output_redirection(
 	assert(r == 1);
 }
 
-void Job::create_child_input_redirection(
-	const Placed_Name &name)
-//	string filename_input,
-//	const Place &place)
+void Job::create_child_input_redirection(const Placed_Name &name)
 {
 	TRACE_FUNCTION();
 	if (name.empty() && option_i) return;

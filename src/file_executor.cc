@@ -1069,24 +1069,12 @@ bool File_Executor::start(
 			}
 		}
 
-		pid= job.start_copy(
-			rule->copy_dst,
-//			rule->targets[0]->object.name.unparametrized(),
-			source,
-			rule->base_dir);
-//			rule->targets[0]->place);
+		pid= job.start_copy(rule->copy_dst, source, rule->base_dir);
 	} else {
 		pid= job.start(
-			rule->command->command,
-			mapping,
-			rule->name_input,
-			rule->name_output,
-//			rule->name_output.unparametrized(),
-//			rule->name_input.unparametrized(),
-			rule->base_dir,
-			rule->command->place);
-//			rule->name_output.place,
-//			rule->name_input.place);
+			rule->command->command, mapping,
+			rule->name_input, rule->name_output,
+			rule->base_dir, rule->command->place);
 	}
 	return false;
 }

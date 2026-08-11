@@ -1,10 +1,3 @@
-* %cd list.dir %include main.stu %cd - # 2.19-2001
-** It cannot work with the current setup, because %include is excuted at tokenizing time,
-   but %cd only at parsing time.
-** The base stack should be maintained at tokenizing
-   time (Base -> Base_Stack, make variables non-static). CD tokens should also be
-   emitted, but they should only contain the complete base dir (no push/pop tokens).
-
 * Dynamic dependency in %cd mode
 %cd a <RULE> %cd -
 %cd a %cd - <RULE>

@@ -56,7 +56,7 @@ string Base_Stack::rebase(string filename) const
 	if (is_absolute_for_base(filename)) return filename;
 	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 	string sep= end_in_slash ? "" : "/";
-	return base_dir + filename;
+	return base_dir + sep + filename;
 }
 
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)

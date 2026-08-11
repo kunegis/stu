@@ -112,19 +112,9 @@ void render(const Flag_Token &flag_token, Parts &parts, Rendering rendering)
 CD_Token::CD_Token(
 	Environment environment_,
 	const Place &place_,
-	string dir_)
-	: Token(environment_), dir(dir_), place(place_)
-{
-	assert(! dir.empty());
-}
-
-CD_Token::CD_Token(
-	Environment environment_,
-	const Place &place_)
-	: Token(environment_), place(place_)
-{
-	assert(dir.empty());
-}
+	string base_dir_)
+	: Token(environment_), base_dir(base_dir_), place(place_)
+{ }
 
 void CD_Token::render(Parts &parts, Rendering) const
 {

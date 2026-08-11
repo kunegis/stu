@@ -1,4 +1,10 @@
-%cd list.dir %include main.stu %cd - # Like future %include -d list.dir
+* %cd list.dir %include main.stu %cd - # 2.19-2001
+** It cannot work with the current setup, because %include is excuted at tokenizing time,
+   but %cd only at parsing time.
+** The base stack should be maintained at tokenizing
+   time (Base -> Base_Stack, make variables non-static). CD tokens should also be
+   emitted, but they should only contain the complete base dir (no push/pop tokens).
+
 * Dynamic dependency in %cd mode
 %cd a <RULE> %cd -
 %cd a %cd - <RULE>
@@ -61,6 +67,10 @@ $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir D
 $ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash
 * The default rule is a %cd rule.  I.e., a %cd followed by the first rule.
+* A %cd rule contains a dependency or target '../file', which is also referenced in the non-cd part
+* Multiply nested '%include -d'-like %cd+%include combinations
+* Syntax error in a file included during %cd:  The trace into the file includes the '%cd' directory
+$ stu -C '%cd DIR' # Error
 
 #
 # %include -d

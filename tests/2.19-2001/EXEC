@@ -1,0 +1,26 @@
+#!/bin/sh
+# TOPIC: %cd a %include a.stu %cd -
+. ../../sh/test.sh
+set -x ##
+
+cat <<EOF >list.stu
+
+A = list.dir/B;
+
+%cd list.dir
+%include main.stu
+%cd -
+
+EOF
+
+mkdir -p list.dir
+
+cat <<EOF >list.dir/main.stu
+B = {CORRECT}
+EOF
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+[ -e A ]
+grep -q -F -x -e 'CORRECT'
+

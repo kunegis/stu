@@ -23,9 +23,10 @@ public:
 		Place &place_end,
 		string filename,
 		const Place &place_diagnostic,
-		int fd= -1,
-		bool allow_enoent= false,
-		bool try_defaut= true);
+		int fd,//= -1,
+		bool allow_enoent,//= false,
+		bool try_defaut,//= true,
+		bool use_base);
 	/* The given file descriptor FD may optionally be that file already opened.  If
 	 * the file was not yet opened, FD is -1.  If FILENAME is "", use standard input,
 	 * but FD must be -1.
@@ -67,8 +68,8 @@ private:
 	const char *p; /* Current position */
 	const char *const p_end; /* End of input */
 
-	Environment environment= E_WHITESPACE;
-	/* For the next token */
+	Environment environment= E_WHITESPACE; /* For the next token */
+	Base_Stack *base_stack;
 
 	Tokenizer(
 		std::vector <shared_ptr <Token> > &tokens_,
@@ -76,6 +77,7 @@ private:
 		std::vector <string> &filenames_,
 		std::set <string> &includes_,
 		const Place &place_base_,
+		Base_Stack *base_stack_,
 		const char *p_,
 		size_t length);
 
@@ -140,13 +142,14 @@ private:
 		Context context,
 		Place &place_end,
 		string filename,
+		Base_Stack *base_stack_,
 		std::vector <Backtrace> &backtraces,
 		std::vector <string> &filenames,
 		std::set <string> &includes,
 		const Place &place_diagnostic,
-		int fd= -1,
-		bool allow_enoent= false,
-		bool try_defaut= true);
+		int fd,//= -1,
+		bool allow_enoent,//= false,
+		bool try_defaut);//= true);
 	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
 	 * be modified when returning, but is declared as non-const because it is used as
 	 * a stack.

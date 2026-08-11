@@ -148,17 +148,13 @@ class CD_Token
 	: public Token
 {
 public:
-	const string dir;
-	/* If empty, this is an pop token, otherwise a push token */
-
+	const string base_dir;
 	Place place;
 
-	CD_Token(Environment, const Place &, string dir_); /* Push */
-	CD_Token(Environment, const Place &); /* Pop */
+	CD_Token(Environment, const Place &, string base_dir_); /* Push */
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;
-	bool is_push() const { return ! dir.empty(); }
 };
 
 #endif /* ! TOKEN_HH */

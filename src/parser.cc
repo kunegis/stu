@@ -197,7 +197,8 @@ shared_ptr <Rule> Parser::parse_rule(
 		move(targets),
 		deps,
 		command,
-		base_stack.get_base_dir(),
+		base_dir,
+//		Base::get_base_dir(),
 		is_content,
 		name_input,
 		name_output);
@@ -326,7 +327,8 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	return std::make_shared <Rule> (
 		targets[0],
 		name_copy_src,
-		base_stack.get_base_dir(),
+		base_dir,
+//		Base::get_base_dir(),
 		place_flag_persistent,
 		place_flag_optional);
 }
@@ -1023,19 +1025,20 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
 {
 	TRACE_FUNCTION();
-	if (cd_token->is_push()) {
-		TRACE("Push dir='%s'", cd_token->dir);
-		base_stack.push(cd_token->dir);
-	} else {
-		TRACE("Pop");
-		if (base_stack.empty()) {
-			cd_token->get_place() << fmt(
-				"no previous directory to %s into",
-				show(cd_token));
-			throw ERR_LOGICAL;
-		}
-		base_stack.pop();
-	}
+	base_dir= cd_token->base_dir;
+//	if (cd_token->is_push()) {
+//		TRACE("Push dir='%s'", cd_token->dir);
+//		Base::push(cd_token->dir);
+//	} else {
+//		TRACE("Pop");
+//		if (Base::empty()) {
+//			cd_token->get_place() << fmt(
+//				"no previous directory to %s into",
+//				show(cd_token));
+//			throw ERR_LOGICAL;
+//		}
+//		Base::pop();
+//	}
 }
 
 void Parser::append_copy(      Name &to,
@@ -1257,7 +1260,7 @@ void Parser::get_file(
 	Place place_end;
 	Tokenizer::parse_tokens_file(
 		tokens, Tokenizer::SOURCE, place_end, filename_passed,
-		place_diagnostic, file_fd);
+		place_diagnostic, file_fd, false, true, true);
 
 	/* Build rules */
 	std::vector <shared_ptr <Rule> > rules;

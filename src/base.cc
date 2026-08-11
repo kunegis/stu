@@ -46,9 +46,25 @@ void Base_Stack::pop()
 	dirs.pop_back();
 }
 
+string Base_Stack::rebase(string filename) const
+{
+	TRACE_FUNCTION();
+	get_base_dir();
+	TRACE("base_dir='%s'", base_dir);
+	if (base_dir.empty()) return filename;
+
+	if (is_absolute_for_base(filename)) return filename;
+	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
+	string sep= end_in_slash ? "" : "/";
+	return base_dir + filename;
+}
+
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 {
+	TRACE_FUNCTION();
+	TRACE("base_dir='%s'", base_dir);
 	if (base_dir.empty()) return d;
+
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
 		if (is_absolute_for_base(e->object.name)) return d;
 		bool end_in_slash= base_dir[base_dir.size()-1] == '/';

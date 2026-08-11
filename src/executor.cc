@@ -71,7 +71,7 @@ void Executor::read_dynamic(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
 				object.place, -1,
-				allow_enoent, false);
+				allow_enoent, false, false);
 			Placed_Name input;
 			Place place_input;
 			try {

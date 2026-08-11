@@ -1569,6 +1569,8 @@ void Tokenizer::parse_cd_directive(
 			throw ERR_LOGICAL;
 		}
 		base_stack->pop();
+		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
+			base_stack->get_base_dir()));
 //		tokens.push_back(std::make_shared <CD_Token> (
 //			environment_,
 //			place_percent));

@@ -1556,8 +1556,8 @@ void Tokenizer::parse_cd_directive(
 	if (!name) {
 		current_place() <<
 			(p == p_end
-				? "expected a variable name"
-				: fmt("expected a variable name, not %s",
+				? "expected a directory name"
+				: fmt("expected a directory name, not %s",
 					show(current_mbchar())));
 		place_percent << fmt("after %s",
 			show(Operator_View("%cd")));

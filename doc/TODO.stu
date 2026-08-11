@@ -1,4 +1,3 @@
-%cd <A # Error (dir missing)
 * Check that "%cd X" works even if X does not exist -- the error will come later when
   building or matching a file that starts with "X/".
 %cd list.dir %include main.stu %cd - # Like future %include -d list.dir

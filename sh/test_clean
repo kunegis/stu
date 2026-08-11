@@ -1,4 +1,5 @@
 #!/bin/sh
+## TODO rename to test_misc
 set -e
 dir=${TMPDIR:-/tmp}/test_clean.$$
 error_file=$dir/error

@@ -1316,19 +1316,15 @@ void Parser::parse_rule_list(
 {
 	assert(ret.size() == 0);
 	while (iter != tokens.end()) {
-
-#ifndef NDEBUG
-		const auto iter_begin= iter;
-#endif /* ! NDEBUG */
-
 		while (is <CD_Token> ()) {
 			shared_ptr <CD_Token> cd_token= is <CD_Token> ();
 			++iter;
 			handle_cd(cd_token);
 		}
-
+#ifndef NDEBUG
+		const auto iter_begin= iter;
+#endif /* ! NDEBUG */
 		shared_ptr <Rule> rule= parse_rule(target_first);
-
 		if (rule == nullptr) {
 			assert(iter == iter_begin);
 			break;

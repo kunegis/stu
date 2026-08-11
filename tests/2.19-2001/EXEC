@@ -21,5 +21,4 @@ EOF
 ../../bin/stu.test -f list.stu >list.out 2>list.err
 
 [ -e A ]
-grep -q -F -x -e 'CORRECT'
-
+grep -q -F -x -e 'CORRECT' A

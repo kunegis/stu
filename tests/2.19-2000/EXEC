@@ -11,5 +11,5 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 2 ]
-grep -q -F -x -e 'list.stu:1:4: expected a variable name' list.err
+grep -q -F -x -e 'list.stu:1:4: expected a directory name' list.err
 grep -q -F -x -e 'list.stu:1:1: after %cd' list.err

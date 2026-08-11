@@ -1,0 +1,10 @@
+# TOPIC: %cd nonexistingdirectory # no an error when not executed
+
+>A {}
+
+%cd nonexistingdirectory123
+
+X
+{
+	exit 77
+}

@@ -1,5 +1,3 @@
-* Check that "%cd X" works even if X does not exist -- the error will come later when
-  building or matching a file that starts with "X/".
 %cd list.dir %include main.stu %cd - # Like future %include -d list.dir
 * Dynamic dependency in %cd mode
 %cd a <RULE> %cd -
@@ -62,6 +60,7 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
 $ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash
+* The default rule is a %cd rule.  I.e., a %cd followed by the first rule.
 
 #
 # %include -d

@@ -1,0 +1,7 @@
+# TOPIC: %cd nonexistingdirectory
+
+X: nonexistingdirectory/A { }
+
+%cd nonexistingdirectory
+
+A { }

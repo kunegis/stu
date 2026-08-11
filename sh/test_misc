@@ -1,7 +1,6 @@
 #!/bin/sh
-## TODO rename to test_misc
 set -e
-dir=${TMPDIR:-/tmp}/test_clean.$$
+dir=${TMPDIR:-/tmp}/test_misc.$$
 error_file=$dir/error
 ret=0 # Functions report errors by returning non-zero OR by touching $error_file
 
@@ -243,7 +242,7 @@ Check_Manpage_Tab()
 Check_Backtick()
 {
 	Find_Source_Files |
-		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_clean|MANPAGE|.*\.cc)$' |
+		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_misc|MANPAGE|.*\.cc)$' |
 		xargs grep -E -n -e '`' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backtick "`",' |
 		grep -E -e '.' >&2 && return 1
@@ -351,7 +350,7 @@ Check_Preload()
 Check_seq()
 {
 	{ ls -1U sh/* ; find . -name EXEC -o -name '*.stu' ; } |
-		grep -v -E -x -e sh/seq -e sh/test_clean |
+		grep -v -E -x -e sh/seq -e sh/test_misc |
 		xargs grep -n -E -e '(^|[^/a-zA-Z_])seq[^a-zA-Z_]' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Script must not use seq (use sh/seq instead),' |
 		grep -E -e '.' >&2 && return 1

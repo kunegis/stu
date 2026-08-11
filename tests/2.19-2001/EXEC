@@ -1,7 +1,6 @@
 #!/bin/sh
 # TOPIC: %cd a %include a.stu %cd -
 . ../../sh/test.sh
-set -x ##
 
 cat <<EOF >list.stu
 

@@ -124,8 +124,6 @@ public:
 
 	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
 	shared_ptr <const Rule> rebase() const;
-
-private:
 	shared_ptr <const Dep> rebase(shared_ptr <const Dep> d) const {
 		return ::rebase(d, base_dir);
 	}

@@ -1,0 +1,18 @@
+# TOPIC: %cd a b: [c]
+
+A: d d/b
+{
+	cp d/b A
+}
+
+-p d { mkdir d ; }
+
+%cd d
+
+b: [c]
+{
+	cp e b
+}
+
+c = { e }
+e = { CORRECT }

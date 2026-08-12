@@ -1,4 +1,3 @@
-* Dynamic dependency in %cd mode # 2.19-0015
 %cd a <RULE> %cd -
 %cd a %cd - <RULE>
 * Copy rule in cd mode

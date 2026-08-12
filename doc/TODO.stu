@@ -1,4 +1,3 @@
-%cd a %cd - <RULE>
 * Copy rule in cd mode
 * %set vvv aaa %cd ddd <RULE that uses $(vvv)> # Value of $(vvv) is not affected
 * What should $(PWD) return?:  Probably the "current" directy based on previous %cd directives

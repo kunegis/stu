@@ -1,0 +1,11 @@
+# TOPIC: %cd a %cd -
+
+A: B
+{
+	cp B A
+}
+
+%cd nonexistingdir
+%cd -
+
+B = {content}

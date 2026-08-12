@@ -1,4 +1,3 @@
-* What should $(PWD) return?:  Probably the "current" directy based on previous %cd directives
 %cd a %cd b %cd - %cd c # Same as %cd a/c
 %cd '-' # Directory named '-'
 %cd "-" # Directory named '-'
@@ -61,6 +60,7 @@ $ stu -F '%cd' # Error
 $ stu -C '%cd DIR' # Error
 * File that ends in a valid '%cd DIR'
 * File that ends in a valid '%cd -'
+* In a command, the $PWD variable is the base dir. (Need to compile a C++ program to test it)
 
 #
 # %include -d

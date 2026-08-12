@@ -636,58 +636,61 @@ ENVIRONMENT VARIABLES
        tax,  but  not  the home directory ~.  Comments are not allowed between
        %set/%unset and its arguments.
 
+       The environment variable $(PWD) is special. It  always  refers  to  the
+       current directory, taking %cd directives into account.
+
        %set and %unset are executed sequentially at parse time, and are global
-       to  the Stu process.  When a command is executed, environment variables
+       to the Stu process.  When a command is executed, environment  variables
        as defined at the end of parsing are passed.  Environment variables ac‐
        cessed using $(VARIABLE) are replaced at parse time, and cannot be used
        before they are set.
 
-       %set and %unset can be used to set/unset the variables  $STU_SHELL  and
-       $STU_CP  to  specify how Stu executes commands and copy rules, see Sec‐
+       %set  and  %unset can be used to set/unset the variables $STU_SHELL and
+       $STU_CP to specify how Stu executes commands and copy rules,  see  Sec‐
        tion "ENVIRONMENT".
 
        To pass an environment variable to only a single command, or to compute
-       the  value  of an environment variable, see Section "VARIABLE DEPENDEN‐
+       the value of an environment variable, see Section  "VARIABLE  DEPENDEN‐
        CIES".
 
 HOME DIRECTORY
-       The home directory of the current user can be represented by ~ and  the
+       The  home directory of the current user can be represented by ~ and the
        home directory of a user by ~<username>.  A lone unquoted ~ is resolved
-       to the value of $HOME.  If $HOME is not defined, Stu  uses  getpwuid(2)
-       to  determine  the  home  directory  of  the current user.  An unquoted
+       to  the  value of $HOME.  If $HOME is not defined, Stu uses getpwuid(2)
+       to determine the home directory  of  the  current  user.   An  unquoted
        ~<username> stands for the given user's home directory.
 
-       In command-line arguments, ~ always stands for itself, and home  direc‐
+       In  command-line arguments, ~ always stands for itself, and home direc‐
        tories are not used.  If any part of a name is in double quotes, single
-       quotes, escaped with backslash, or contains characters not  allowed  in
+       quotes,  escaped  with backslash, or contains characters not allowed in
        usernames (only a-zA-Z0-9_-. are allowed and - not as first character),
-       the name is not parsed as a home  directory.   Preceding  or  following
+       the  name  is  not  parsed as a home directory.  Preceding or following
        concatenated expressions with () or [] are not taken into account.  For
-       instance, ~abc(def) will look up the home directory  of  user  abc  and
+       instance,  ~abc(def)  will  look  up the home directory of user abc and
        concatenate def to it.
 
 CONCATENATION
-       In  certain  circumstances,  two dependencies that are not separated by
-       spaces are said to be concatenated.  Concatenation takes place  in  the
+       In certain circumstances, two dependencies that are  not  separated  by
+       spaces  are  said to be concatenated.  Concatenation takes place in the
        following cases:
 
            A( A[ )A )( )[ ]A ]( ][
 
-       In  this  list, A stands for any literal name, including one containing
+       In this list, A stands for any literal name, including  one  containing
        parameters, single or double quotes, environment variables, or home di‐
        rectories.
 
-       If  two  dependencies are concatenated, their concatenation is taken as
+       If two dependencies are concatenated, their concatenation is  taken  as
        the dependency.  Effectively this considers each side of the concatena‐
-       tion  to be a list of names (after processing of dynamic dependencies),
-       and replaces the concatenation by the combination of all names  in  the
+       tion to be a list of names (after processing of dynamic  dependencies),
+       and  replaces  the concatenation by the combination of all names in the
        left groups concatenated textually with items in the right group.
 
 PARAMETERS
-       Any  file or phony target may include parameters.  Parameters are noted
-       using the $ character and are given a name.  The syntax for  parameters
-       is  similar  to that for variables in the shell.  If the sign $ is fol‐
-       lowed by {, then everything up to the corresponding } is the  parameter
+       Any file or phony target may include parameters.  Parameters are  noted
+       using  the $ character and are given a name.  The syntax for parameters
+       is similar to that for variables in the shell.  If the sign $  is  fol‐
+       lowed  by {, then everything up to the corresponding } is the parameter
        name.  Otherwise, all alphanumeric characters and underscores _ follow‐
        ing will be taken as the parameter name:
 
@@ -696,7 +699,7 @@ PARAMETERS
 
        Parameters cannot be contiguous.  I.e., there must always be at least a
        single character between two parameters.  (The reason is that otherwise
-       it would be ambiguous how to match the two parameters.)  Names  of  pa‐
+       it  would  be ambiguous how to match the two parameters.)  Names of pa‐
        rameters cannot be empty.  Thus,
 
            data/${part1}${part2}.png
@@ -705,10 +708,10 @@ PARAMETERS
 
        are errors.
 
-       Stu  will  match  the  pattern  to any file or phony target it needs to
-       build.  Parameters can appear in dependencies and in commands any  num‐
+       Stu will match the pattern to any file or  phony  target  it  needs  to
+       build.   Parameters can appear in dependencies and in commands any num‐
        ber of times (included not appearing in them).  In a target name, a pa‐
-       rameter can only appear once.  The following rule uses the  single  pa‐
+       rameter  can  only appear once.  The following rule uses the single pa‐
        rameter $name:
 
            list.$name:    data.$name ${name}.in
@@ -716,16 +719,16 @@ PARAMETERS
                ./compute-list -n "$name"
            }
 
-       A  target  name may match more than one rule.  If that is the case, Stu
-       will use the rule that dominates all other matching rules.  A rule  (x)
+       A target name may match more than one rule.  If that is the  case,  Stu
+       will  use the rule that dominates all other matching rules.  A rule (x)
        is defined to dominate another rule (y) for a given name if every char‐
-       acter in the name that is part of a matched parameter in  rule  (x)  is
+       acter  in  the  name that is part of a matched parameter in rule (x) is
        also inside a matched parameter in rule (y), and at least one character
-       of the name is part of a matched parameter in rule (y) but not in  rule
-       (x).   It  is an error when there is no single matching rule that domi‐
+       of  the name is part of a matched parameter in rule (y) but not in rule
+       (x).  It is an error when there is no single matching rule  that  domi‐
        nates all other matching rules.
 
-       In the following example, the first rule dominates the other rules  for
+       In  the following example, the first rule dominates the other rules for
        the file named a.b.c:
 
            a.$x.c: ... { ... }
@@ -741,49 +744,49 @@ PARAMETERS
 
 CANONICALIZATION
        Stu canonicalizes names of files and phony targets.  As an example, the
-       filenames  aaa//bbb  and  aaa/bbb are considered to be the same by Stu,
-       and can be used interchangeably.  Canonicalization concerns the use  of
-       /  (slash, the directory separator) and . (dot, the current directory).
+       filenames aaa//bbb and aaa/bbb are considered to be the  same  by  Stu,
+       and  can be used interchangeably.  Canonicalization concerns the use of
+       / (slash, the directory separator) and . (dot, the current  directory).
        The following rules are applied in order:
 
-       (1) All instances of multiple slashes (/) are  collapsed  to  a  single
-       one,  except  when the name begins with exactly two slashes.  Then, any
+       (1)  All  instances  of  multiple slashes (/) are collapsed to a single
+       one, except when the name begins with exactly two slashes.   Then,  any
        ending slash is removed, except if the name is / or //.
 
-       (2) If the name is /., it is changed to /.  If the name is  ./,  it  is
-       changed  to ..  If the name begins with ./ followed by a character that
-       is not part of a parameter, the ./ is removed (the rule is applied  re‐
+       (2)  If  the  name is /., it is changed to /.  If the name is ./, it is
+       changed to ..  If the name begins with ./ followed by a character  that
+       is  not part of a parameter, the ./ is removed (the rule is applied re‐
        peatedly).  Any number of ending /. components are removed.  Any number
        of /./ is simplified to / (a single slash).
 
-       Canonicalization does not involve any procedure  that  requires  system
+       Canonicalization  does  not  involve any procedure that requires system
        calls to be performed.  Thus, symlinks are not resolved, and names such
-       as aaa/.. is not simplified.  Likewise, /.. is not simplified to  /  (a
+       as  aaa/..  is not simplified.  Likewise, /.. is not simplified to / (a
        single slash).
 
-       The  canonicalization rules apply not only to file targets, but also to
-       phony targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same  target.
+       The canonicalization rules apply not only to file targets, but also  to
+       phony  targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same target.
        It is thus strongly suggested to use phony targets in a fashion that is
        consistent with the file system semantics of / and . (slash and dot).
 
        Canonicalization is applied in the following fashion:
 
-       Phase 1:  When rules are parsed, canonicalization  is  applied  to  all
-       target  names.  At this stage, parameters are not yet replaced by their
-       values, and thus the / and . components in  parameter  values  are  not
+       Phase  1:   When  rules  are parsed, canonicalization is applied to all
+       target names.  At this stage, parameters are not yet replaced by  their
+       values,  and  thus  the  / and . components in parameter values are not
        canonicalized in targets.
 
-       Phase  2: Second, When a dependency is matched to a rule, canonicaliza‐
-       tion is applied to the dependency name.  At this stage,  names  do  not
-       contain  parameters and canonicalization is performed on the final file
+       Phase 2: Second, When a dependency is matched to a rule,  canonicaliza‐
+       tion  is  applied  to the dependency name.  At this stage, names do not
+       contain parameters and canonicalization is performed on the final  file
        or phony target name.
 
        Additionally, there are three special rules for canonicalization:
 
        (a) There is a special rule concerning ./:  When a target to be canoni‐
-       calized  in  Phase 1 as described above starts with ./ followed immedi‐
-       ately by a parameter, then this parameter will only match strings  that
-       do  not  start  with  a slash.  The ./ is still removed.  This makes it
+       calized in Phase 1 as described above starts with ./  followed  immedi‐
+       ately  by a parameter, then this parameter will only match strings that
+       do not start with a slash.  The ./ is still  removed.   This  makes  it
        possible to distinguish files with relative paths from files with abso‐
        lute paths.  For instance, consider the following example:
 
@@ -791,38 +794,38 @@ CANONICALIZATION
            $path.B      { ... }
            ./$file      { ... }
 
-       Here,  the dependency ./list.B will match the third rule only.  Without
-       the special rule, the dependency would match both the second and  third
-       rule,  and  produce  an  error,  because  none of the two dominates the
+       Here, the dependency ./list.B will match the third rule only.   Without
+       the  special rule, the dependency would match both the second and third
+       rule, and produce an error, because  none  of  the  two  dominates  the
        other.
 
-       (b) Another special rule concerns the root directory /:  A  pattern  of
-       the  form  $A/xxx where $A is a parameter and xxx any string (which may
+       (b)  Another  special rule concerns the root directory /:  A pattern of
+       the form $A/xxx where $A is a parameter and xxx any string  (which  may
        contain more parameters) will match the name /xxx by setting the param‐
        eter $A to the value /.  This special rule corresponds to the fact that
-       while the root directory is called /, a file within it is  called  /xxx
+       while  the  root directory is called /, a file within it is called /xxx
        rather than //xxx.
 
        (c) If the target for a rule is $x/AAA, where AAA may contain other pa‐
-       rameters, then a dependency of AAA will match that rule with $x set  to
+       rameters,  then a dependency of AAA will match that rule with $x set to
        ., as long as AAA does not start with a slash.
 
 DIRECTIVES
-       Directives  in  Stu  are introduced by % and serve a similar purpose to
-       the C preprocessor, i.e., they are  processed  before  the  actual  Stu
-       script  is  parsed and interpreted.  (However, they are not used to im‐
+       Directives in Stu are introduced by % and serve a  similar  purpose  to
+       the  C  preprocessor,  i.e.,  they  are processed before the actual Stu
+       script is parsed and interpreted.  (However, they are not used  to  im‐
        plement a macro system.)  The token % must be followed by the directive
-       name.  There may be any amount of whitespace (including none) between %
-       and the name of the directive.  Directives don't have to be on  a  line
-       of  their  own  -- they can be split into multiple lines and other code
+       name. There may be any amount of whitespace (including none) between  %
+       and  the  name of the directive.  Directives don't have to be on a line
+       of their own -- they can be split into multiple lines  and  other  code
        can appear on the same line.  There cannot be comments between a direc‐
        tive and its arguments.
 
-       File  inclusion  is done using the %include directive.  This can be put
+       File inclusion is done using the %include directive.  This can  be  put
        at any place in the input file, and will temporarily continue tokeniza‐
-       tion  in another file.  The filename does not have to be quoted, except
+       tion in another file.  The filename does not have to be quoted,  except
        if it contains special characters, just like any other filename in Stu.
-       If  a  directory  is  given  after  include  (with or without an ending
+       If a directory is given  after  include  (with  or  without  an  ending
        slash), the file main.stu within that directory is read.
 
            %include a.stu
@@ -831,22 +834,22 @@ DIRECTIVES
            %include data/
            %include $(DIR)/file.stu
 
-       To declare which version of Stu a script is written for, use the  %ver‐
+       To  declare which version of Stu a script is written for, use the %ver‐
        sion directive:
 
            %version 2.3
            %version 2.3.4
 
-       Both  variants will allow the script to be executed only with a version
-       of Stu of the correct major version number (2  in  this  example),  and
-       whose  minor  version (and patch level) have at least the given values.
-       There may be multiple %version directives; each  one  is  then  checked
+       Both variants will allow the script to be executed only with a  version
+       of  Stu  of  the  correct major version number (2 in this example), and
+       whose minor version (and patch level) have at least the  given  values.
+       There  may  be  multiple  %version directives; each one is then checked
        separately.  In particular, it is possible to place a version directive
-       in each source file.  This treatment of version numbers follows  seman‐
-       tic  versioning  (semver.org).   The version directive will not prevent
+       in  each source file.  This treatment of version numbers follows seman‐
+       tic versioning (semver.org).  The version directive  will  not  prevent
        usage of Stu features that were not present in the specified version.
 
-       Environment variables can be set and unset  (see  Section  "ENVIRONMENT
+       Environment  variables  can  be set and unset (see Section "ENVIRONMENT
        VARIABLES" for details):
 
            %set VARIABLE value
@@ -861,18 +864,21 @@ DIRECTIVES
        %cd and %cd i used to push and pop from the stack.
 
        Directory changes are processed at parsing time.  Each rule will be in‐
-       terpreted  relative  to  the current %cd directory.  This includes tar‐
-       gets, dependencies, and the command itself.   The  Stu  process  itself
-       will  not  change directory -- only the commands are executed in a dif‐
+       terpreted relative to the current %cd directory.   This  includes  tar‐
+       gets,  dependencies,  and  the  command itself.  The Stu process itself
+       will not change directory -- only the commands are executed in  a  dif‐
        ferent directory.
 
-       Phony targets are also interpreted relative to the current  %cd  direc‐
+       Phony  targets  are also interpreted relative to the current %cd direc‐
        tory.  For instance,
 
            %cd dir
            @do { ... }
 
        will create a rule for the target @dir/do.
+
+       The environment variable $(PWD) always refers to the current directory,
+       taking %cd into account.
 
        %cd  can  only  be used between rules, not in the middle of a rule.  It
        cannot be used in a dynamic dependency.

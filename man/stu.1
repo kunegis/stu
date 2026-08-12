@@ -553,6 +553,9 @@ and use environment variables using the \fB$(\fR\fIname\fR\fB)\fR syntax, but no
 directory \fI~\fR.  Comments are not allowed between \fI%set\fR/\fI%unset\fR and its
 arguments.
 
+The environment variable \fI$(PWD)\fR is special. It always refers to the current
+directory, taking \fI%cd\fR directives into account.
+
 \fI%set\fR and \fI%unset\fR are executed sequentially at parse time, and are global to the
 Stu process.  When a command is executed, environment variables as defined at the end of
 parsing are passed.  Environment variables accessed using \fB$(\fR\fIVARIABLE\fR\fB)\fR
@@ -776,6 +779,9 @@ instance,
     @do { ... }
 
 will create a rule for the target \fI@dir/do\fR.
+
+The environment variable \fI$(PWD)\fR always refers to the current directory, taking
+\fI%cd\fR into account.
 
 \fI%cd\fR can only be used between rules, not in the middle of a rule.  It cannot be used
 in a dynamic dependency.

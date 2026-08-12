@@ -775,16 +775,48 @@ void Tokenizer::parse_dollar(Placed_Name &name)
 
 	if (p[1] == '(') {
 		parse_environment_variable(key);
-		TRACE("key= %s", show(key));
+		TRACE("key= '%s'", show(key));
 		assert(key.size() > 0);
-		const char *value= getenv(key.c_str());
-		TRACE("value= %s", value ? show(value) : "<null>");
-		if (!value) {
-			place_dollar << fmt("expected environment variable %s to be set",
-				show(Environment_Variable_View(key)));
-			throw ERR_LOGICAL;
+		if (key == "PWD") {
+			// TODO move to own function.
+			string buf;
+			buf.resize(0x400);
+		retry:
+			TRACE("Try size= %s", frmt("%zu", buf.size()));
+			char *r= getcwd(buf.data(), buf.size());
+			if (!r && errno == ERANGE) {
+				buf.resize(4 * buf.size());
+				goto retry;
+			}
+			TRACE("PWD= '%s'", buf.c_str());
+			string pwd= buf.c_str();
+			if (base_stack) {
+				string base_dir= base_stack->get_base_dir();
+				if (! base_dir.empty()) {
+					if (base_dir[0] == '/') {
+						pwd= base_dir;
+					} else {
+						if (! pwd.empty() &&
+							pwd[pwd.size() - 1] != '/')
+						{
+							pwd += '/';
+						}
+						pwd += base_dir;
+					}
+				}
+			}
+			name.append_text(pwd);
+		} else {
+			const char *v= getenv(key.c_str());
+			if (!v) {
+				place_dollar << fmt(
+					"expected environment variable %s to be set",
+					show(Environment_Variable_View(key)));
+				throw ERR_LOGICAL;
+			}
+			TRACE("value= '%s'", v);
+			name.append_text(v);
 		}
-		name.append_text(value);
 	} else {
 		parse_parameter(key);
 		name.append_parameter(key, place_dollar);

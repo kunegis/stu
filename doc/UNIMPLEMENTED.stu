@@ -519,3 +519,10 @@ B {...}
 # B matches the rule:
 A: B { ... }
 $(PWD)/B { ... }
+
+#
+# $(PWD)/x and x should refer to the same file.
+#
+
+A: x {...}
+$(PWD)/x {...}

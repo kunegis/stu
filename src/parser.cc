@@ -1020,12 +1020,12 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	return ret;
 }
 
-void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
-// TODO doesn't need to be a function; inline
-{
-	TRACE_FUNCTION();
-	base_dir= cd_token->base_dir;
-}
+//void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
+//// TODO doesn't need to be a function; inline
+//{
+//	TRACE_FUNCTION();
+//	base_dir= cd_token->base_dir;
+//}
 
 void Parser::append_copy(      Name &to,
 			 const Name &from)
@@ -1302,10 +1302,9 @@ void Parser::parse_rule_list(
 {
 	assert(ret.size() == 0);
 	while (iter != tokens.end()) {
-		while (is <CD_Token> ()) {
+		for (; is <CD_Token> (); ++iter) {
 			shared_ptr <CD_Token> cd_token= is <CD_Token> ();
-			++iter;
-			handle_cd(cd_token);
+			base_dir= cd_token->base_dir;
 		}
 #ifndef NDEBUG
 		const auto iter_begin= iter;

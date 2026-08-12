@@ -2,20 +2,19 @@
 
 #include "trace.hh"
 
-string Base_Stack::get_base_dir() const
-// TODO no need to build lazily.  Have a function that always builds it, and a function
-// that always returns it.
+void Base_Stack::build_base_dir()
 {
-	if (dirs.empty()) return "";
-	if (! base_dir.empty()) return base_dir;
+	if (dirs.empty()) {
+		base_dir= "";
+		return;
+	}
+
 	size_t i= dirs.size() - 1;
 	while (i && dirs[i][0] != '/') --i;
-	string ret= dirs[i];
+	base_dir= dirs[i];
 	for (size_t j= i + 1; j < dirs.size(); ++j) {
-		ret += '/' + dirs[j];
+		base_dir += '/' + dirs[j];
 	}
-	base_dir= ret;
-	return ret;
 }
 
 void Base_Stack::push(string dir)
@@ -24,7 +23,6 @@ void Base_Stack::push(string dir)
 	TRACE("dir= '%s'", dir);
 	assert(dir != "");
 
-	base_dir= "";
 	size_t i= dir.size() - 1;
 	for (; i; --i) {
 		if (dir[i] != '/') break;
@@ -37,21 +35,21 @@ void Base_Stack::push(string dir)
 	TRACE("After canonicalization: dir= '%s'", dir);
 	assert(! dir.empty());
 	dirs.push_back(dir);
+	build_base_dir();
 }
 
 void Base_Stack::pop()
 {
 	TRACE_FUNCTION();
 	assert(! dirs.empty());
-
 	base_dir= "";
 	dirs.pop_back();
+	build_base_dir();
 }
 
 string Base_Stack::rebase(string filename) const
 {
 	TRACE_FUNCTION();
-	get_base_dir();
 	TRACE("base_dir='%s'", base_dir);
 	if (base_dir.empty()) return filename;
 

@@ -1,6 +1,10 @@
 #ifndef BASE_HH
 #define BASE_HH
 
+/*
+ * The base directory can be empty, in which case no 'cd' is needed.
+ */
+
 #include <vector>
 
 #include "dep.hh"
@@ -11,10 +15,7 @@ public:
 	bool empty() const { return dirs.empty(); }
 	void push(string dir);
 	void pop();
-
-	string get_base_dir() const;
-	/* Empty string if no 'cd' needed */
-
+	string get_base_dir() const { return base_dir; }
 	string rebase(string filename) const;
 
 private:
@@ -22,8 +23,9 @@ private:
 	/* - Components are not ""
 	 * - Components only end in slash if they consist only of slashes */
 
-	mutable string base_dir;
+	string base_dir;
 
+	void build_base_dir();
 };
 
 bool is_absolute_for_base(const Name &);

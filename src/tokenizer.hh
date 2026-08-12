@@ -23,9 +23,9 @@ public:
 		Place &place_end,
 		string filename,
 		const Place &place_diagnostic,
-		int fd,//= -1,
-		bool allow_enoent,//= false,
-		bool try_defaut,//= true,
+		int fd,
+		bool allow_enoent,
+		bool try_defaut,
 		bool use_base);
 	/* The given file descriptor FD may optionally be that file already opened.  If
 	 * the file was not yet opened, FD is -1.  If FILENAME is "", use standard input,
@@ -147,9 +147,9 @@ private:
 		std::vector <string> &filenames,
 		std::set <string> &includes,
 		const Place &place_diagnostic,
-		int fd,//= -1,
-		bool allow_enoent,//= false,
-		bool try_defaut);//= true);
+		int fd,
+		bool allow_enoent,
+		bool try_defaut);
 	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
 	 * be modified when returning, but is declared as non-const because it is used as
 	 * a stack.

@@ -17,13 +17,13 @@ void Tokenizer::parse_tokens_file(
 	bool use_base)
 {
 	assert(use_base == (context == SOURCE || context == OPTION_C));
-	
+
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
 	std::set <string> includes;
 	std::unique_ptr <Base_Stack> base_stack;
 	if (use_base) base_stack= std::make_unique <Base_Stack> ();
-		
+
 	parse_tokens_file(
 		tokens, context, place_end, filename, base_stack.get(),
 		backtraces, filenames, includes,
@@ -77,7 +77,7 @@ void Tokenizer::parse_tokens_file(
 
 		if (fd < 0) {
 			TRACE("open('%s')", filename);
-			fd= open(filename.c_str(), O_RDONLY); // XXX
+			fd= open(filename.c_str(), O_RDONLY);
 			TRACE("fd= %s", frmt("%d", fd));
 			if (fd < 0) {
 				if (allow_enoent) {
@@ -1571,9 +1571,6 @@ void Tokenizer::parse_cd_directive(
 		base_stack->pop();
 		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
 			base_stack->get_base_dir()));
-//		tokens.push_back(std::make_shared <CD_Token> (
-//			environment_,
-//			place_percent));
 		return;
 	}
 
@@ -1601,10 +1598,6 @@ void Tokenizer::parse_cd_directive(
 	base_stack->push(name_string);
 	tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
 		base_stack->get_base_dir()));
-//	tokens.push_back(std::make_shared <CD_Token> (
-//			environment_,
-//			place_percent,
-//			name_string));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

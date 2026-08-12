@@ -3,6 +3,8 @@
 #include "trace.hh"
 
 string Base_Stack::get_base_dir() const
+// TODO no need to build lazily.  Have a function that always builds it, and a function
+// that always returns it.
 {
 	if (dirs.empty()) return "";
 	if (! base_dir.empty()) return base_dir;

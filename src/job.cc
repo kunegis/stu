@@ -577,7 +577,7 @@ void Job::create_child_input_redirection(const Placed_Name &name)
 	TRACE_FUNCTION();
 	if (name.empty() && option_i) return;
 	string n= name.unparametrized();
-	
+
 	const char *filename= n.empty()
 		? "/dev/null"
 		: n.c_str();

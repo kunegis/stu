@@ -198,7 +198,6 @@ shared_ptr <Rule> Parser::parse_rule(
 		deps,
 		command,
 		base_dir,
-//		Base::get_base_dir(),
 		is_content,
 		name_input,
 		name_output);
@@ -328,7 +327,6 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 		targets[0],
 		name_copy_src,
 		base_dir,
-//		Base::get_base_dir(),
 		place_flag_persistent,
 		place_flag_optional);
 }
@@ -1023,22 +1021,10 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 }
 
 void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
+// TODO doesn't need to be a function; inline
 {
 	TRACE_FUNCTION();
 	base_dir= cd_token->base_dir;
-//	if (cd_token->is_push()) {
-//		TRACE("Push dir='%s'", cd_token->dir);
-//		Base::push(cd_token->dir);
-//	} else {
-//		TRACE("Pop");
-//		if (Base::empty()) {
-//			cd_token->get_place() << fmt(
-//				"no previous directory to %s into",
-//				show(cd_token));
-//			throw ERR_LOGICAL;
-//		}
-//		Base::pop();
-//	}
 }
 
 void Parser::append_copy(      Name &to,

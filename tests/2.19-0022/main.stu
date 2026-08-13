@@ -1,0 +1,13 @@
+# TOPIC: %cd '-'
+
+A: "-" "-/B"
+{
+	cp -- -/B A
+}
+
+-p "-" { mkdir -- - ; }
+
+>"-/B"
+{
+	echo CORRECT
+}

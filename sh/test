@@ -299,8 +299,7 @@ cd tests
 if [ "$1" ] ; then
 	tests="$@"
 	tests=$(echo $tests | filter_tests)
-	## TODO replace echo...wc by grep -c
-	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l)))"
+	subset=" subset($(echo $tests | tr ' ' '\n' | grep -c -E -e .))"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible

@@ -1020,13 +1020,6 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	return ret;
 }
 
-//void Parser::handle_cd(shared_ptr <CD_Token> cd_token)
-//// TODO doesn't need to be a function; inline
-//{
-//	TRACE_FUNCTION();
-//	base_dir= cd_token->base_dir;
-//}
-
 void Parser::append_copy(      Name &to,
 			 const Name &from)
 {

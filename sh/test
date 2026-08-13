@@ -331,13 +331,12 @@ do
 		{ test_fail_fatal_no_cd "Expected '$file' to be a directory" ; continue ; }
 
 	# There are no files in the test directory (ignoring dotfiles)
-	## TODO replace echo...wc by grep -c
-	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
+	ls -1 "$file" | grep -q -E -e . || {
 		if [ "$emptyok" != 1 ] ; then
 			test_fail_fatal_no_cd "Directory '$file' is empty"
 			continue
 		fi
-	fi
+	}
 
 	output_next
 	cd "$file" || {

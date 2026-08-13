@@ -1,4 +1,3 @@
-%cd a %cd b %cd - %cd c # Same as %cd a/c
 %cd '-' # Directory named '-'
 %cd "-" # Directory named '-'
 %cd \- # Directory named '-'

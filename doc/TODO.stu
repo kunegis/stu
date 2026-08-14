@@ -1,4 +1,3 @@
-%cd $(VAR) # When $VAR is '-':  Directory named '-'
 A=B;%cd DIR <RULE> # No whitespace before %%
 %cd .
 %cd ..

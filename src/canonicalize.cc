@@ -106,11 +106,10 @@ char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
 
 #if 0
 	/*
-	 * Fold '..' -- The code is kept here but not used.
-	 * In general, what is done here is wrong because ABC/.. is not
-	 * equivalent to '.' when ABC is a symlink.  Thus, a system call
-	 * would be needed to resolve such cases, and systems calls are
-	 * not used in Stu for canonicalization.
+	 * Fold '..' -- The code is kept here but not used.  In general, what is done here
+	 * is wrong because ABC/.. is not equivalent to '.' when ABC is a symlink.  Thus,
+	 * a system call would be needed to resolve such cases, and systems calls are not
+	 * used in Stu for canonicalization.
 	 */
 	/* Note: This code does not take into account CANONICALIZE_FLAGS -- it
 	 * behaves as if both were set */

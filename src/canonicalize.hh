@@ -2,8 +2,8 @@
 #define CANONICALIZE_HH
 
 /*
- * Canonicalization is the mapping of filenames and phony names to unique names in
- * their simplest form with respect to the filename components '/' and '.'.
+ * Canonicalization is the mapping of filenames and phony names to unique names in their
+ * simplest form with respect to the filename components '/' and '.'.
  *
  * This function canonicalizes a string, and is used by higher-level code to canonicalize
  * actual names.  The function is called both on entire names (when they are
@@ -27,17 +27,18 @@
  *      - /.$ -> ''  [multiple times]
  *
  * Symlinks and '..' are not canonicalized by Stu.  As a general rule, no stat(2) is
- * performed to check whether name components exist.
+ * performed to check whether name components exist.  Also, realpath(3) cannot be used as
+ * it only works on files that actually exist, but Stu needs to canonicalize filenames
+ * before the files are built.
  *
- * For further rules about canonicalization see the manpage.  Some of the special rules
+ * For further rules about canonicalization, see the manpage.  Some of the special rules
  * are handled in this file.
  */
 
 typedef unsigned Canonicalize_Flags;
-
+/* Each flags means: The begin/end of the string is adjacent to begin/end of the name,
+ * rather than to a parameter. */
 enum
-/* Each flags means:  The begin/end of the string is adjacent to beginning/end of the
- * name, rather than to a parameter. */
 {
 	A_BEGIN  = 1 << 0,
 	A_END    = 1 << 1,

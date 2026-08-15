@@ -1,4 +1,3 @@
-%cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa
 %cd // # Stays as-is

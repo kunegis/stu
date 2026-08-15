@@ -1,5 +1,8 @@
-* Multitarget rule in %cd mode
-A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...}
+A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
+** May need to include base dir in Hash_Dep
+
+A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
+A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 
 A = [list.dir/C] {...}  %cd list.dir  C {...}
 * Output redirection in %cd mode
 * Input redirection in %cd mode
@@ -48,6 +51,9 @@ $ stu -C '%cd DIR' # Error
 * First rule is %cd command rule and directory already exists; succeeds
 * First rule is %cd copy rule and directory already exists; succeeds
 * First rule is %cd content rule and directory already exists; succeeds
+A: d/B {...}  %cd d  B: nonexistingfile # Make sure error message shows "d/nonexistingfile"
+* Dynamic dependency [C] used in two different rules that have a different base directory, e.g. as [C] and [d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
+* Dynamic dependency list.[C] used in two different rules that have a different base directory, e.g. as list.[C] and list.[d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
 
 #
 # %include -d

@@ -29,7 +29,8 @@ Dynamic_Executor::Dynamic_Executor(
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Plain_Dep> target_plain_dep;
-			shared_ptr <const Rule> r=
+			inner_rule=
+//			shared_ptr <const Rule> r=
 				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
 					dep->get_place(), target_plain_dep, target_index);
 		} catch (int e) {

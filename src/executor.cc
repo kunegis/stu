@@ -33,12 +33,14 @@ void Executor::read_dynamic(
 	shared_ptr <const Dep> dep,
 	Executor *dynamic_executor)
 {
-	try {
-		const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
-		assert(object.name.get_n() == 0);
-		const Hash_Dep hash_dep= object.unparametrized();
-		assert(deps.empty());
+	TRACE_FUNCTION();
+	assert(deps.empty());
+	assert(dynamic_executor);
+	const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
+	assert(object.name.get_n() == 0);
+	const Hash_Dep hash_dep= object.unparametrized();
 
+	try {
 		/* Check:  variable dependencies are not allowed in multiply dynamic
 		 * dependencies. */
 		if (dep_target->flags.get_flags() & F_VARIABLE) {
@@ -54,13 +56,12 @@ void Executor::read_dynamic(
 
 		assert(hash_dep.is_file());
 		string filename= hash_dep.get_name_nondynamic();
+//		string base_dir= dynamic_executor->rule->base_dir;
 
-		bool delim= (dep_target->flags.get_flags()
-			& (F_NEWLINE | F_NULL));
+		bool delim= (dep_target->flags.get_flags() & (F_NEWLINE | F_NULL)) != 0;
 		/* Whether the dynamic dependency is delimiter-separated */
 
-		bool allow_enoent= dep_target->flags.get_flags()
-			& (F_OPTIONAL | F_TRIVIAL);
+		bool allow_enoent= dep_target->flags.get_flags() & (F_OPTIONAL | F_TRIVIAL);
 
 		if (! delim) {
 			/* Dynamic dependency in full Stu syntax */
@@ -101,10 +102,10 @@ void Executor::read_dynamic(
 
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
-			const char c= (dep_target->flags.get_flags()
-				& F_NEWLINE) ? '\n' : '\0';
-			Index index= (dep_target->flags.get_flags()
-				& F_NEWLINE) ? I_NEWLINE : I_NULL;
+			const char c= (dep_target->flags.get_flags() & F_NEWLINE)
+				? '\n' : '\0';
+			Index index= (dep_target->flags.get_flags() & F_NEWLINE)
+				? I_NEWLINE : I_NULL;
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
@@ -133,13 +134,23 @@ void Executor::read_dynamic(
 		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
+		Dynamic_Executor *exec=
+			dynamic_cast <Dynamic_Executor *> (dynamic_executor);
+		
 		std::vector <shared_ptr <const Dep> > deps_new;
 		for (auto &j: deps) {
 			if (!j) continue;
+			TRACE("j= %s", show_trace(j));
 			shared_ptr <Dep> j_new= j->clone();
 			j_new->top= top;
 			shared_ptr <const Dep> k= j_new;
-			if (rule) k= rule->rebase(k);
+			TRACE("exec->inner_rule= %s",
+				frmt("%d", exec->get_inner_rule() != nullptr));
+			TRACE("exec->inner_rule->base_dir= '%s'", exec->get_inner_rule()->base_dir);
+			TRACE("exec->inner_rule->targets[0]= %s", show(exec->get_inner_rule()->targets[0]));
+			if (exec->get_inner_rule())
+				k= exec->get_inner_rule()->rebase(k);
+			TRACE("k= %s", show_trace(k));
 			deps_new.push_back(k);
 		}
 		swap(deps, deps_new);

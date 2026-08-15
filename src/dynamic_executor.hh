@@ -26,6 +26,7 @@ public:
 	 * - When a cycle is found at rule-level. */
 
 	shared_ptr <const Dynamic_Dep> get_dep() const { return dep; }
+	shared_ptr <const Rule> get_inner_rule() const { return inner_rule; }
 
 	virtual bool want_delete() const override;
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
@@ -42,6 +43,7 @@ public:
 private:
 	const shared_ptr <const Dynamic_Dep> dep;
 	Done done;
+	shared_ptr <const Rule> inner_rule;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

@@ -135,14 +135,12 @@ void Executor::read_dynamic(
 
 		std::vector <shared_ptr <const Dep> > deps_new;
 		for (auto &j: deps) {
-			// TODO can 'j' ever be null?
-			if (j) {
-				shared_ptr <Dep> j_new= j->clone();
-				j_new->top= top;
-				shared_ptr <const Dep> k= j_new;
-				if (rule) k= rule->rebase(k);
-				deps_new.push_back(k);
-			}
+			if (!j) continue;
+			shared_ptr <Dep> j_new= j->clone();
+			j_new->top= top;
+			shared_ptr <const Dep> k= j_new;
+			if (rule) k= rule->rebase(k);
+			deps_new.push_back(k);
 		}
 		swap(deps, deps_new);
 	} catch (int e) {

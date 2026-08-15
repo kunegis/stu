@@ -12,7 +12,8 @@ shared_ptr <Rule> Parser::parse_rule(
 	Place place_output;
 	Target_Index output_target_index= TARGET_INDEX_NONE;
 	std::vector <shared_ptr <const Plain_Dep> > targets;
-
+//	bool has_target_first= target_first != nullptr;
+	
 	while (iter != tokens.end()) {
 		bool r= parse_target(
 			place_output, targets, output_target_index, target_first);
@@ -201,6 +202,10 @@ shared_ptr <Rule> Parser::parse_rule(
 		is_content,
 		name_input,
 		name_output);
+//	if (! has_first_target) {
+//		first_target= rule->rebase(first_target);
+//	}
+//	return ret;
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -337,6 +342,7 @@ bool Parser::parse_target(
 	Target_Index &output_target_index,
 	shared_ptr <const Plain_Dep> &target_first)
 {
+	TRACE_FUNCTION();
 	Place place_output_new;
 	Placed_Flags flags;
 	shared_ptr <Flag_Token> flag_token;
@@ -499,8 +505,13 @@ bool Parser::parse_target(
 			show(Operator_View('>')));
 		throw ERR_LOGICAL;
 	}
-	if (target_first == nullptr)
+	if (target_first == nullptr) {
 		target_first= target;
+//		rebase(target_first, base_dir);
+		target_first= to <const Plain_Dep> (rebase(target_first, base_dir));
+		TRACE("target_first= %s", show_trace(target_first));
+		assert(target_first);
+	}
 
 	targets.push_back(target);
 	return true;
@@ -1223,6 +1234,7 @@ void Parser::get_file(
 	shared_ptr <const Plain_Dep> &target_first,
 	Place &place_first)
 {
+	TRACE_FUNCTION();
 	assert(file_fd == -1 || file_fd > 1);
 	assert(filename);
 
@@ -1293,11 +1305,13 @@ void Parser::parse_rule_list(
 	std::vector <shared_ptr <Rule> > &ret,
 	shared_ptr <const Plain_Dep> &target_first)
 {
+	TRACE_FUNCTION();
 	assert(ret.size() == 0);
 	while (iter != tokens.end()) {
 		for (; is <CD_Token> (); ++iter) {
 			shared_ptr <CD_Token> cd_token= is <CD_Token> ();
 			base_dir= cd_token->base_dir;
+			TRACE("base_dir= '%s'", base_dir);
 		}
 #ifndef NDEBUG
 		const auto iter_begin= iter;

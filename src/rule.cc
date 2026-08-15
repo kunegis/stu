@@ -355,7 +355,7 @@ shared_ptr <const Rule> Rule_Set::get(
 		place << fmt("multiple best matching targets for dependency %s",
 			     show(hash_dep));
 		for (const Found_Rule &f: best_rule_finder.all_best()) {
-			TRACE("f.target= %s", show(f.target));
+			TRACE("f.target= %s", show_trace(f.target));
 			f.target->place << fmt("rule with target %s", show(f.target));
 		}
 		explain_minimal_matching_rule();

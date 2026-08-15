@@ -1,4 +1,5 @@
-* The default rule is a %cd rule.  I.e., a %cd followed by the first rule. (currently, name is not rebased)
+* First rule is a %cd copy rule
+* First rule is a content rule
 %cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa

@@ -65,9 +65,9 @@ public:
 		std::vector <shared_ptr <const Dep> > &deps,
 		shared_ptr <const Dep> dep,
 		Executor *dynamic_executor);
-	/* Read dynamic dependencies.  The only reason this is not static is
-	 * that errors can be raised and printed correctly.  Dependencies that
-	 * are read are written into DEPS, which is empty on calling. */
+	/* Read dynamic dependencies.  The only reason this is not static is that errors
+	 * can be raised and printed correctly.  Dependencies that are read are written
+	 * into DEPS, which is empty on calling. */
 
 	void operator<<(string text) const override;
 	/* Print full trace for the executor.  First the message is printed,

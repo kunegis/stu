@@ -172,8 +172,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	if (deps.empty() && ! had_option_target) {
 		if (target_first == nullptr) {
 			if (! place_first.empty()) {
-				place_first
-					<< "expected a rule, because no target is given";
+				place_first <<
+					"expected a rule, because no target is given";
 			} else {
 				print_error("no rules and no targets given");
 			}

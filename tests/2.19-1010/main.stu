@@ -1,0 +1,7 @@
+# TOPIC: First rule after %cd
+
+%cd directoryname987
+
+filename123
+{
+}

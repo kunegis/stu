@@ -1,5 +1,6 @@
 #include "base.hh"
 
+#include "show_dep.hh"
 #include "trace.hh"
 
 void Base_Stack::build_base_dir()
@@ -62,7 +63,9 @@ string Base_Stack::rebase(string filename) const
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 {
 	TRACE_FUNCTION();
+	TRACE("d= %s", show_trace(d));
 	TRACE("base_dir='%s'", base_dir);
+	assert(d);
 	if (base_dir.empty()) return d;
 
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
@@ -91,6 +94,17 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		unreachable();
 	}
 }
+
+//void rebase(Name &name, string base_dir)
+//{
+//	TRACE_FUNCTION();
+//	TRACE("base_dir= '%s'", base_dir);
+//	if (is_absolute_for_base(name)) return;
+//	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
+//	string sep= end_in_slash ? "" : "/";
+//	name.prepend_text(base_dir + sep);
+//	name.canonicalize();
+//}
 
 bool is_absolute_for_base(const Name &name)
 /* Starts with '/' text, or with param followed by '/' text */

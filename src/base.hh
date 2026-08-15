@@ -31,5 +31,6 @@ private:
 bool is_absolute_for_base(const Name &);
 
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir);
+//void rebase(Name &name, string base_dir);
 
 #endif /* ! BASE_HH */

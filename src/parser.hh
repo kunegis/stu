@@ -83,16 +83,17 @@ public:
 		char c, Index index,
 		const Printer &printer,
 		bool allow_enoent);
-	/* Read delimiter-separated dynamic dependency from FILENAME,
-	 * delimited by C.  Write result into DEPS.  Throws errors.  When
-	 * ALLOW_ENOENT, just return on ENOENT. */
+	/* Read delimiter-separated dynamic dependency from FILENAME, delimited by C.
+	 * Write result into DEPS.  Throws errors.  When ALLOW_ENOENT, just return on
+	 * ENOENT. */
 
-	static void get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
-				   int argc, const char *const *argv);
-	/* Parse a dependency as given on the command line outside of
-	 * options.  Strings in ARGV may be empty; those are ignored.
-	 * Parsed dependency are appended to DEPS, which is not
-	 * necessarily empty on invocation. */
+	static void get_target_arg(
+		std::vector <shared_ptr <const Dep> > &deps,
+		int argc,
+		const char *const *argv);
+	/* Parse a dependency as given on the command line outside of options.  Strings in
+	 * ARGV may be empty; those are ignored. Parsed dependency are appended to DEPS,
+	 * which is not necessarily empty on invocation. */
 
 	static void get_file(
 		const char *filename,

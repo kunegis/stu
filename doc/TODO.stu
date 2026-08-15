@@ -1,11 +1,10 @@
-%cd aaa//bbb # double slash is not preserved (check with aaa/bbb/... dependency)
-%cd //bin # double slash is preserved (or not)
-%cd aaa///bbb # Triple slash is preserved (or not)
+%cd //bin # double slash is preserved
+%cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa
 %cd // # Stays as-is
-%cd /// # Stays as-is (or not)
-%cd ////// # Stays as-is (or not)
+%cd /// # Same as /
+%cd ////// # Same as /
 * Multitarget rule in %cd mode
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}
@@ -53,6 +52,8 @@ $ stu -C '%cd DIR' # Error
 * File that ends in a valid '%cd DIR'
 * File that ends in a valid '%cd -'
 * In a command, the $PWD variable is the base dir. (Need to compile a C++ program to test it)
+%cd aaa %cd . # same as: %cd aaa
+%cd . %cd aaa # same as: %cd aaa
 
 #
 # %include -d

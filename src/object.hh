@@ -1,12 +1,6 @@
 #ifndef OBJECT_HH
 #define OBJECT_HH
 
-/*
- * Targets are to be distinguished from the more general dependencies, which can
- * represent any nested expression, including concatenations, flags, compound
- * expressions, etc., while targets only represent individual files or phonies.
- */
-
 #include "flags.hh"
 #include "hash_dep.hh"
 #include "name.hh"
@@ -17,7 +11,7 @@ class Object
 /* A parametrized name for which it is saved what type it represents.  Non-dynamic. */
 {
 public:
-	Flags flags;  /* Only file/phony target info */
+	Flags flags;  /* Only file/phony info */
 	Name name;
 
 	Object(Flags flags_, const Name &name_)
@@ -27,7 +21,7 @@ public:
 	}
 
 	Object(Hash_Dep hash_dep)
-	/* Unparametrized target. The passed TARGET must be non-dynamic. */
+	/* Unparametrized object. The passed HASH_DEP must be non-dynamic. */
 		: flags(hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY),
 		  name(hash_dep.get_name_nondynamic())
 	{
@@ -39,21 +33,21 @@ public:
 	}
 
 	Hash_Dep unparametrized() const
-	/* The corresponding unparametrized target.  Must have zero parameters. */
+	/* The corresponding unparametrized object.  Must have zero parameters. */
 	{
 		return Hash_Dep(flags, name.unparametrized());
 	}
 };
 
 class Placed_Object
-/* A target that is parametrized and contains places.  Non-dynamic. */
+/* A object that is parametrized and contains places.  Non-dynamic. */
 {
 public:
 	Flags flags;  /* Only F_TARGET_PHONY is used */
 	Placed_Name name;
 
 	Place place;
-	/* The place of the target as a whole.  The PLACED_NAME variable additionally
+	/* The place of the object as a whole.  The PLACED_NAME variable additionally
 	 * contains a place for the name itself, as well as for individual parameters. */
 
 	Placed_Object(

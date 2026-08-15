@@ -27,6 +27,7 @@ enum
 	I_PERSISTENT= 0,      /* -p \   common flags    \                    */
 	I_OPTIONAL,           /* -o /                    |                   */
 	I_TRIVIAL,            /* -t                      |                   */
+	// TODO rename target->object
 	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
 	I_TARGET_PHONY,       /* @   /                   | Hash_Dep          */
 	I_VARIABLE,           /* $                       |                   */
@@ -59,10 +60,10 @@ enum
 	/* (-t) Trivial dependency */
 
 	F_TARGET_DYNAMIC        = 1 << I_TARGET_DYNAMIC,
-	/* A dynamic target */
+	/* A dynamic object */
 
 	F_TARGET_PHONY          = 1 << I_TARGET_PHONY,
-	/* A phony target */
+	/* A phony object */
 
 	F_VARIABLE              = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */
@@ -79,7 +80,7 @@ enum
 	/* For dynamic dependencies, the file contains Stu code */
 
 	F_NO_FOLLOW             = 1 << I_NO_FOLLOW,
-	/* Target is symlink and should not be dereferenced */
+	/* Object is symlink and should not be dereferenced */
 
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
@@ -102,6 +103,7 @@ enum
 	F_WORD          = (1 << C_WORD) - 1,
 	F_ATTRIBUTE     = F_NEWLINE | F_NULL | F_CODE,
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
+	// TODO rename target->object
 	F_PLACED_TARGET = F_PERSISTENT | F_OPTIONAL | F_NO_FOLLOW | F_ATTRIBUTE,
 	F_PLACED_TARGET_PHONY = F_PERSISTENT | F_OPTIONAL | F_ATTRIBUTE,
 	F_PLACED_DEPENDENCY= F_PERSISTENT | F_OPTIONAL | F_TRIVIAL

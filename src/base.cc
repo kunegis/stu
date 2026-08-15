@@ -71,7 +71,7 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
 		f->object.name.prepend_text(base_dir + sep);
-		f->object.name.canonicalize(); // XXX
+		f->object.name.canonicalize();
 		return f;
 	} else if (shared_ptr <const Dynamic_Dep> e2= to <const Dynamic_Dep> (d)) {
 		shared_ptr <Dynamic_Dep> f= to <Dynamic_Dep> (e2->clone());

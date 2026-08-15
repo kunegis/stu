@@ -775,9 +775,7 @@ void Tokenizer::parse_dollar(Placed_Name &name)
 	if (p[1] == '(') {
 		parse_environment_variable(name);
 	} else {
-//		string key;
 		parse_parameter(name);
-//		name.append_parameter(key, place_dollar);
 	}
 }
 

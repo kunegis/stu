@@ -1,4 +1,3 @@
-%cd // # Stays as-is
 %cd /// # Same as /
 %cd ////// # Same as /
 * Multitarget rule in %cd mode

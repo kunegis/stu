@@ -99,7 +99,7 @@ public:
 	 * parameters with the two unseparated parameters. */
 
 	void canonicalize();
-	/* In-place canonicalizarion */
+	/* In-place canonicalization */
 
 	bool equals_same_length(const Name &that) const;
 

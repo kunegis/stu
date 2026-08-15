@@ -1,0 +1,10 @@
+# TOPIC: %cd .
+
+A: B
+{
+	cp B A
+}
+
+%cd .
+
+B = {CORRECT}

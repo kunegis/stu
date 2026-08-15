@@ -1,4 +1,3 @@
-%cd .
 %cd ..
 %cd aaa//bbb # double slash is preserved (or not)
 %cd //bin # double slash is preserved (or not)
@@ -537,5 +536,9 @@ VARIABLE
 VALUE
 
 #
-# Check whether we can use (or already use -fstack-protector.
+# Check whether we can use (or already use) -fstack-protector.
+#
+
+#
+# Check that we are not performing double-canonicalization.
 #

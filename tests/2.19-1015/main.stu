@@ -1,0 +1,7 @@
+# TOPIC: %cd //////
+
+A: /filename_does_not_exist;
+
+%cd //////
+
+filename_does_not_exist;

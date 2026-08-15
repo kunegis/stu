@@ -1,5 +1,3 @@
-%cd /// # Same as /
-%cd ////// # Same as /
 * Multitarget rule in %cd mode
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}

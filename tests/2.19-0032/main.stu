@@ -1,0 +1,12 @@
+# TOPIC: %cd a/////
+
+A: list.directory list.directory/B
+{
+	cp list.directory/B A
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory/////
+
+B = {content}

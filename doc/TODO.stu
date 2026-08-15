@@ -1,5 +1,4 @@
-%cd ..
-%cd aaa//bbb # double slash is preserved (or not)
+%cd aaa//bbb # double slash is not preserved (check with aaa/bbb/... dependency)
 %cd //bin # double slash is preserved (or not)
 %cd aaa///bbb # Triple slash is preserved (or not)
 %cd aaa// # Same as aaa

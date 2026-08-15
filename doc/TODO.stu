@@ -1,4 +1,3 @@
-* First rule is a content rule # Fails because directory does not exist
 %cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa

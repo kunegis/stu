@@ -95,17 +95,6 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 	}
 }
 
-//void rebase(Name &name, string base_dir)
-//{
-//	TRACE_FUNCTION();
-//	TRACE("base_dir= '%s'", base_dir);
-//	if (is_absolute_for_base(name)) return;
-//	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
-//	string sep= end_in_slash ? "" : "/";
-//	name.prepend_text(base_dir + sep);
-//	name.canonicalize();
-//}
-
 bool is_absolute_for_base(const Name &name)
 /* Starts with '/' text, or with param followed by '/' text */
 {

@@ -12,8 +12,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	Place place_output;
 	Target_Index output_target_index= TARGET_INDEX_NONE;
 	std::vector <shared_ptr <const Plain_Dep> > targets;
-//	bool has_target_first= target_first != nullptr;
-	
+
 	while (iter != tokens.end()) {
 		bool r= parse_target(
 			place_output, targets, output_target_index, target_first);
@@ -202,10 +201,6 @@ shared_ptr <Rule> Parser::parse_rule(
 		is_content,
 		name_input,
 		name_output);
-//	if (! has_first_target) {
-//		first_target= rule->rebase(first_target);
-//	}
-//	return ret;
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -507,7 +502,6 @@ bool Parser::parse_target(
 	}
 	if (target_first == nullptr) {
 		target_first= target;
-//		rebase(target_first, base_dir);
 		target_first= to <const Plain_Dep> (rebase(target_first, base_dir));
 		TRACE("target_first= %s", show_trace(target_first));
 		assert(target_first);

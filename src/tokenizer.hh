@@ -96,8 +96,8 @@ private:
 
 	void parse_dollar(Placed_Name &);
 	void parse_home(Placed_Name &);
-	void parse_parameter(string &name);
-	void parse_environment_variable(string &name);
+	void parse_parameter(Placed_Name &);
+	void parse_environment_variable(Placed_Name &);
 
 	/* The following three functions parse the two types of quotes, and escapes.  The
 	 * pointer must be on a ", ', or \ character respectively.  The read string is

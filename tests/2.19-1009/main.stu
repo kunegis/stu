@@ -1,0 +1,7 @@
+# TOPIC: %cd //a
+
+B: //nonexistingfile/A;
+
+%cd //nonexistingfile
+
+A{}

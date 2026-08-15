@@ -1,4 +1,4 @@
-%cd //bin # double slash is preserved
+* The default rule is a %cd rule.  I.e., a %cd followed by the first rule. (currently, name is not rebased)
 %cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa
@@ -44,7 +44,6 @@ A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V 
 $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
 $ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash
-* The default rule is a %cd rule.  I.e., a %cd followed by the first rule.
 * A %cd rule contains a dependency or target '../file', which is also referenced in the non-cd part
 * Multiply nested '%include -d'-like %cd+%include combinations
 * Syntax error in a file included during %cd:  The trace into the file includes the '%cd' directory

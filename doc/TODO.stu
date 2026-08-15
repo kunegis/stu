@@ -1,5 +1,4 @@
-* First rule is a %cd copy rule
-* First rule is a content rule
+* First rule is a content rule # Fails because directory does not exist
 %cd aaa///bbb # Triple slash is not preserved
 %cd aaa// # Same as aaa
 %cd aaa///// # Same as aaa
@@ -54,6 +53,9 @@ $ stu -C '%cd DIR' # Error
 * In a command, the $PWD variable is the base dir. (Need to compile a C++ program to test it)
 %cd aaa %cd . # same as: %cd aaa
 %cd . %cd aaa # same as: %cd aaa
+* First rule is %cd command rule and directory already exists; succeeds
+* First rule is %cd copy rule and directory already exists; succeeds
+* First rule is %cd content rule and directory already exists; succeeds
 
 #
 # %include -d

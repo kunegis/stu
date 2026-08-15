@@ -141,7 +141,7 @@ void Concat_Executor::launch_stage_normal()
 		f2->flags.add_unplaced_index(I_RESULT_COPY);
 
 		/* Add flags from self */
-		f2->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
+		f2->flags.add(dep->flags, F_WORD & ~F_DYNAMIC);
 
 		f2->flags.add(f->flags);
 		push(f2);

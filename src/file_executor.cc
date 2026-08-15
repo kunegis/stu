@@ -28,7 +28,7 @@ File_Executor::File_Executor(
 
 	/* Later replaced with all targets from the rule, if a rule exists */
 	Hash_Dep hash_dep_no_flags= hash_dep_;
-	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_PHONY;
+	hash_dep_no_flags.get_front_word_nondynamic() &= F_PHONY;
 	hash_deps.push_back(hash_dep_no_flags);
 	executors_by_hash_dep[hash_dep_no_flags]= {target_index, this};
 
@@ -87,8 +87,8 @@ File_Executor::File_Executor(
 
 	/* It is not allowed to have a dynamic of a non-transitive phony */
 	if (dynamic_cast <Dynamic_Executor *> (parent) &&
-		(dep->flags.get_flags() & (F_RESULT_NOTIFY | F_TARGET_PHONY))
-		== (F_RESULT_NOTIFY | F_TARGET_PHONY))
+		(dep->flags.get_flags() & (F_RESULT_NOTIFY | F_PHONY))
+		== (F_RESULT_NOTIFY | F_PHONY))
 	{
 		Place place_target;
 		for (auto &t: rule->targets) {
@@ -117,7 +117,7 @@ File_Executor::File_Executor(
 		return;
 	}
 
-	if (dep->flags.get_flags() & F_TARGET_PHONY &&
+	if (dep->flags.get_flags() & F_PHONY &&
 		dep->flags.get_flags() & (F_OPTIONAL | F_PERSISTENT))
 	{
 		Place place_target;
@@ -904,7 +904,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 	if (dep_link->flags.get_flags() & F_OPTIONAL
 		&& to <Plain_Dep> (dep_link)
-		&& ! (to <Plain_Dep> (dep_link)->object.flags & F_TARGET_PHONY))
+		&& ! (to <Plain_Dep> (dep_link)->object.flags & F_PHONY))
 	{
 		TRACE("Is optional file target");
 
@@ -1042,7 +1042,7 @@ bool File_Executor::start(
 {
 	if (rule->is_copy()) {
 		assert(rule->targets.size() == 1);
-		assert(! (rule->targets.front()->object.flags & F_TARGET_PHONY));
+		assert(! (rule->targets.front()->object.flags & F_PHONY));
 		string source= rule->copy_src.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up

@@ -49,7 +49,7 @@ void Executor::read_dynamic(
 				::show(dep));
 			raise(ERR_LOGICAL);
 		}
-		if (object.flags & F_TARGET_PHONY)
+		if (object.flags & F_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
@@ -92,7 +92,7 @@ void Executor::read_dynamic(
 					show(Prefix_View("<", input)));
 				Hash_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
-					&= ~F_TARGET_PHONY;
+					&= ~F_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
 					show(hash_dep_file));
 				raise(ERR_LOGICAL);
@@ -248,7 +248,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
-				&= F_TARGET_PHONY;
+				&= F_PHONY;
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
@@ -272,7 +272,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			use_file_executor= true;
 		} else {
 			for (auto &i: rule_child->targets) {
-				if ((i->flags.get_flags() & F_TARGET_PHONY) == 0)
+				if ((i->flags.get_flags() & F_PHONY) == 0)
 					use_file_executor= true;
 			}
 		}
@@ -823,7 +823,7 @@ bool Executor::check_clash_without_target_flags(
 	{
 		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
 		assert(plain_dep_child);
-		assert(!(dep_child->flags.get_flags() & F_TARGET_PHONY));
+		assert(!(dep_child->flags.get_flags() & F_PHONY));
 		const Place &place_variable= dep_child->get_place();
 		const Place &place_flag= dep_child->flags.place_by_index(I_OPTIONAL);
 		place_variable << fmt(
@@ -986,9 +986,9 @@ void Executor::check_unparametrized(
 		show(Hash_Dep(0, hash_dep)),
 		show(Prefix_View("$", parameter_name)));
 	Hash_Dep hash_dep_base= hash_dep;
-	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_PHONY;
+	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;
 	hash_dep_base.get_front_word_nondynamic()
-		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY);
+		|= (hash_dep.get_front_word_nondynamic() & F_PHONY);
 	*this << fmt("%s is declared here", show(hash_dep_base));
 	explain_dynamic_no_param();
 	raise(ERR_LOGICAL);

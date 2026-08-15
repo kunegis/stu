@@ -112,7 +112,7 @@ shared_ptr <Rule> Parser::parse_rule(
 					show(targets[0]));
 				throw ERR_LOGICAL;
 			}
-			if ((targets[0]->flags.get_flags() & F_TARGET_PHONY)) {
+			if ((targets[0]->flags.get_flags() & F_PHONY)) {
 				place_equal << fmt(
 					"content rule using %s cannot be used",
 					show(Operator_View('=')));
@@ -149,7 +149,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	if (! place_output.empty()) {
 		assert(output_target_index != TARGET_INDEX_NONE);
 		/* Already checked before */
-		assert((targets[output_target_index]->flags.get_flags() & F_TARGET_PHONY)
+		assert((targets[output_target_index]->flags.get_flags() & F_PHONY)
 			== 0);
 
 		name_output= targets[output_target_index]->object.name;
@@ -301,7 +301,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 		throw ERR_LOGICAL;
 	}
 
-	if (targets[0]->flags.get_flags() & F_TARGET_PHONY) {
+	if (targets[0]->flags.get_flags() & F_PHONY) {
 		place_equal << fmt("copy rule using %s cannot be used",
 			show(Operator_View('=')));
 		targets[0]->place << fmt("with phony target %s",
@@ -389,7 +389,7 @@ bool Parser::parse_target(
 			place_at << fmt("after %s", show(Operator_View('@')));
 			throw ERR_LOGICAL;
 		}
-		flags.add_unplaced_flags(F_TARGET_PHONY);
+		flags.add_unplaced_flags(F_PHONY);
 	}
 
 	if (! is <Name_Token> ()) {
@@ -443,10 +443,10 @@ bool Parser::parse_target(
 	}
 
 	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
-		(flags, Placed_Object(flags.get_flags() & F_TARGET_PHONY,
+		(flags, Placed_Object(flags.get_flags() & F_PHONY,
 			*target_name, place_of_target));
 
-	if (flags.get_flags() & F_TARGET_PHONY) {
+	if (flags.get_flags() & F_PHONY) {
 		for (const Placed_Flag &flag: flags.get()) {
 			if (! ((1 << flag.index) & F_PLACED_TARGET_PHONY)) {
 				string possible;
@@ -480,7 +480,7 @@ bool Parser::parse_target(
 			assert(output_target_index != TARGET_INDEX_NONE);
 			assert(targets[output_target_index]->object.name.get_n() == 0);
 			assert((targets[output_target_index]->flags.get_flags()
-					& F_TARGET_PHONY) == 0);
+					& F_PHONY) == 0);
 			place_output << fmt(
 				"shadowing previous output redirection %s",
 				show(Prefix_View(">", targets[output_target_index]
@@ -493,7 +493,7 @@ bool Parser::parse_target(
 		output_target_index= targets.size();
 	}
 
-	if (flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {
+	if (flags.get_flags() & F_PHONY && ! place_output_new.empty()) {
 		target->place << fmt("phony target %s is invalid",
 			show(target));
 		place_output_new << fmt("after output redirection using %s",
@@ -980,9 +980,9 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 		assert(! place_input.empty());
 
 	if (has_phony) {
-		flags.add_unplaced_index(I_TARGET_PHONY);
+		flags.add_unplaced_index(I_PHONY);
 	}
-	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
+	Flags phony_bit= has_phony ? F_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep> (
 		flags,
 		Placed_Object(phony_bit, *name_token,

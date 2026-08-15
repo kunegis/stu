@@ -292,7 +292,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	TRACE_FUNCTION();
 	TRACE("hash_dep= %s", show(hash_dep));
 	assert(hash_dep.is_file() || hash_dep.is_phony());
-	assert((hash_dep.get_front_word() & ~F_TARGET_PHONY) == 0);
+	assert((hash_dep.get_front_word() & ~F_PHONY) == 0);
 	assert(mapping_parameter.size() == 0);
 	assert(!target_plain_dep);
 
@@ -396,7 +396,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule.must_exist())
 			continue;
 		for (auto target: rule.targets) {
-			if (target->flags.get_flags() & F_TARGET_PHONY)
+			if (target->flags.get_flags() & F_PHONY)
 				continue;
 			filenames.insert(
 				show(target->object.name, S_OPTION_I, R_GLOB));
@@ -406,7 +406,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule->must_exist())
 			continue;
 		for (auto target: rule->targets) {
-			if (target->flags.get_flags() & F_TARGET_PHONY)
+			if (target->flags.get_flags() & F_PHONY)
 				continue;
 			filenames.insert(
 				show(target->object.name, S_OPTION_I, R_GLOB));
@@ -504,7 +504,7 @@ void Best_Rule_Finder::check(
 
 	/* The parametrized rule is of another type */
 	if (hash_dep.get_front_word() !=
-		(t->flags.get_flags() & F_TARGET_PHONY))
+		(t->flags.get_flags() & F_PHONY))
 		return;
 
 	/* The parametrized rule does not match */

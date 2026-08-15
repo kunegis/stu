@@ -155,20 +155,20 @@ void Dep::check() const
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
 		/* The F_TARGET_PHONY flag is always set in the dependency flags, even
 		 * though that is redundant. */
-		assert((plain_this->flags.get_flags() & F_TARGET_PHONY)
+		assert((plain_this->flags.get_flags() & F_PHONY)
 		       == (plain_this->object.flags));
 
 		if (! plain_this->variable_name.empty()) {
-			assert((plain_this->object.flags & F_TARGET_PHONY) == 0);
+			assert((plain_this->object.flags & F_PHONY) == 0);
 			assert(plain_this->flags.get_flags() & F_VARIABLE);
 		}
 	}
 
 	if (auto dynamic_this= dynamic_cast <const Dynamic_Dep *> (this)) {
-		assert(flags.get_flags() & F_TARGET_DYNAMIC);
+		assert(flags.get_flags() & F_DYNAMIC);
 		dynamic_this->dep->check();
 	} else {
-		assert(!(flags.get_flags() & F_TARGET_DYNAMIC));
+		assert(!(flags.get_flags() & F_DYNAMIC));
 	}
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
@@ -196,7 +196,7 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 
 	string this_name= ret_object->name.unparametrized();
 	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
-		assert((ret_object->flags & F_TARGET_PHONY) == 0);
+		assert((ret_object->flags & F_PHONY) == 0);
 		place << fmt(
 			"dynamic variable %s cannot be instantiated with parameter value that contains %s",
 			show(Dynamic_Variable_View(this_name)),
@@ -252,15 +252,15 @@ Hash_Dep Dynamic_Dep::get_target() const
 	string text;
 	const Dep *d= this;
 	while (dynamic_cast <const Dynamic_Dep *> (d)) {
-		Flags f= F_TARGET_DYNAMIC;
-		assert(d->flags.get_flags() & F_TARGET_DYNAMIC);
+		Flags f= F_DYNAMIC;
+		assert(d->flags.get_flags() & F_DYNAMIC);
 		f |= d->flags.get_flags() & F_WORD;
 		text += Hash_Dep::string_from_word(f);
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get();
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d));
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d);
-	assert(!(sin->flags.get_flags() & F_TARGET_DYNAMIC));
+	assert(!(sin->flags.get_flags() & F_DYNAMIC));
 	Flags f= sin->flags.get_flags() & F_WORD;
 	text += Hash_Dep::string_from_word(f);
 	text += sin->object.unparametrized().get_name_nondynamic();
@@ -272,7 +272,7 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
 	size_t s= parts.size();
-	::render(Flags_View(flags.get_flags() & ~F_TARGET_DYNAMIC), parts, rendering);
+	::render(Flags_View(flags.get_flags() & ~F_DYNAMIC), parts, rendering);
 	if (s != parts.size()) parts.append_space();
 #endif /* ! NDEBUG */
 	parts.append_marker("[");
@@ -500,7 +500,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return nullptr;
 	}
 
-	if (b->flags.get_flags() & F_TARGET_PHONY) {
+	if (b->flags.get_flags() & F_PHONY) {
 		b->get_place() << fmt("phony target %s is invalid", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERR_LOGICAL;
@@ -554,7 +554,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 
 	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep> (
 		flags_combined,
-		Placed_Object(flags_combined.get_flags() & F_TARGET_PHONY,
+		Placed_Object(flags_combined.get_flags() & F_PHONY,
 			name_combined, a->object.place),
 		a->place, "");
 	ret->top= a->top;

@@ -27,9 +27,8 @@ enum
 	I_PERSISTENT= 0,      /* -p \   common flags    \                    */
 	I_OPTIONAL,           /* -o /                    |                   */
 	I_TRIVIAL,            /* -t                      |                   */
-	// TODO rename target->object
-	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
-	I_TARGET_PHONY,       /* @   /                   | Hash_Dep          */
+	I_DYNAMIC,            /* [ ] \  target flags     |                   */
+	I_PHONY,              /* @   /                   | Hash_Dep          */
 	I_VARIABLE,           /* $                       |                   */
 	I_NEWLINE,            /* -n  \                   |                   */
 	I_NULL,               /* -0   | dynamic format   |                   */
@@ -59,10 +58,10 @@ enum
 	F_TRIVIAL               = 1 << I_TRIVIAL,
 	/* (-t) Trivial dependency */
 
-	F_TARGET_DYNAMIC        = 1 << I_TARGET_DYNAMIC,
+	F_DYNAMIC               = 1 << I_DYNAMIC,
 	/* A dynamic object */
 
-	F_TARGET_PHONY          = 1 << I_TARGET_PHONY,
+	F_PHONY                 = 1 << I_PHONY,
 	/* A phony object */
 
 	F_VARIABLE              = 1 << I_VARIABLE,

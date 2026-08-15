@@ -239,7 +239,7 @@ public:
 		: dep(dep_)
 	{
 		assert(dep_ != nullptr);
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 	}
 
 	Dynamic_Dep(shared_ptr <const Dynamic_Dep> base_dep,
@@ -250,7 +250,7 @@ public:
 		    shared_ptr <const Dep> dep_)
 		: dep(dep_)
 	{
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 		assert((flags_ & F_PLACED) == 0);
 		flags.add_unplaced_flags(flags_);
 		assert((flags.get_flags() & F_VARIABLE) == 0);
@@ -263,7 +263,7 @@ public:
 		: Dep(flags_),
 		  dep(dep_)
 	{
-		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		flags.add_unplaced_index(I_DYNAMIC);
 		assert(! flags.contains_index(I_VARIABLE));
 		assert(dep_ != nullptr);
 	}

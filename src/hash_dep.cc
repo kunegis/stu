@@ -3,22 +3,22 @@
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
 	size_t i;
-	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		assert((get_word(i) & F_TARGET_PHONY) == 0);
+	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
+		assert((get_word(i) & F_PHONY) == 0);
 		parts.append_marker("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 #ifndef NDEBUG
 	if (rendering & R_SHOW_FLAGS) {
-		::render(Flags_View(get_word(i) & ~(F_TARGET_PHONY | F_VARIABLE)),
+		::render(Flags_View(get_word(i) & ~(F_PHONY | F_VARIABLE)),
 			parts, rendering);
 	}
 #endif /* ! NDEBUG */
-	if (get_word(i) & F_TARGET_PHONY) {
+	if (get_word(i) & F_PHONY) {
 		parts.append_marker("@");
 	}
 	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
-	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
+	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
 		parts.append_marker("]");
 	}
 }
@@ -28,7 +28,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 void Hash_Dep::canonicalize()
 {
 	char *b= (char *)text.c_str(), *p= b;
-	while ((*(word_t *)p) & F_TARGET_DYNAMIC)
+	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);
 	p += sizeof(word_t);
 	p= canonicalize_string(A_BEGIN | A_END, p);
@@ -38,7 +38,7 @@ void Hash_Dep::canonicalize()
 size_t Hash_Dep::get_dynamic_depth() const
 {
 	size_t ret;
-	for (ret= 0; get_word(ret) & F_TARGET_DYNAMIC; ++ret);
+	for (ret= 0; get_word(ret) & F_DYNAMIC; ++ret);
 	return ret;
 }
 
@@ -47,7 +47,7 @@ size_t Hash_Dep::get_dynamic_depth() const
 void Hash_Dep::canonicalize_plain()
 {
 	char *b= (char *)text.c_str(), *p= b;
-	assert(! ((*(word_t *)p) & F_TARGET_DYNAMIC));
+	assert(! ((*(word_t *)p) & F_DYNAMIC));
 	p += sizeof(word_t);
 	p= canonicalize_string(A_BEGIN | A_END, p);
 	text.resize(p - b);

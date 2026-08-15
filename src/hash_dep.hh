@@ -46,7 +46,7 @@ public:
 	/* A plain target */
 		: text(string_from_word(flags) + name)
 	{
-		assert((flags & ~F_TARGET_PHONY) == 0);
+		assert((flags & ~F_PHONY) == 0);
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(! name.empty());
 	}
@@ -54,42 +54,41 @@ public:
 	Hash_Dep(Flags flags, const Hash_Dep &target)
 	/* Makes the given target once more dynamic with the given
 	 * flags, which must *not* contain the 'dynamic' flag. */
-		: text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
+		: text(string_from_word(flags | F_DYNAMIC) + target.text)
 	{
-		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_PHONY)) == 0);
+		assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
 		assert(flags < (1 << C_WORD));
 	}
 
 	const string &get_text() const { return text; }
 	string &get_text() { return text; }
 	const char *get_text_c_str() const { return text.c_str(); }
-	bool is_dynamic() const { check(); return get_word(0) & F_TARGET_DYNAMIC; }
+	bool is_dynamic() const { check(); return get_word(0) & F_DYNAMIC; }
 
 	bool is_file() const {
 		check();
-		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_PHONY)) == 0;
+		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == 0;
 	}
 
 	bool is_phony() const {
 		check();
-		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_PHONY))
-			== F_TARGET_PHONY;
+		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == F_PHONY;
 	}
 
 	bool is_any_file() const {
 		size_t i= 0;
-		while (get_word(i) & F_TARGET_DYNAMIC) {
+		while (get_word(i) & F_DYNAMIC) {
 			++i;
 		}
-		return (get_word(i) & F_TARGET_PHONY) == 0;
+		return (get_word(i) & F_PHONY) == 0;
 	}
 
 	bool is_any_phony() const {
 		size_t i= 0;
-		while (get_word(i) & F_TARGET_DYNAMIC) {
+		while (get_word(i) & F_DYNAMIC) {
 			++i;
 		}
-		return get_word(i) & F_TARGET_PHONY;
+		return get_word(i) & F_PHONY;
 	}
 
 	void render(Parts &, Rendering= 0) const;
@@ -98,7 +97,7 @@ public:
 	/* Get the name of the target, knowing that the target is not dynamic */
 	{
 		check();
-		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);
+		assert((get_word(0) & F_DYNAMIC) == 0);
 		return text.substr(sizeof(word_t));
 	}
 
@@ -107,14 +106,14 @@ public:
 	 * non-dynamic. */
 	{
 		check();
-		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);
+		assert((get_word(0) & F_DYNAMIC) == 0);
 		return text.c_str() + sizeof(word_t);
 	}
 
 	const char *get_name_c_str_any() const
 	{
 		const char *ret= text.c_str();
-		while ((*(const word_t *)ret) & F_TARGET_DYNAMIC)
+		while ((*(const word_t *)ret) & F_DYNAMIC)
 			ret += sizeof(word_t);
 		return ret += sizeof(word_t);
 	}
@@ -126,13 +125,13 @@ public:
 	/* Get the front byte, given that the target is not dynamic */
 	{
 		check();
-		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);
+		assert((get_word(0) & F_DYNAMIC) == 0);
 		return *(word_t *)&text[0];
 	}
 
 	Flags get_front_word_nondynamic() const {
 		check();
-		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);
+		assert((get_word(0) & F_DYNAMIC) == 0);
 		return *(const word_t *)&text[0];
 	}
 

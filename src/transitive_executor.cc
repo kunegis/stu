@@ -52,7 +52,7 @@ Transitive_Executor::Transitive_Executor(
 	 * in the dependency.  Also, add the flags. */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
-			(dep_link->flags.get_flags() & (F_WORD & ~F_TARGET_DYNAMIC));
+			(dep_link->flags.get_flags() & (F_WORD & ~F_DYNAMIC));
 		executors_by_hash_dep[t]= {target_index, this};
 	}
 

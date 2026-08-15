@@ -2,7 +2,7 @@
 
 void Placed_Object::render(Parts &parts, Rendering rendering) const
 {
-	if (flags & F_TARGET_PHONY)
+	if (flags & F_PHONY)
 		parts.append_marker("@");
 	name.render(parts, rendering);
 }

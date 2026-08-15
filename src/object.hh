@@ -17,12 +17,12 @@ public:
 	Object(Flags flags_, const Name &name_)
 		: flags(flags_), name(name_)
 	{
-		assert((flags_ & ~F_TARGET_PHONY) == 0);
+		assert((flags_ & ~F_PHONY) == 0);
 	}
 
 	Object(Hash_Dep hash_dep)
 	/* Unparametrized object. The passed HASH_DEP must be non-dynamic. */
-		: flags(hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY),
+		: flags(hash_dep.get_front_word_nondynamic() & F_PHONY),
 		  name(hash_dep.get_name_nondynamic())
 	{
 		assert(! hash_dep.is_dynamic());
@@ -55,7 +55,7 @@ public:
 		const Placed_Name &name_)
 		: flags(flags_), name(name_), place(name_.place)
 	{
-		assert((flags_ & ~F_TARGET_PHONY) == 0);
+		assert((flags_ & ~F_PHONY) == 0);
 	}
 
 	Placed_Object(
@@ -64,7 +64,7 @@ public:
 		const Place &place_)
 		: flags(flags_), name(name_), place(place_)
 	{
-		assert((flags_ & ~F_TARGET_PHONY) == 0);
+		assert((flags_ & ~F_PHONY) == 0);
 	}
 
 	Placed_Object(const Placed_Object &that)

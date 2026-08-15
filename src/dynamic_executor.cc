@@ -149,7 +149,7 @@ void Dynamic_Executor::notify_result(
 			/* Add -% flag */
 			j_new->flags.add_unplaced_flags(F_RESULT_COPY);
 			/* Add flags from self */
-			j_new->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
+			j_new->flags.add(dep->flags, F_WORD & ~F_DYNAMIC);
 			j= j_new;
 			push(j);
 		}

@@ -1,5 +1,7 @@
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
-** May need to include base dir in Hash_Dep
+** Include base dir in Hash_Dep
+*** Include a prefix size_t-sized word that gives the starting address of the base_dir
+** get_executor() takes the base_dir of the parent into account
 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 
@@ -54,6 +56,10 @@ $ stu -C '%cd DIR' # Error
 A: d/B {...}  %cd d  B: nonexistingfile # Make sure error message shows "d/nonexistingfile"
 * Dynamic dependency [C] used in two different rules that have a different base directory, e.g. as [C] and [d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
 * Dynamic dependency list.[C] used in two different rules that have a different base directory, e.g. as list.[C] and list.[d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
+* Dynamic dependency [[C]] used in two different rules that have a different base directory, e.g. as [[C]] and [[d/C]]:  the content of the dynamic dependency must be interpreted in a different base directory.
+%cd dir . {...} # Same as "dir {...}", but must fail because chdir fails
+A: list.dir/C [list.dir/B] {...} %cd list.dir  C: [B] {...}  B {...} # Names from list.dir/B must be present in both . and list.dir/
+@clean: @dirA/clean @dirB/clean {...} # dirA and dirB have their own @clean rule, defined using %cd
 
 #
 # %include -d
@@ -540,5 +546,6 @@ VALUE
 #
 
 #
-# Check that we are not performing double-canonicalization.
+# Check that we are not performing double-canonicalization, i.e., run canonicalize()
+# multiple times on same input, or on output of canonicalize().
 #

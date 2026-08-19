@@ -10,6 +10,10 @@
  * Each dynamic executor corresponds to an exact dynamic dependency, taking into account
  * all flags.  This is as opposed to file executors, where multiple file dependencies
  * share a single executor object.
+ * 
+ * Parent base dir:  Each dynamic executor must remember the base dir of the rule that
+ * included it.  Different dynamic executors are used for the same object name, if they
+ * have different base dirs.  Hash_Dep also includes the parent base dir.
  */
 
 class Dynamic_Executor
@@ -20,13 +24,15 @@ public:
 		shared_ptr <const Dynamic_Dep> dep_,
 		Executor *parent,
 		int &error_additional);
+//		string parent_base_dir_);
 	/* ERR_ADDITIONAL is only set:
 	 * - When the dynamic contains a plain dependency for which there are multiple
 	 *   matching rules.
 	 * - When a cycle is found at rule-level. */
 
 	shared_ptr <const Dynamic_Dep> get_dep() const { return dep; }
-	shared_ptr <const Rule> get_inner_rule() const { return inner_rule; }
+
+	string get_parent_base_dir() const;
 
 	virtual bool want_delete() const override;
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
@@ -43,7 +49,7 @@ public:
 private:
 	const shared_ptr <const Dynamic_Dep> dep;
 	Done done;
-	shared_ptr <const Rule> inner_rule;
+//	string parent_base_dir;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

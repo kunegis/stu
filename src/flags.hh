@@ -33,7 +33,8 @@ enum
 	I_NEWLINE,            /* -n  \                   |                   */
 	I_NULL,               /* -0   | dynamic format   |                   */
 	I_CODE,               /* -C  /                   |                   */
-	I_NO_FOLLOW,          /* -P                     /                    */
+	I_NO_FOLLOW,          /* -P                      |                   */
+	I_BASE,               /* -/                     /                    */
 	I_INPUT,              /* <                                           */
 	I_RESULT_NOTIFY,      /* -*                                          */
 	I_RESULT_COPY,        /* -%                                          */
@@ -81,6 +82,9 @@ enum
 	F_NO_FOLLOW             = 1 << I_NO_FOLLOW,
 	/* Object is symlink and should not be dereferenced */
 
+	F_BASE                  = 1 << I_BASE,
+	/* Contains base dir (only used in Hash_Dep) */
+	
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
 
@@ -113,7 +117,7 @@ enum
 
 constexpr Index I_ERR= UINT_MAX;
 
-constexpr const char flag_chars[]= "pot[@$n0CP<*%&";
+constexpr const char flag_chars[]= "pot[@$n0CP/<*%&";
 static_assert(sizeof(flag_chars) == C_ALL + 1, "Keep in sync with Flags");
 
 class Flag_Info

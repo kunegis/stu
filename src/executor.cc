@@ -138,18 +138,17 @@ void Executor::read_dynamic(
 			dynamic_cast <Dynamic_Executor *> (dynamic_executor);
 		
 		std::vector <shared_ptr <const Dep> > deps_new;
+		string parent_base_dir= exec->get_parent_base_dir();
+		TRACE("parent_base_dir= '%s'", parent_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;
 			TRACE("j= %s", show_trace(j));
 			shared_ptr <Dep> j_new= j->clone();
 			j_new->top= top;
 			shared_ptr <const Dep> k= j_new;
-			TRACE("exec->inner_rule= %s",
-				frmt("%d", exec->get_inner_rule() != nullptr));
-			TRACE("exec->inner_rule->base_dir= '%s'", exec->get_inner_rule()->base_dir);
-			TRACE("exec->inner_rule->targets[0]= %s", show(exec->get_inner_rule()->targets[0]));
-			if (exec->get_inner_rule())
-				k= exec->get_inner_rule()->rebase(k);
+			if (! parent_base_dir.empty()) {
+				k= rebase(k, parent_base_dir);
+			}
 			TRACE("k= %s", show_trace(k));
 			deps_new.push_back(k);
 		}
@@ -159,7 +158,7 @@ void Executor::read_dynamic(
 	}
 }
 
-Executor *Executor::get_executor(shared_ptr <const Dep> dep)
+Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_dir)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
@@ -181,8 +180,10 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	    && ! to <const Plain_Dep> (dep->strip_dynamic())) {
 		TRACE("Create Dynamic_Executor with concatenation inside");
 		int error_additional= 0;
-		Dynamic_Executor *executor= new Dynamic_Executor
-			(to <const Dynamic_Dep> (dep), this, error_additional);
+		Dynamic_Executor *executor= new Dynamic_Executor(
+			to <const Dynamic_Dep> (dep),
+			this,
+			error_additional);
 		assert(executor);
 		if (error_additional) {
 			should_not_happen();
@@ -204,7 +205,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	const Hash_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
-	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
+	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep, parent_base_dir);
 	auto it= executors_by_hash_dep.find(target_for_cache);
 
 	if (it != executors_by_hash_dep.end()) {
@@ -260,6 +261,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
 				&= F_PHONY;
+//			hash_dep_without_flags= Hash_Dep(base_dir, hash_dep_without_flags);
+//			...; // prepend calling_base_dir
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
@@ -309,7 +312,9 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		}
 	} else {
 		executor= new Dynamic_Executor(
-			to <Dynamic_Dep> (dep), this, error_additional);
+			to <Dynamic_Dep> (dep),
+			this,
+			error_additional);
 	}
 
 	if (error_additional) {
@@ -640,8 +645,8 @@ const Place &Executor::get_place() const
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	assert(options_jobs > 0);
 	assert(dep_link);
+	assert(options_jobs > 0);
 	if (finished(dep_link->flags.get_flags())) {
 		TRACE("Finished");
 		return 0;
@@ -735,6 +740,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
+	// TODO add "assert(dep_link)"?
 	assert(buffer_A.empty());
 	assert(options_jobs > 0);
 	Proceed proceed= 0;
@@ -794,7 +800,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
+Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string base_dir)
 {
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
@@ -804,6 +810,10 @@ Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
 		hash_dep.get_front_word_any() &= (word_t)F_CACHE;
 	}
 
+	if (! base_dir.empty()) {
+		hash_dep= Hash_Dep(base_dir, hash_dep);
+	}
+	
 	return hash_dep;
 }
 
@@ -939,7 +949,16 @@ Proceed Executor::connect(
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
 
-	Executor *child= get_executor(dep_child);
+	string base_dir;
+	if (rule) {
+		base_dir= rule->base_dir;
+	} else {
+		base_dir= "";
+	}
+	
+	Executor *child= get_executor(
+		dep_child,
+		base_dir);
 	if (!child) return 0;
 	children.insert(child);
 	if (dep_child->flags.get_flags() & F_RESULT_NOTIFY) {

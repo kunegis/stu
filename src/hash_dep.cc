@@ -1,5 +1,12 @@
 #include "hash_dep.hh"
 
+Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
+{
+	...
+}
+
+... change all accesses to std::string[0].
+
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
 	size_t i;

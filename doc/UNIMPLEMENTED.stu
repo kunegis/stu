@@ -531,6 +531,9 @@ $(PWD)/x {...}
 # Take into account .. during canonicalization.  Not done at the moment because it is
 # inconsistent with realpath(), but it may be needed in conjunction with '%include -d'.
 #
+# This is "logical" treatment of .., like in "cd -P" (which is not the default for the
+# shell's cd).
+#
 
 # At the moment, the following example doesn't work because A and dir/../A are not
 # recognized as the same file.

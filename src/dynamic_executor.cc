@@ -29,8 +29,7 @@ Dynamic_Executor::Dynamic_Executor(
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Plain_Dep> target_plain_dep;
-			inner_rule=
-//			shared_ptr <const Rule> r=
+			shared_ptr <const Rule> r=
 				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
 					dep->get_place(), target_plain_dep, target_index);
 		} catch (int e) {
@@ -40,7 +39,14 @@ Dynamic_Executor::Dynamic_Executor(
 			raise(e);
 			return;
 		}
-		executors_by_hash_dep[hash_dep]= {target_index, this};
+		Hash_Dep hash_dep_with_parent_base_dir= hash_dep;
+		if (parent->get_rule()) {
+			// TODO can it ever happen that parent->rule is null?
+			string base_dir= parent->get_rule()->base_dir;
+			hash_dep_with_parent_base_dir=
+				Hash_Dep(base_dir, hash_dep_with_parent_base_dir);
+		}
+		executors_by_hash_dep[hash_dep_with_parent_base_dir]= {target_index, this};
 	}
 
 	parents.erase(parent);
@@ -107,6 +113,14 @@ bool Dynamic_Executor::finished(Flags flags) const
 	bool ret= done.is_done_from_flags(flags);
 	TRACE("ret= %s", frmt("%d", ret));
 	return ret;
+}
+
+string Dynamic_Executor::get_parent_base_dir() const
+/* All parents have the same base dir -- use the first returned */
+{
+	const Executor *e= get_parents().begin()->first;
+	if (! e->get_rule()) return "";
+	return e->get_rule()->base_dir;
 }
 
 bool Dynamic_Executor::want_delete() const

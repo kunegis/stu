@@ -77,12 +77,9 @@ public:
 	const std::map <Executor *, shared_ptr <const Dep> > &get_parents() const {
 		return parents;
 	}
-	std::map <Executor *, shared_ptr <const Dep> > &get_parents() {
-		return parents;
-	}
-	std::set <Executor *> get_children() {
-		return children;
-	}
+	std::map <Executor *, shared_ptr <const Dep> > &get_parents() { return parents; }
+	std::set <Executor *> get_children() { return children; }
+	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual bool want_delete() const;
 
@@ -121,9 +118,11 @@ public:
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static Rule_Set rule_set;
+	// TODO maybe this should be in rule.hh
 	/* Set before calling main_loop() */
 
-	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep);
+	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep, string base_dir);
+	// TODO move function to Hash_Dep
 	/* Get the target value used for caching.  I.e, return TARGET with certain flags
 	 * removed. */
 	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
@@ -143,10 +142,9 @@ protected:
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;
 	/* This is a map rather than an unsorted_map because typically, the number of
-	 * elements is always very small, i.e., mostly one, and a map is better suited in
-	 * this case.  The map is sorted, but by the executor pointer, i.e., the sorting
-	 * is arbitrary as far as Stu is concerned.  The dependencies contain flags
-	 * declared on targets of rules. */
+	 * elements is always very small, i.e., mostly one.  The map is sorted, but by the
+	 * executor pointer, i.e., the sorting is arbitrary as far as Stu is concerned.
+	 * The dependencies contain flags declared on targets of rules. */
 
 	std::set <Executor *> children;
 
@@ -189,15 +187,10 @@ protected:
 	/* Execute already-active children */
 
 	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
-	/* DEP_LINK is not null */
-
 	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
-	/* Second pass (trivial dependencies).  Called once we are sure that the target
-	 * must be built. */
 
-	Executor *get_executor(shared_ptr <const Dep> dep);
-	/* Get an existing Executor or create a new one for the given
-	 * DEPENDENCY.  Return null on errors. */
+	Executor *get_executor(shared_ptr <const Dep> dep, string parent_base_dir);
+	/* Get an existing Executor or create a new one.  Return null on errors. */
 
 	void check_waited() const {
 		assert(buffer_A.empty());

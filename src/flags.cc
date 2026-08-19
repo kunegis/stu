@@ -15,6 +15,7 @@ Flag_Info flag_info[C_ALL]= {
 	{nullptr,          nullptr},
 	{nullptr,          nullptr},
 	{nullptr,          nullptr},
+	{nullptr,          nullptr},
 };
 
 static_assert(sizeof(flag_info) / sizeof(flag_info[0]) == C_ALL,

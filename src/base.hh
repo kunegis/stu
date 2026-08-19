@@ -5,6 +5,8 @@
  * The base directory can be empty, in which case no 'cd' is needed.
  */
 
+// TODO 'base dir' should be changed to 'base' everywhere.
+
 #include <vector>
 
 #include "dep.hh"

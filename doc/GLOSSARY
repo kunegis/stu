@@ -4,13 +4,20 @@ Anchoring - Represents the position of a parameter in a matched filename.  Each 
 	the number of parameters.  For instance, when "/usr/bin" is matched to
 	"/$DIR/$NAME", the anchoring is given by the array [1 4 5 8].
 
+Base - (a.k.a. base dir) The directory in which a rule is defined.  Determined by %cd
+	directives.  When no %cd directives are present, the Stu process' working
+	directory.  Represented as a string.  Empty when unchanged, and non-empty
+	otherwise.
+
 Command - A command that is run for a target.  Enclosed by braces ({}) in Stu files, and
 	executed with the shell.
 
 Content rule - A rule of the form "A = {xxx}".  Stu will write "xxx" into the file A,
 	effectively hardcoding the content of the file into the Stu file.
 
-Copy rule - A rule of the form "A = B;", which copies file B to file A.
+Copy rule - A rule of the form "A = B;", which copies file B to file A.  Essentially the
+	same as "A: B { cp -- B A ; }", but calls "cp" directly instead of using a
+	subshell.
 
 Depth - The depth of a dependency counts how many times over it includes a dynamic
 	dependency.  For instance, an ordinary file target "file" has depth zero, a
@@ -19,25 +26,38 @@ Depth - The depth of a dependency counts how many times over it includes a dynam
 
 Directive - A construct introduced with '%' in Stu source code.  Directives are processed
 	before the source code is otherwise parsed.  They are comparable to C preprocessor
-	directives, but do not implement a macro system.
+	directives, but do not implement a macro system.  Examples: %include %cd %set.
 
 Domination - A rule dominates another rule for a given target if it has priority.  For
 	instance, given the target "abc", a rule with target ab$x dominates a rule with
-	target a$x.  For each target, there must be single rule that dominates all
-	others, or no matching rule at all.  Domination is transitive.
+	target a$x.  For each target, there must be single rule that dominates all others,
+	or no matching rule at all.  Domination is transitive.
 
-File - An object in the file system.  We use the term in the broad
-	sense, which includes directories and other special files.  The "normal"
-	files which store a sequence of bytes are called regular files.
+Escape - Characters in a Stu script can be escaped by a baskslash.  For intance, \: stands
+	for a filename that consists only of a colon.  (The colon is the target-dependency
+	separator otherwise.)
 
-Flag - A flag is a syntax and semantic element of Stu scripts.  They start with
-	a dash.  An example is '-p' for persistent dependencies.
+File - An object in the file system.  We use the term in the broad sense, which includes
+	directories and other special files.  The "normal" files which store a sequence of
+	bytes are called regular files.
+
+Flag - A flag is a syntax and semantic element of Stu scripts.  They start with a dash.
+	An example is '-p' for persistent dependencies.  Can be written before targets or
+	dependencies.  Some flags can be used only before targets (e.g. -P), and some only
+	before dependencies (e.g. -t).
 
 Job - A job is a child process started by Stu to build one or more files or phony targets.
-	Jobs are run in the background by default, but the -i option changes that.
+	Jobs are run in the background by default, but the -i option changes that.  Jobs
+	can be shell processes started by a {}-delimited command, but there are also
+	special jobs, e.g. to copy files using /bin/cp.
 
-Name - The name of a file or of a phony target.  Names are strings of bytes, must have
-	length at least one, and cannot contain the NUL (\0) character.
+Name - The name of an object, i.e., of a file or phony.  Names are strings of bytes, must
+	have length at least one, and cannot contain the NUL (\0) character.
+
+Object - A file or a phony.  Objects can be targets and/or dependencies.  Objects have a
+	name that must be non-empty and non contain '\0'.  There are disjoint namespaces
+	for files and phonies.  In a Stu script, any unquoted or unescaped text represents
+	an object.
 
 Option - An option is passed on the Stu command line and starts with a dash.  Some have
 	arguments.
@@ -54,22 +74,31 @@ Place - The combination of filename, line number, and column number.  Used to pr
 	messages.
 
 Placed - A class name starts with 'Placed_' when it includes a place, e.g., 'Name'
-	vs. 'Placed_Name'.
+	vs. 'Placed_Name'. 
 
-Plain - (Said of a dependency or target) Either a file or a phony target.
+Plain - (Said of a dependency, target, or object) Either a file or a phony target.
 
-Special rule - Special rules are used when matching parametrized targets to names of files
-	and phony targets.  They are described in the manpage.
+Quote - Names can be quoted with single and double quotes.  They work largely like in the
+	shell.  In single quotes, all characters stand for themselves except the single
+	quote character.  In double quotes, the backslash, dollar and double quote are
+	special (dollar can be used for parameters/environment variables, backslash for
+	escaping).
 
-Target - A file or a phony target, possibly (multiply) dynamic.
+Special rule - Special rules are a set if rules use dby Stu when matching parametrized
+	targets to names of files and phony targets.  They are described in the manpage.
+	For instance, a target ${dir}/file will match a target named "file" with ${dir}
+	set to ".".
+
+Target - The files and phonies that are built by a rule.  Written at the beginning of a
+	rule.  May be followed by ':' to separate it from dependencies.
 
 Trace - A line printed by the TRACE() macro.  Enabled by $STU_TRACE.  Only in the debug
 	variant.
 
 Transitive - A transitive target is a phony whose rule (a) contains no file targets, and
-	(b) has no command.  Transitive targets pass flags to their dependencies.  Phony
-	targets that have a command or whose rule also has file targets do not pass flags
-	through to their dependencies.
+	(b) has no command.  Only transitive targets pass flags to their dependencies.
+	Phony targets that have a command or whose rule also has file targets do not pass
+	flags through to their dependencies.
 
 Variant - Stu can be compiled in different variants, e.g. release, debug.  See
 	doc/VARIANTS.

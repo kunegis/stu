@@ -52,7 +52,9 @@ class Hash_Dep
 {
 public:
 	explicit
-	Hash_Dep(std::string_view text_): text(text_) { }
+	Hash_Dep(std::string_view text_): text(text_) {
+		check(); 
+	}
 	/* TEXT_ is the full text field of this Hash_Dep */
 
 	Hash_Dep(Flags flags, string name)
@@ -64,6 +66,7 @@ public:
 		assert((flags & ~F_PHONY) == 0);
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(! name.empty());
+		check(); // RM
 	}
 
 	Hash_Dep(Flags flags, const Hash_Dep &target)
@@ -73,6 +76,7 @@ public:
 	{
 		assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
 		assert(flags < (1 << C_WORD));
+		check(); // RM
 	}
 
 	Hash_Dep(string base_dir, Hash_Dep hash_dep);
@@ -146,14 +150,14 @@ public:
 	{
 		check();
 		assert((get_word(0) & F_DYNAMIC) == 0);
-		return *(word_t *)(text.data + sizeof(word_size_t));
+		return *(word_t *)(text.data() + sizeof(word_size_t));
 //		return *(word_t *)&text[0];
 	}
 
 	Flags get_front_word_nondynamic() const {
 		check();
 		assert((get_word(0) & F_DYNAMIC) == 0);
-		return *(const word_t *)(text.data + sizeof(word_size_t));
+		return *(const word_t *)(text.data() + sizeof(word_size_t));
 //		return *(const word_t *)&text[0];
 	}
 
@@ -164,12 +168,22 @@ public:
 		return ((const word_t *)&text[sizeof(word_size_t)])[i];
 	}
 
+	const char *get_base_dir() const
+	{
+		return (*(const word_size_t *)text.data()) != 0
+			? text.data() + (*(const word_size_t *)text.data())
+			: nullptr;
+	}
+	
 	bool operator==(const Hash_Dep &target) const { return text == target.text; }
 	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
 	void canonicalize_plain(); /* In-place, knowing it is plain */
 
+	// TODO these two functions should not be needed if we always have constructors
+	// that properly use std::string(size_t, '\0').
 	static string string_from_word(Flags flags);
 	/* Return a string of length sizeof(word_t) containing the given flags */
+	static string string_from_size(size_t size);
 
 #ifndef NEBUG
 	void canonicalize(); /* In-place */

@@ -299,9 +299,9 @@ shared_ptr <const Rule> Rule_Set::get(
 	hash_dep.canonicalize_plain();
 
 	/* Check for an unparametrized rule.  Since we keep them in a map by target
-	 * filename(s), there can only be a single matching rule to begin with.  (I.e., if
+	 * filename(s), there can only be a single matching rule to begin with.  I.e., if
 	 * multiple unparametrized rules for the same filename exist, then that error is
-	 * caught earlier when the Rule_Set is built.) */
+	 * caught earlier when the Rule_Set is built. */
 	auto i= rules_unparam.find(hash_dep);
 	if (i != rules_unparam.end()) {
 		target_index= i->second.first;
@@ -312,7 +312,9 @@ shared_ptr <const Rule> Rule_Set::get(
 		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto ta: rule->targets) {
-			Hash_Dep t= ta->object.unparametrized();
+			Hash_Dep t(ta->object.unparametrized());
+			if (! rule->base_dir.empty())
+				t= Hash_Dep(rule->base_dir, t);
 			t.canonicalize();
 			if (t == hash_dep)
 				found= true;

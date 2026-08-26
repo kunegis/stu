@@ -1,8 +1,5 @@
+# 0.2-0009
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
-** Include base dir in Hash_Dep
-*** Include a prefix size_t-sized word that gives the starting address of the base_dir
-** get_executor() takes the base_dir of the parent into account
-
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 
 A = [list.dir/C] {...}  %cd list.dir  C {...}

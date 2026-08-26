@@ -98,6 +98,7 @@ public:
 
 	// TODO move to .cc
 	bool is_any_file() const {
+		check(); //
 		size_t i= 0;
 		while (get_word(i) & F_DYNAMIC) {
 			++i;
@@ -107,6 +108,7 @@ public:
 
 	// TODO move to .cc
 	bool is_any_phony() const {
+		check(); //
 		size_t i= 0;
 		while (get_word(i) & F_DYNAMIC) {
 			++i;
@@ -136,6 +138,7 @@ public:
 	// TODO move to .cc
 	const char *get_name_c_str_any() const
 	{
+		check(); //
 		const char *ret= text.c_str() + sizeof(word_size_t);
 		while ((*(const word_t *)ret) & F_DYNAMIC)
 			ret += sizeof(word_t);
@@ -164,12 +167,14 @@ public:
 	Flags get_word(size_t i) const
 	/* For access to any front word */
 	{
+		check(); //
 		assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
 		return ((const word_t *)&text[sizeof(word_size_t)])[i];
 	}
 
 	const char *get_base_dir() const
 	{
+		check(); //
 		return (*(const word_size_t *)text.data()) != 0
 			? text.data() + (*(const word_size_t *)text.data())
 			: nullptr;
@@ -185,7 +190,7 @@ public:
 	/* Return a string of length sizeof(word_t) containing the given flags */
 	static string string_from_size(size_t size);
 
-#ifndef NEBUG
+#ifndef NDEBUG
 	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
@@ -194,14 +199,12 @@ private:
 	string text;
 
 	// TODO put into .cc when !NDEBUG
-	void check() const {
-		/* The minimum length of TEXT is sizeof(word_t)+1:  One word indicating a
-		 * non-dynamic target, and a text of length one.  (The text cannot be
-		 * empty.) */
-#ifndef NDEBUG
-		assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
+
+#ifdef NDEBUG
+	void check() const {}
+#else /* ! NDEBUG */
+	void check() const;
 #endif /* ! NDEBUG */
-	}
 };
 
 void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering= 0);

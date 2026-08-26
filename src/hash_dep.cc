@@ -20,6 +20,8 @@ Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
 
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
+	check();
+	const char *base_dir= get_base_dir();
 	size_t i;
 	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
 		assert((get_word(i) & F_PHONY) == 0);
@@ -27,19 +29,24 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	}
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
 #ifndef NDEBUG
-	if (rendering & R_SHOW_FLAGS) {
+	if (rendering & R_SHOW_FLAGS)
 		::render(Flags_View(get_word(i) & ~(F_PHONY | F_VARIABLE)),
 			parts, rendering);
-	}
 #endif /* ! NDEBUG */
 	if (get_word(i) & F_PHONY) {
 		parts.append_marker("@");
 	}
-	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
+	size_t start= sizeof(word_size_t) + sizeof(word_t) * (i + 1);
+	parts.append_text(text.substr(
+		start,
+		base_dir
+		? base_dir - text.data() - start
+		: text.size() - start));
 	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
 		parts.append_marker("]");
 	}
-	const char *base_dir= get_base_dir();
+
+	// TODO probably not needed
 	if (base_dir) {
 		parts.append_marker("(");
 		parts.append_text(base_dir);
@@ -50,11 +57,15 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 void Hash_Dep::canonicalize_plain()
 {
 	TRACE_FUNCTION();
+	check();
+	TRACE("text(1)= %s", show(text)); //
 	const char *base_dir= get_base_dir();
+	TRACE("base_dir= %s", base_dir ? base_dir : "<NULL>"); //
 	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
 	assert(! ((*(word_t *)p) & F_DYNAMIC));
 	p += sizeof(word_t);
 	p= canonicalize_string(A_BEGIN | A_END, p);
+
 	if (base_dir) {
 		size_t base_dir_len= text.size() - *(word_size_t *)text.data();
 		memmove(
@@ -66,6 +77,7 @@ void Hash_Dep::canonicalize_plain()
 	} else {
 		text.resize(p - text.data());
 	}
+	TRACE("text(2)= %s", show(text)); //
 	check();
 }
 
@@ -106,15 +118,18 @@ string show_trace(const Hash_Dep &hash_dep)
 }
 
 void Hash_Dep::canonicalize()
+// TODO code is nearly identicaly to NDEBUG function; merge
 {
+	TRACE_FUNCTION();
+	check();
 	const char *base_dir= get_base_dir();
-	char *b= (char *)text.c_str(), *p= b;
+	TRACE("base_dir= %s", base_dir ? base_dir : "<NULL>");
+	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
 	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);
 	p += sizeof(word_t);
 	p= canonicalize_string(A_BEGIN | A_END, p);
 
-	// TODO code is identicaly to NDEBUG function; merge
 	if (base_dir) {
 		size_t base_dir_len= text.size() - *(word_size_t *)text.data();
 		memmove(
@@ -124,8 +139,9 @@ void Hash_Dep::canonicalize()
 		*(word_size_t *)text.data()= p - text.data() + 1;
 		text.resize(p - text.data() + 1 + base_dir_len);
 	} else {
-		text.resize(p - b);
+		text.resize(p - text.data());
 	}
+	check();
 }
 
 size_t Hash_Dep::get_dynamic_depth() const
@@ -135,4 +151,32 @@ size_t Hash_Dep::get_dynamic_depth() const
 	return ret;
 }
 
+
+void Hash_Dep::check() const
+/* The minimum length of TEXT is sizeof(word_t)+1: One word indicating a non-dynamic
+ * target, and a text of length one.  (The text cannot be empty.) */
+{
+	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
+	word_size_t b= *(const word_size_t *)text.data();
+	TRACE("b= %s", frmt("%zu", b)); //
+	TRACE("text.size()= %s", frmt("%zu", text.size())); //
+	TRACE("(b < text.size())= %s", frmt("%d", b < text.size())); //
+	TRACE("text.size()(2)= %s", frmt("%zu", text.size())); //
+	TRACE("b(2)= %s", frmt("%zu", b)); //
+	TRACE("static_cast <bool> (b < text.size())= %s", frmt("%d", static_cast <bool> (b < text.size()))); //
+
+	//
+//	int *pp= nullptr;
+//	*pp= 1;
+
+	//
+	bool yyy= true;
+	assert(yyy);
+
+//	bool xxx= b < text.size(); //
+//	TRACE("xxx= %s", frmt("%d", xxx)); //
+//	assert(xxx); //
+//	assert((b < text.size())); // XXX fix
+}
+		
 #endif /* ! NDEBUG */

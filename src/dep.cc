@@ -265,7 +265,7 @@ Hash_Dep Dynamic_Dep::get_target() const
 	text += Hash_Dep::string_from_word(f);
 	text += sin->object.unparametrized().get_name_nondynamic();
 
-	return Hash_Dep(text);
+	return Hash_Dep(Hash_Dep::string_from_size(0) + text);
 }
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const

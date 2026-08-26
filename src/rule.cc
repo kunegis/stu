@@ -54,6 +54,8 @@ Rule::Rule(
 	  copy_src(*copy_src_),
 	  copy_dst(target_->object.name)
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	assert(! copy_src.empty());
 	targets[0]= to <const Plain_Dep> (rebase(targets[0]));
 	assert(targets[0]);
@@ -91,7 +93,9 @@ Rule::Rule(
 	  is_content(is_content_),
 	  copy_src(copy_src_),
 	  copy_dst(copy_dst_)
-{ }
+{
+	TRACE_FUNCTION();
+}
 
 bool Rule::is_parametrized() const
 {
@@ -101,6 +105,8 @@ bool Rule::is_parametrized() const
 shared_ptr <const Rule> Rule::instantiate(
 	const std::map <string, string> &mapping) const
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	assert(is_parametrized());
 
 	std::vector <shared_ptr <const Plain_Dep> > new_targets(targets.size());
@@ -137,6 +143,7 @@ shared_ptr <const Rule> Rule::instantiate(
 shared_ptr <const Rule> Rule::rebase() const
 {
 	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	if (base_dir.empty()) return shared_from_this();
 
 	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets;
@@ -191,6 +198,8 @@ void Rule::check_unparametrized(
 	shared_ptr <const Dep> dep,
 	const std::set <string> &parameters) const
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	assert(dep != nullptr);
 
 	if (auto dynamic_dep= to <const Dynamic_Dep> (dep)) {
@@ -230,6 +239,8 @@ void Rule::check_unparametrized(
 
 void Rule::check_duplicate_target() const
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	for (size_t i= 0; i < targets.size(); ++i) {
 		for (size_t j= 0; j < i; ++j) {
 			if (! targets[i]->object
@@ -254,6 +265,8 @@ const std::vector <string> &Rule::get_parameters() const
 
 void Rule::canonicalize()
 {
+	TRACE_FUNCTION();
+	TRACE("targets[0]= %s", show_trace(targets[0]));
 	for (size_t i= 0; i < targets.size(); ++i) {
 		shared_ptr <Dep> d= targets[i]->clone();
 		shared_ptr <Plain_Dep> e= to <Plain_Dep> (d);
@@ -270,7 +283,9 @@ void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering)
 
 void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 {
+	TRACE_FUNCTION();
 	for (auto &rule: rules_) {
+		TRACE("rule->targets[0]= %s", show_trace(rule->targets[0]));
 		rule->canonicalize();
 		rule->check_duplicate_target();
 		if (! rule->is_parametrized()) {
@@ -312,10 +327,14 @@ shared_ptr <const Rule> Rule_Set::get(
 		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto ta: rule->targets) {
+			TRACE("ta= %s", show_trace(ta)); //
 			Hash_Dep t(ta->object.unparametrized());
+			TRACE("t(1)= %s", show_trace(t)); // 
 			if (! rule->base_dir.empty())
 				t= Hash_Dep(rule->base_dir, t);
+			TRACE("t(2)= %s", show_trace(t)); //
 			t.canonicalize();
+			TRACE("t(3)= %s", show_trace(t)); //
 			if (t == hash_dep)
 				found= true;
 		}
@@ -377,6 +396,7 @@ shared_ptr <const Rule> Rule_Set::get(
 
 void Rule_Set::print_for_option_P() const
 {
+	TRACE_FUNCTION();
 	std::unordered_set <shared_ptr <const Rule> > seen;
 	for (auto i: rules_unparam)  {
 		if (seen.find(i.second.second) != seen.end()) continue;
@@ -392,6 +412,7 @@ void Rule_Set::print_for_option_P() const
 
 void Rule_Set::print_for_option_I() const
 {
+	TRACE_FUNCTION();
 	std::set <string> filenames;
 	for (auto i: rules_unparam)  {
 		const Rule &rule= * i.second.second;
@@ -421,9 +442,13 @@ void Rule_Set::print_for_option_I() const
 
 void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 {
+	TRACE_FUNCTION();
+	TRACE("rule= %s", show(rule));
 	for (size_t i= 0; i < rule->targets.size(); ++i) {
+		TRACE("i= %s", frmt("%zu", i));
 		auto &t= rule->targets[i];
 		Hash_Dep hash_dep= t->object.unparametrized();
+		TRACE("hash_dep= %s", show_trace(hash_dep));
 		if (rules_unparam.count(hash_dep)) {
 			t->place <<
 				fmt("there cannot be a second rule for target %s",
@@ -441,6 +466,7 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 			throw ERR_LOGICAL;
 		}
 		rules_unparam[hash_dep]= {i, rule};
+		assert(rules_unparam.count(hash_dep) == 1);
 	}
 }
 

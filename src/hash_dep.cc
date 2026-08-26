@@ -4,7 +4,10 @@ Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {
 	assert(! hash_dep.get_base_dir());
-	assert(! base_dir.empty());
+	if (base_dir.empty()) {
+		text= hash_dep.text;
+		return;
+	}
 	*((word_size_t *)text.data())= hash_dep.text.size() + 1;
 	memcpy(
 		text.data() + sizeof(word_size_t),

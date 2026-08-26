@@ -1,5 +1,34 @@
 #include "hash_dep.hh"
 
+Hash_Dep::Hash_Dep(Flags flags, const Hash_Dep &target)
+//	: text(string_from_size(0) + string_from_word(flags | F_DYNAMIC) + target.text)
+{
+//	...; // XXX
+	assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
+	assert(flags < (1 << C_WORD));
+
+	const char *base_dir= target.get_base_dir();
+	if (base_dir) {
+		text= string(sizeof(word_t) + target.text.size(), '\0');
+		*(word_size_t *)text.data()=
+			sizeof(word_t) + *(const word_size_t *)target.text.data();
+		get_front_word_any()= flags | F_DYNAMIC;
+		memcpy(
+			text.data() + sizeof(word_size_t) + sizeof(word_t),
+			target.text.data() + sizeof(word_size_t),
+			target.text.size() - sizeof(word_size_t));
+	} else {
+		text= string(sizeof(word_t) + target.text.size(), '\0');
+		get_front_word_any()= flags | F_DYNAMIC;
+		memcpy(
+			text.data() + sizeof(word_size_t) + sizeof(word_t),
+			target.text.data() + sizeof(word_size_t),
+			target.text.size() - sizeof(word_size_t));
+	}
+
+	check(); // RM
+}
+
 Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {

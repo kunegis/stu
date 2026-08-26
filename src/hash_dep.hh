@@ -69,15 +69,9 @@ public:
 		check(); // RM
 	}
 
-	Hash_Dep(Flags flags, const Hash_Dep &target)
-	/* Makes the given target once more dynamic with the given
-	 * flags, which must *not* contain the 'dynamic' flag. */
-		: text(string_from_size(0) + string_from_word(flags | F_DYNAMIC) + target.text)
-	{
-		assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
-		assert(flags < (1 << C_WORD));
-		check(); // RM
-	}
+	Hash_Dep(Flags flags, const Hash_Dep &target);
+	/* Makes the given target once more dynamic with the given flags, which must *not*
+	 * contain the 'dynamic' flag. */
 
 	Hash_Dep(string base_dir, Hash_Dep hash_dep);
 	
@@ -146,7 +140,7 @@ public:
 	}
 
 	Flags get_front_word() const { return get_word(0); }
-	word_t &get_front_word_any() { return *(word_t *)&text[0]; }
+	word_t &get_front_word_any() { return *(word_t *)&text[sizeof(word_size_t)]; }
 
 	word_t &get_front_word_nondynamic()
 	/* Get the front byte, given that the target is not dynamic */

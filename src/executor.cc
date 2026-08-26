@@ -1013,7 +1013,7 @@ void Executor::check_unparametrized(
 
 	parameter_place << fmt(
 		"dynamic dependency %s must not contain parameter %s",
-		show(Hash_Dep(0, hash_dep)),
+		show(Hash_Dep(0, hash_dep)), // XXX
 		show(Prefix_View("$", parameter_name)));
 	Hash_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;

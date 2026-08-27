@@ -32,8 +32,6 @@ public:
 
 	shared_ptr <const Dynamic_Dep> get_dep() const { return dep; }
 
-	string get_parent_base_dir() const;
-
 	virtual bool want_delete() const override;
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished(Flags flags) const override;

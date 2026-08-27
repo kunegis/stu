@@ -32,6 +32,7 @@ void Executor::read_dynamic(
 	std::vector <shared_ptr <const Dep> > &deps,
 	shared_ptr <const Dep> dep,
 	Executor *dynamic_executor)
+// TODO is dynamic_executor always a Dynamic_Executor?
 {
 	TRACE_FUNCTION();
 	assert(deps.empty());
@@ -134,11 +135,11 @@ void Executor::read_dynamic(
 		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
-		Dynamic_Executor *exec=
-			dynamic_cast <Dynamic_Executor *> (dynamic_executor);
+//		Dynamic_Executor *exec=
+//			dynamic_cast <Dynamic_Executor *> (dynamic_executor);
 		
 		std::vector <shared_ptr <const Dep> > deps_new;
-		string parent_base_dir= exec->get_parent_base_dir();
+		string parent_base_dir= dynamic_executor->get_parent_base_dir(); // XXX exec is null
 		TRACE("parent_base_dir= '%s'", parent_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;
@@ -418,6 +419,14 @@ void Executor::operator<<(string text) const
 		}
 		depp_old->get_place() << msg;
 	}
+}
+
+string Executor::get_parent_base_dir() const
+/* All parents have the same base dir -- use the first returned */
+{
+	const Executor *e= get_parents().begin()->first;
+	if (! e->get_rule()) return "";
+	return e->get_rule()->base_dir;
 }
 
 bool Executor::want_delete() const

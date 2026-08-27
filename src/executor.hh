@@ -80,6 +80,7 @@ public:
 	std::map <Executor *, shared_ptr <const Dep> > &get_parents() { return parents; }
 	std::set <Executor *> get_children() { return children; }
 	shared_ptr <const Rule> get_rule() const { return rule; }
+	string get_parent_base_dir() const;
 
 	virtual bool want_delete() const;
 

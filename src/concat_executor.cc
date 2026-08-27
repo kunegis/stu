@@ -157,7 +157,7 @@ void Concat_Executor::notify_result(
 	assert(source);
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
-		!= (F_RESULT_NOTIFY | F_RESULT_COPY));
+		!= (F_RESULT_NOTIFY | F_RESULT_COPY)); // TODO useless assert
 	assert(dep_source);
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("dep_result= %s", show_trace(dep_result));

@@ -115,14 +115,6 @@ bool Dynamic_Executor::finished(Flags flags) const
 	return ret;
 }
 
-string Dynamic_Executor::get_parent_base_dir() const
-/* All parents have the same base dir -- use the first returned */
-{
-	const Executor *e= get_parents().begin()->first;
-	if (! e->get_rule()) return "";
-	return e->get_rule()->base_dir;
-}
-
 bool Dynamic_Executor::want_delete() const
 {
 	return to <Plain_Dep> (dep->strip_dynamic()) == nullptr;

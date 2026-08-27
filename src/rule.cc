@@ -330,11 +330,11 @@ shared_ptr <const Rule> Rule_Set::get(
 			TRACE("ta= %s", show_trace(ta)); //
 			Hash_Dep t(ta->object.unparametrized());
 			TRACE("t(1)= %s", show_trace(t)); // 
-			if (! rule->base_dir.empty())
-				t= Hash_Dep(rule->base_dir, t);
-			TRACE("t(2)= %s", show_trace(t)); //
+//			if (! rule->base_dir.empty())
+//				t= Hash_Dep(rule->base_dir, t);
+//			TRACE("t(2)= %s", show_trace(t)); //
 			t.canonicalize();
-			TRACE("t(3)= %s", show_trace(t)); //
+			TRACE("t(2)= %s", show_trace(t)); //
 			if (t == hash_dep)
 				found= true;
 		}

@@ -60,11 +60,13 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_marker("[");
 	}
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
+
 #ifndef NDEBUG
 	if (rendering & R_SHOW_FLAGS)
 		::render(Flags_View(get_word(i) & ~(F_PHONY | F_VARIABLE)),
 			parts, rendering);
 #endif /* ! NDEBUG */
+
 	if (get_word(i) & F_PHONY) {
 		parts.append_marker("@");
 	}
@@ -72,7 +74,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	parts.append_text(text.substr(
 		start,
 		base_dir
-		? base_dir - text.data() - start
+		? base_dir - text.data() - start - 1
 		: text.size() - start));
 	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
 		parts.append_marker("]");
@@ -188,6 +190,7 @@ void Hash_Dep::check() const
 /* The minimum length of TEXT is sizeof(word_t)+1: One word indicating a non-dynamic
  * target, and a text of length one.  (The text cannot be empty.) */
 {
+	TRACE_FUNCTION();
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
 	word_size_t b= *(const word_size_t *)text.data();
 	TRACE("b= %s", frmt("%zu", b)); //

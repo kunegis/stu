@@ -32,9 +32,11 @@ void Executor::read_dynamic(
 	std::vector <shared_ptr <const Dep> > &deps,
 	shared_ptr <const Dep> dep,
 	Executor *dynamic_executor)
-// TODO is dynamic_executor always a Dynamic_Executor?
+// TODO is dynamic_executor always a Dynamic_Executor?  No.  Rename to something else.
 {
 	TRACE_FUNCTION();
+	TRACE("dep_target= %s", show_trace(dep_target));
+	TRACE("dep= %s", show_trace(dep));
 	assert(deps.empty());
 	assert(dynamic_executor);
 	const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
@@ -57,7 +59,6 @@ void Executor::read_dynamic(
 
 		assert(hash_dep.is_file());
 		string filename= hash_dep.get_name_nondynamic();
-//		string base_dir= dynamic_executor->rule->base_dir;
 
 		bool delim= (dep_target->flags.get_flags() & (F_NEWLINE | F_NULL)) != 0;
 		/* Whether the dynamic dependency is delimiter-separated */
@@ -135,11 +136,8 @@ void Executor::read_dynamic(
 		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
-//		Dynamic_Executor *exec=
-//			dynamic_cast <Dynamic_Executor *> (dynamic_executor);
-		
 		std::vector <shared_ptr <const Dep> > deps_new;
-		string parent_base_dir= dynamic_executor->get_parent_base_dir(); // XXX exec is null
+		string parent_base_dir= dynamic_executor->get_parent_base_dir();
 		TRACE("parent_base_dir= '%s'", parent_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;

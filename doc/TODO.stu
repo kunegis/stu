@@ -1,4 +1,5 @@
-make bin/stu.debug && sh/rm_tmps && STU_TRACE='rule' bin/stu.debug -f tests/2.19-0000
+* make bin/stu.debug && sh/rm_tmps && STU_TRACE='executor' bin/stu.debug -f tests/2.19-0034
+** Problem is that in Executor::read_dynamic(), parent_base_dir, is "", but should be "list.dir".
 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 

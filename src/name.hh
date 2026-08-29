@@ -15,6 +15,7 @@
  */
 
 #include "place.hh"
+#include "show.hh"
 
 class Name
 {

@@ -1,3 +1,5 @@
+* Have multiple variants of Hash_Dep, without and without base_dir
+** Hash_Plain_Dep
 * make bin/stu.debug && sh/rm_tmps && STU_TRACE='executor' bin/stu.debug -f tests/2.19-0034
 ** Problem is that in Executor::read_dynamic(), parent_base_dir, is "", but should be "list.dir".
 
@@ -59,6 +61,13 @@ A: d/B {...}  %cd d  B: nonexistingfile # Make sure error message shows "d/nonex
 %cd dir . {...} # Same as "dir {...}", but must fail because chdir fails
 A: list.dir/C [list.dir/B] {...} %cd list.dir  C: [B] {...}  B {...} # Names from list.dir/B must be present in both . and list.dir/
 @clean: @dirA/clean @dirB/clean {...} # dirA and dirB have their own @clean rule, defined using %cd
+* Same as 2.19-0034, but with concatenation next to each dynamic dependency, i.e. [X] -> Y.[X]
+
+# Names in B are interpreted relatively to A.
+A: [@dir/x] {...}
+%cd dir
+@x: B;
+B = {...}
 
 #
 # %include -d

@@ -2,7 +2,7 @@
 #define OBJECT_HH
 
 #include "flags.hh"
-#include "hash_dep.hh"
+#include "hash_bare_dep.hh"
 #include "name.hh"
 #include "place.hh"
 #include "show.hh"
@@ -20,22 +20,22 @@ public:
 		assert((flags_ & ~F_PHONY) == 0);
 	}
 
-	Object(Hash_Dep hash_dep)
-	/* Unparametrized object. The passed HASH_DEP must be non-dynamic. */
-		: flags(hash_dep.get_front_word_nondynamic() & F_PHONY),
-		  name(hash_dep.get_name_nondynamic())
+	Object(Hash_Bare_Dep hash_bare_dep)
+	/* Unparametrized object. The passed Hash_Plain_Dep must be non-dynamic. */
+		: flags(hash_bare_dep.get_front_word_nondynamic() & F_PHONY),
+		  name(hash_bare_dep.get_name_nondynamic())
 	{
-		assert(! hash_dep.is_dynamic());
+		assert(! hash_bare_dep.is_dynamic());
 	}
 
-	Hash_Dep instantiate(const std::map <string, string> &mapping) const {
-		return Hash_Dep(flags, name.instantiate(mapping));
+	Hash_Bare_Dep instantiate(const std::map <string, string> &mapping) const {
+		return Hash_Bare_Dep(flags, name.instantiate(mapping));
 	}
 
-	Hash_Dep unparametrized() const
+	Hash_Bare_Dep unparametrized() const
 	/* The corresponding unparametrized object.  Must have zero parameters. */
 	{
-		return Hash_Dep(flags, name.unparametrized());
+		return Hash_Bare_Dep(flags, name.unparametrized());
 	}
 };
 
@@ -84,8 +84,8 @@ public:
 	shared_ptr <Placed_Object> instantiate(
 		const std::map <string, string> &mapping) const;
 
-	Hash_Dep unparametrized() const {
-		return Hash_Dep(flags, name.unparametrized());
+	Hash_Bare_Dep unparametrized() const {
+		return Hash_Bare_Dep(flags, name.unparametrized());
 	}
 
 	Object get_Object() const {

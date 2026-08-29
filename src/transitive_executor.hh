@@ -37,7 +37,7 @@ protected:
 private:
 	~Transitive_Executor();
 
-	std::vector <Hash_Dep> hash_deps;
+	std::vector <Hash_Bare_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  All are phonies.
 	 * Contains at least one element. */
 

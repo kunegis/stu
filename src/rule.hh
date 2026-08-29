@@ -141,7 +141,7 @@ public:
 	 * targets, print and throw a logical error. */
 
 	shared_ptr <const Rule> get(
-		Hash_Dep hash_dep,
+		Hash_Bare_Dep hash_bare_dep,
 		shared_ptr <const Rule> &param_rule,
 		std::map <string, string> &mapping_parameter,
 		const Place &place,
@@ -159,7 +159,7 @@ public:
 	void print_for_option_I() const;
 
 private:
-	std::unordered_map <Hash_Dep, std::pair <Target_Index, shared_ptr <const Rule> > >
+	std::unordered_map <Hash_Bare_Dep, std::pair <Target_Index, shared_ptr <const Rule> > >
 		rules_unparam;
 	/* All unparametrized rules by their targets.  Rules with multiple targets are
 	 * included multiple times, for each * of their targets.  None of the targets has
@@ -201,7 +201,7 @@ public:
 class Best_Rule_Finder
 {
 public:
-	void check(const Hash_Dep &, shared_ptr <const Rule> , Target_Index);
+	void check(const Hash_Bare_Dep &, shared_ptr <const Rule> , Target_Index);
 	size_t count() const { return found_rules.size(); }
 
 	/* Access the best rule.  The best rule must be unique. */

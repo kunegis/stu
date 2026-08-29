@@ -16,7 +16,7 @@ Transitive_Executor::Transitive_Executor(
 	assert(to <Plain_Dep> (dep_link));
 	shared_ptr <const Plain_Dep> plain_dep= to <Plain_Dep> (dep_link);
 
-	Hash_Dep hash_dep= plain_dep->object.unparametrized();
+	Hash_Bare_Dep hash_dep= plain_dep->object.unparametrized();
 	assert(hash_dep.is_phony());
 
 	if (rule == nullptr)
@@ -50,10 +50,10 @@ Transitive_Executor::Transitive_Executor(
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
 	 * in the dependency.  Also, add the flags. */
-	for (Hash_Dep t: hash_deps) {
+	for (Hash_Bare_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags.get_flags() & (F_WORD & ~F_DYNAMIC));
-		executors_by_hash_dep[t]= {target_index, this};
+		executors_by_dep[t]= {target_index, this};
 	}
 
 	for (auto &dep: rule->deps) {

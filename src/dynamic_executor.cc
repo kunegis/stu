@@ -21,9 +21,10 @@ Dynamic_Executor::Dynamic_Executor(
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-		Hash_Dep hash_dep_base(inner_plain_dep->object.flags,
+		Hash_Bare_Dep hash_dep_base(inner_plain_dep->object.flags,
 			inner_plain_dep->object.name.unparametrized());
-		Hash_Dep hash_dep= dep->get_target();
+		// TODO rename to avoid 'base'
+		Hash_Bare_Dep hash_dep= dep->get_target();
 		Target_Index target_index;
 		TRACE("hash_dep= %s", show(hash_dep));
 		try {
@@ -39,14 +40,14 @@ Dynamic_Executor::Dynamic_Executor(
 			raise(e);
 			return;
 		}
-		Hash_Dep hash_dep_with_parent_base_dir= hash_dep;
+		Hash_Based_Dep hash_dep_with_parent_base_dir(hash_dep);
 		if (parent->get_rule()) {
 			// TODO can it ever happen that parent->rule is null?
 			string base_dir= parent->get_rule()->base_dir;
 			hash_dep_with_parent_base_dir=
-				Hash_Dep(base_dir, hash_dep_with_parent_base_dir);
+				Hash_Based_Dep(base_dir, hash_dep_with_parent_base_dir);
 		}
-		executors_by_hash_dep[hash_dep_with_parent_base_dir]= {target_index, this};
+		executors_by_dep[hash_dep_with_parent_base_dir]= {target_index, this};
 	}
 
 	parents.erase(parent);

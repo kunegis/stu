@@ -24,8 +24,8 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
-	Executor::executors_by_hash_dep;
+std::unordered_map <Hash_Based_Dep, std::pair <Target_Index, Executor *> >
+	Executor::executors_by_dep;
 
 void Executor::read_dynamic(
 	shared_ptr <const Plain_Dep> dep_target,
@@ -41,7 +41,7 @@ void Executor::read_dynamic(
 	assert(dynamic_executor);
 	const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
 	assert(object.name.get_n() == 0);
-	const Hash_Dep hash_dep= object.unparametrized();
+	const Hash_Bare_Dep hash_dep= object.unparametrized();
 
 	try {
 		/* Check:  variable dependencies are not allowed in multiply dynamic
@@ -88,12 +88,12 @@ void Executor::read_dynamic(
 
 			/* Check that there are no input dependencies */
 			if (! input.empty()) {
-				Hash_Dep hash_dep_dynamic(0, hash_dep);
+				Hash_Bare_Dep hash_dep_dynamic(0, hash_dep);
 				place_input << fmt(
 					"dynamic dependency %s must not contain input redirection %s",
 					show(hash_dep_dynamic),
 					show(Prefix_View("<", input)));
-				Hash_Dep hash_dep_file= hash_dep;
+				Hash_Bare_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
 					&= ~F_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
@@ -202,12 +202,13 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 	 * Cached executors
 	 */
 
-	const Hash_Dep hash_dep= dep->get_target();
+	const Hash_Bare_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
-	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep, parent_base_dir);
-	auto it= executors_by_hash_dep.find(target_for_cache);
+	const Hash_Based_Dep target_for_cache=
+		get_target_for_cache(hash_dep, parent_base_dir);
+	auto it= executors_by_dep.find(target_for_cache);
 
-	if (it != executors_by_hash_dep.end()) {
+	if (it != executors_by_dep.end()) {
 		TRACE("Executor already exists");
 		Target_Index target_index= it->second.first;
 		executor= it->second.second;
@@ -257,9 +258,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 		shared_ptr <const Plain_Dep> target_plain_dep;
 		Target_Index target_index;
 		try {
-			Hash_Dep hash_dep_without_flags= hash_dep;
-			hash_dep_without_flags.get_front_word_nondynamic()
-				&= F_PHONY;
+			Hash_Bare_Dep hash_dep_without_flags= hash_dep;
+			hash_dep_without_flags.get_front_word_nondynamic() &= F_PHONY;
 //			hash_dep_without_flags= Hash_Dep(base_dir, hash_dep_without_flags);
 //			...; // prepend calling_base_dir
 			rule_child= rule_set.get(
@@ -807,7 +807,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string base_dir)
+Hash_Based_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string base_dir)
 {
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
@@ -817,11 +817,7 @@ Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string base_dir)
 		hash_dep.get_front_word_any() &= (word_t)F_CACHE;
 	}
 
-	if (! base_dir.empty()) {
-		hash_dep= Hash_Dep(base_dir, hash_dep);
-	}
-	
-	return hash_dep;
+	return Hash_Based_Dep(base_dir, hash_dep);
 }
 
 shared_ptr <const Dep> Executor::append_top(
@@ -1007,7 +1003,7 @@ bool Executor::same_dependency_for_print(
 
 void Executor::check_unparametrized(
 	shared_ptr <const Dep> &j,
-	Hash_Dep hash_dep,
+	Hash_Bare_Dep hash_dep,
 	bool &found_error)
 {
 	TRACE_FUNCTION();
@@ -1020,9 +1016,9 @@ void Executor::check_unparametrized(
 
 	parameter_place << fmt(
 		"dynamic dependency %s must not contain parameter %s",
-		show(Hash_Dep(0, hash_dep)), // XXX
+		show(Hash_Bare_Dep(0, hash_dep)), 
 		show(Prefix_View("$", parameter_name)));
-	Hash_Dep hash_dep_base= hash_dep;
+	Hash_Bare_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;
 	hash_dep_base.get_front_word_nondynamic()
 		|= (hash_dep.get_front_word_nondynamic() & F_PHONY);

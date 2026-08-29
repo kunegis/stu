@@ -218,9 +218,9 @@ bool Plain_Dep::find_parameter(
 	return true;
 }
 
-Hash_Dep Plain_Dep::get_target() const
+Hash_Bare_Dep Plain_Dep::get_target() const
 {
-	Hash_Dep ret= object.unparametrized();
+	Hash_Bare_Dep ret= object.unparametrized();
 	ret.get_front_word_nondynamic() |= (word_t)(flags.get_flags() & F_WORD);
 	return ret;
 }
@@ -247,7 +247,7 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 #endif
 }
 
-Hash_Dep Dynamic_Dep::get_target() const
+Hash_Bare_Dep Dynamic_Dep::get_target() const
 {
 	string text;
 	const Dep *d= this;
@@ -255,17 +255,17 @@ Hash_Dep Dynamic_Dep::get_target() const
 		Flags f= F_DYNAMIC;
 		assert(d->flags.get_flags() & F_DYNAMIC);
 		f |= d->flags.get_flags() & F_WORD;
-		text += Hash_Dep::string_from_word(f);
+		text += string_from_word(f);
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get();
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d));
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d);
 	assert(!(sin->flags.get_flags() & F_DYNAMIC));
 	Flags f= sin->flags.get_flags() & F_WORD;
-	text += Hash_Dep::string_from_word(f);
+	text += string_from_word(f);
 	text += sin->object.unparametrized().get_name_nondynamic();
 
-	return Hash_Dep(Hash_Dep::string_from_size(0) + text);
+	return Hash_Bare_Dep(text);
 }
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
@@ -449,7 +449,7 @@ void Concat_Dep::normalize_concat(
 	}
 }
 
-Hash_Dep Concat_Dep::get_target() const /* unreachable */
+Hash_Bare_Dep Concat_Dep::get_target() const /* unreachable */
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	unreachable();

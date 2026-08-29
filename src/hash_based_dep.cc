@@ -1,9 +1,7 @@
-#include "hash_dep.hh"
+#include "hash_based_dep.hh"
 
-Hash_Dep::Hash_Dep(Flags flags, const Hash_Dep &target)
-//	: text(string_from_size(0) + string_from_word(flags | F_DYNAMIC) + target.text)
+Hash_Based_Dep::Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target)
 {
-//	...; // XXX
 	assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
 	assert(flags < (1 << C_WORD));
 
@@ -29,7 +27,7 @@ Hash_Dep::Hash_Dep(Flags flags, const Hash_Dep &target)
 	check(); // RM
 }
 
-Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
+Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {
 	assert(! hash_dep.get_base_dir());
@@ -50,7 +48,11 @@ Hash_Dep::Hash_Dep(string base_dir, Hash_Dep hash_dep)
 	check(); 
 }
 
-void Hash_Dep::render(Parts &parts, Rendering rendering) const
+Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
+	: text(string_from_size(0) + d.get_text())
+{ }
+
+void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
 {
 	check();
 	const char *base_dir= get_base_dir();
@@ -88,7 +90,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	}
 }
 
-void Hash_Dep::canonicalize_plain()
+void Hash_Based_Dep::canonicalize_plain()
 {
 	TRACE_FUNCTION();
 	check();
@@ -115,43 +117,26 @@ void Hash_Dep::canonicalize_plain()
 	check();
 }
 
-string Hash_Dep::string_from_word(Flags flags)
-{
-	assert(flags < 1 << C_WORD);
-	char ret[sizeof(word_t) + 1];
-	ret[sizeof(word_t)]= '\0';
-	word_t w= (word_t)flags;
-	memcpy(ret, &w, sizeof(word_t)); /* Assigning it directly is undefined behavior */
-	return string(ret, sizeof(word_t));
-}
-
-string Hash_Dep::string_from_size(size_t size)
-{
-	string ret(sizeof(word_size_t), 0);
-	*(word_size_t *)ret.data()= size;
-	return ret;
-}
-
-void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering)
+void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
 {
 	hash_dep.render(parts, rendering);
 }
 
-size_t std::hash <Hash_Dep> ::operator()(const Hash_Dep &hash_dep) const
+size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_dep) const
 {
-	return std::hash <string> ()(hash_dep.get_text());
+	return std::hash <string> ()(hash_based_dep.get_text());
 }
 
 #ifndef NDEBUG
 
-string show_trace(const Hash_Dep &hash_dep)
+string show_trace(const Hash_Based_Dep &hash_dep)
 {
 	Parts parts;
 	render(hash_dep, parts, R_SHOW_FLAGS);
 	return show(parts, S_DEBUG);
 }
 
-void Hash_Dep::canonicalize()
+void Hash_Based_Dep::canonicalize()
 // TODO code is nearly identicaly to NDEBUG function; merge
 {
 	TRACE_FUNCTION();
@@ -178,7 +163,7 @@ void Hash_Dep::canonicalize()
 	check();
 }
 
-size_t Hash_Dep::get_dynamic_depth() const
+size_t Hash_Based_Dep::get_dynamic_depth() const
 {
 	size_t ret;
 	for (ret= 0; get_word(ret) & F_DYNAMIC; ++ret);
@@ -186,7 +171,7 @@ size_t Hash_Dep::get_dynamic_depth() const
 }
 
 
-void Hash_Dep::check() const
+void Hash_Based_Dep::check() const
 /* The minimum length of TEXT is sizeof(word_t)+1: One word indicating a non-dynamic
  * target, and a text of length one.  (The text cannot be empty.) */
 {

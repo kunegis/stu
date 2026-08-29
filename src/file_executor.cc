@@ -22,15 +22,15 @@ File_Executor::File_Executor(
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
 	swap(mapping_parameter, mapping_parameter_);
-	Hash_Dep hash_dep_= dep->get_target();
+	Hash_Bare_Dep hash_dep_= dep->get_target();
 	TRACE("hash_dep= %s", show_trace(hash_dep_));
 	assert(! hash_dep_.is_dynamic());
 
 	/* Later replaced with all targets from the rule, if a rule exists */
-	Hash_Dep hash_dep_no_flags= hash_dep_;
+	Hash_Bare_Dep hash_dep_no_flags= hash_dep_;
 	hash_dep_no_flags.get_front_word_nondynamic() &= F_PHONY;
 	hash_deps.push_back(hash_dep_no_flags);
-	executors_by_hash_dep[hash_dep_no_flags]= {target_index, this};
+	executors_by_dep[hash_dep_no_flags]= {target_index, this};
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -45,7 +45,7 @@ File_Executor::File_Executor(
 	if (rule) {
 		hash_deps.clear();
 		for (auto t: rule->targets) {
-			Hash_Dep hd= t->object.unparametrized();
+			Hash_Bare_Dep hd= t->object.unparametrized();
 			hd.get_front_word_nondynamic() |=
 				t->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
@@ -59,7 +59,7 @@ File_Executor::File_Executor(
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
 	 * in the dependency. */
 	for (size_t i= 0; i < hash_deps.size(); ++i)
-		executors_by_hash_dep[hash_deps[i]]= {i, this};
+		executors_by_dep[hash_deps[i]]= {i, this};
 
 	if (rule != nullptr) {
 		TRACE("There is a rule for this executor");
@@ -224,7 +224,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 
 		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
-			const Hash_Dep hash_dep= hash_deps[i];
+			const Hash_Bare_Dep hash_dep= hash_deps[i];
 			if (! hash_dep.is_file()) continue;
 			check_file_was_built(hash_dep, rule->targets[i]->place);
 		}
@@ -256,7 +256,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		}
 
 		if (! param_rule->is_copy()) {
-			Hash_Dep hash_dep= parents.begin()->second->get_target();
+			Hash_Bare_Dep hash_dep= parents.begin()->second->get_target();
 			param_rule->command->place << fmt("command for %s %s",
 				    show(hash_dep), reason);
 		} else {
@@ -508,7 +508,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		/* Now, set to State::MISSING when a file is found not to exist */
 
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
-			const Hash_Dep &hash_dep= hash_deps[i];
+			const Hash_Bare_Dep &hash_dep= hash_deps[i];
 			if (! hash_dep.is_file())
 				continue;
 			if (check_file_target(hash_dep, i,
@@ -529,13 +529,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (! (state & State::NEED_BUILD)) {
 		TRACE("Check whether target is phony of not-yet executed command");
 		bool has_file= false; /* One of the targets is a file */
-		for (const Hash_Dep &hash_dep: hash_deps) {
+		for (const Hash_Bare_Dep &hash_dep: hash_deps) {
 			if (hash_dep.is_file()) {
 				has_file= true;
 				break;
 			}
 		}
-		for (const Hash_Dep &hash_dep: hash_deps) {
+		for (const Hash_Bare_Dep &hash_dep: hash_deps) {
 			if (! hash_dep.is_phony())
 				continue;
 			if (phonies.count(hash_dep.get_name_nondynamic()) == 0) {
@@ -597,7 +597,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	/* We have to start a job now */
 	print_command();
-	for (const Hash_Dep &hash_dep: hash_deps) {
+	for (const Hash_Bare_Dep &hash_dep: hash_deps) {
 		if (! hash_dep.is_phony())
 			continue;
 		Timestamp timestamp_now= Timestamp::now();
@@ -665,7 +665,7 @@ void File_Executor::print_as_job() const
 }
 
 bool File_Executor::check_file_target(
-	const Hash_Dep &target,
+	const Hash_Bare_Dep &target,
 	Target_Index index,
 	shared_ptr <const Dep> dep_link,
 	bool no_execution)
@@ -824,7 +824,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (error)
 		return;
 
-	Hash_Dep hash_dep= dep->get_target();
+	Hash_Bare_Dep hash_dep= dep->get_target();
 	assert(! hash_dep.is_dynamic());
 	const char *filename= hash_dep.get_name_c_str_nondynamic();
 	size_t filesize;
@@ -836,7 +836,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	FILE *file= fopen(filename, "r");
 	if (!file) {
 		if (errno == ENOENT) {
-			Hash_Dep hash_dep_variable=
+			Hash_Bare_Dep hash_dep_variable=
 				to <Plain_Dep> (dep)->object.unparametrized();
 			if (rule == nullptr) {
 				dep->get_place() <<
@@ -951,7 +951,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	return false;
 }
 
-void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
+void File_Executor::check_file_was_built(Hash_Bare_Dep hash_dep, const Place &place)
 {
 	TRACE_FUNCTION();
 	const char *filename= hash_dep.get_name_c_str_nondynamic();
@@ -1006,7 +1006,7 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 
 void File_Executor::check_file_target_without_rule(
 	shared_ptr <const Dep> dep,
-	Hash_Dep &hash_dep,
+	Hash_Bare_Dep &hash_dep,
 	Executor *parent,
 	bool &rule_not_found)
 {
@@ -1049,7 +1049,7 @@ bool File_Executor::start(
 		 * whether the source exists in the cache */
 		if (rule->deps.at(0)->flags.get_flags() & F_OPTIONAL) {
 			Executor *executor_source_base=
-				executors_by_hash_dep.at(Hash_Dep(0, source)).second;
+				executors_by_dep.at(Hash_Bare_Dep(0, source)).second;
 			assert(executor_source_base);
 			File_Executor *executor_source
 				= dynamic_cast <File_Executor *> (executor_source_base);

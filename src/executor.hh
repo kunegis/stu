@@ -43,6 +43,7 @@
  */
 
 #include "buffer.hh"
+#include "hash_based_dep.hh"
 #include "job.hh"
 #include "place.hh"
 #include "proceed.hh"
@@ -122,10 +123,8 @@ public:
 	// TODO maybe this should be in rule.hh
 	/* Set before calling main_loop() */
 
-	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep, string base_dir);
-	// TODO move function to Hash_Dep
-	/* Get the target value used for caching.  I.e, return TARGET with certain flags
-	 * removed. */
+	static Hash_Based_Dep get_target_for_cache(
+		Hash_Bare_Dep hash_dep, string base_dir);
 	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.  Only used for finding
 	 * cycles. */
@@ -233,8 +232,8 @@ protected:
 	/* The timepoint of the last time wait() returned.  No file in the file system
 	 * should be newer than this. */
 
-	static std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
-		executors_by_hash_dep;
+	static std::unordered_map <Hash_Based_Dep, std::pair <Target_Index, Executor *> >
+		executors_by_dep;
 	/* All cached Executor objects by each of their Target.  Such Executor objects are
 	 * never deleted. */
 
@@ -256,7 +255,7 @@ private:
 
 	void check_unparametrized(
 		shared_ptr <const Dep> &dep,
-		Hash_Dep hash_dep,
+		Hash_Bare_Dep hash_bare_dep,
 		bool &found_error);
 
 	static bool same_dependency_for_print(shared_ptr <const Dep> d1,

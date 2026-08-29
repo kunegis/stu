@@ -1,6 +1,8 @@
 #ifndef PLACE_HH
 #define PLACE_HH
 
+#include <assert.h>
+
 /*
  * Denotes a position in Stu source code.  This is either in a file or in
  * arguments/options to Stu.  A Place object can also be empty, which is used as the

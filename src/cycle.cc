@@ -89,8 +89,9 @@ void Cycle::print(
 	/* If the two targets are different (but have the same rule because they match the
 	 * same pattern and/or because they are two different targets of a multitarget
 	 * rule), then output a notice to that effect. */
-	Hash_Dep t1= path.back()->get_parents().begin()->second->get_target();
-	Hash_Dep t2= dep->get_target();
+	// TODO rename to d1, d2
+	Hash_Bare_Dep t1= path.back()->get_parents().begin()->second->get_target();
+	Hash_Bare_Dep t2= dep->get_target();
 	const char *c1= t1.get_name_c_str_any();
 	const char *c2= t2.get_name_c_str_any();
 	if (strcmp(c1, c2)) {

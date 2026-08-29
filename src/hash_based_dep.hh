@@ -1,5 +1,5 @@
-#ifndef HASH_DEP_HH
-#define HASH_DEP_HH
+#ifndef HASH_BASED_DEP_HH
+#define HASH_BASED_DEP_HH
 
 /*
  * Representation of a simple dependency, used as the key for caching of Executor objects.
@@ -36,28 +36,18 @@
  * target of the root dependency, in which case most functions should not be used.
  */
 
-#include <stdint.h>
+#include "hash_dep_utils.hh"
 
-#include "show.hh"
-
-typedef uint16_t word_t;
-// TODO find a way to automate the choice of uint<N>_t based on C_WORD.  (Will make the
-// static_assert unnecessary)
-typedef size_t word_size_t; /* Index in the string */
-
-static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
-	|| sizeof(word_t) == sizeof(uint16_t) && C_WORD > 8 && C_WORD <= 16);
-
-class Hash_Dep
+class Hash_Based_Dep
 {
 public:
 	explicit
-	Hash_Dep(std::string_view text_): text(text_) {
+	Hash_Based_Dep(std::string_view text_): text(text_) {
 		check(); 
 	}
 	/* TEXT_ is the full text field of this Hash_Dep */
 
-	Hash_Dep(Flags flags, string name)
+	Hash_Based_Dep(Flags flags, string name)
 	/* A plain target; no base dir */
 		// TODO use direct std::string constructor with correct length, then
 		// assign content directly
@@ -69,11 +59,12 @@ public:
 		check(); // RM
 	}
 
-	Hash_Dep(Flags flags, const Hash_Dep &target);
+	Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target);
 	/* Makes the given target once more dynamic with the given flags, which must *not*
 	 * contain the 'dynamic' flag. */
 
-	Hash_Dep(string base_dir, Hash_Dep hash_dep);
+	Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_based_dep);
+	Hash_Based_Dep(Hash_Bare_Dep d);
 	
 	const string &get_text() const { return text; }
 	string &get_text() { return text; }
@@ -174,15 +165,14 @@ public:
 			: nullptr;
 	}
 	
-	bool operator==(const Hash_Dep &target) const { return text == target.text; }
-	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
+	bool operator==(const Hash_Based_Dep &d) const { return text == d.text; }
+	bool operator!=(const Hash_Based_Dep &d) const { return text != d.text; }
 	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 	// TODO these two functions should not be needed if we always have constructors
 	// that properly use std::string(size_t, '\0').
-	static string string_from_word(Flags flags);
-	/* Return a string of length sizeof(word_t) containing the given flags */
-	static string string_from_size(size_t size);
+//	static string string_from_word(Flags flags);
+//	/* Return a string of length sizeof(word_t) containing the given flags */
 
 #ifndef NDEBUG
 	void canonicalize(); /* In-place */
@@ -201,17 +191,17 @@ private:
 #endif /* ! NDEBUG */
 };
 
-void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering= 0);
+void render(const Hash_Based_Dep &hash_based_dep, Parts &parts, Rendering rendering= 0);
 
 #ifndef NDEBUG
-string show_trace(const Hash_Dep &hash_dep);
+string show_trace(const Hash_Based_Dep &hash_based_dep);
 #endif /* ! NDEBUG */
 
 namespace std {
-	template <> struct hash <Hash_Dep>
+	template <> struct hash <Hash_Based_Dep>
 	{
-		size_t operator()(const Hash_Dep &hash_dep) const;
+		size_t operator()(const Hash_Based_Dep &hash_based_dep) const;
 	};
 }
 
-#endif /* ! HASH_DEP_HH */
+#endif /* ! HASH_BASED_DEP_HH */

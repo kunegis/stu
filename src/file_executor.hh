@@ -61,9 +61,9 @@ protected:
 private:
 	friend class Executor;
 
-	std::vector <Hash_Dep> hash_deps;
+	std::vector <Hash_Bare_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
-	 * targets are non-dynamic, i.e., only plain files and phonies are included. */
+	 * entries are non-dynamic, i.e., only plain files and phonies are included. */
 
 	Timestamp *timestamps_old;
 	/* Timestamp of each file target, before the command is executed.  Only valid once
@@ -108,17 +108,17 @@ private:
 	void print_command() const;
 
 	bool check_file_target(
-		const Hash_Dep &target,
+		const Hash_Bare_Dep &target,
 		Target_Index index,
 		shared_ptr <const Dep> dep_link,
 		bool no_execution);
 	/* Return whether we are done */
 
 	void write_content(const char *filename, const Command &command);
-	void check_file_was_built(Hash_Dep hash_dep, const Place &place);
+	void check_file_was_built(Hash_Bare_Dep hash_dep, const Place &place);
 	void check_file_target_without_rule(
 		shared_ptr <const Dep> dep,
-		Hash_Dep &hash_dep,
+		Hash_Bare_Dep &hash_dep,
 		Executor *parent,
 		bool &rule_not_found);
 	bool start(

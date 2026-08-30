@@ -1,0 +1,14 @@
+A: d d/B
+{
+	cp d/B A
+	grep -q -F -x -e 'content' A
+}
+
+-p d { mkdir -p d ; }
+
+d/C = D;
+D = {content}
+
+%cd d
+
+B = C;

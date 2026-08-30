@@ -1,9 +1,3 @@
-A: dir/B {...}
-dir/C = D;
-D = {content}
-%cd dir
-B = C;
-
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 

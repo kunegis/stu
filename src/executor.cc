@@ -137,7 +137,7 @@ void Executor::read_dynamic(
 		top->top= top_top;
 
 		std::vector <shared_ptr <const Dep> > deps_new;
-		string parent_base_dir= dynamic_executor->get_dynamic_base_dir();
+		string parent_base_dir= dynamic_executor->get_dynamic_base_dir(); // TODO rename dynamic_base_dir
 		TRACE("parent_base_dir= '%s'", parent_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;
@@ -810,6 +810,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 }
 
 Hash_Based_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string base_dir)
+// TODO arg: rename dynamic_base_dir
 {
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
@@ -954,6 +955,7 @@ Proceed Executor::connect(
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
 
+	// TODO rename dynamic_base_dir
 	string base_dir= get_dynamic_base_dir();
 	if (base_dir.empty()) {
 		if (rule) {

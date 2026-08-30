@@ -1,4 +1,3 @@
-* 2.19-0034
 * Same as 2.19-0034, but with concatenation next to each dynamic dependency, i.e. [X] -> Y.[X]
 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034

@@ -327,14 +327,8 @@ shared_ptr <const Rule> Rule_Set::get(
 		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto ta: rule->targets) {
-			TRACE("ta= %s", show_trace(ta)); //
 			Hash_Bare_Dep t(ta->object.unparametrized());
-			TRACE("t(1)= %s", show_trace(t)); // 
-//			if (! rule->base_dir.empty())
-//				t= Hash_Dep(rule->base_dir, t);
-//			TRACE("t(2)= %s", show_trace(t)); //
 			t.canonicalize();
-			TRACE("t(2)= %s", show_trace(t)); //
 			if (t == hash_dep)
 				found= true;
 		}

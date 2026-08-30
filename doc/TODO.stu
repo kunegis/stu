@@ -1,3 +1,5 @@
+* Like 2.19-0035, but the dynamic dependency has index 0, i.e., [X].data instead of list.[X]
+* Like 2.19-0035, but with list.[[X]]
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 
 A = [list.dir/C] {...}  %cd list.dir  C {...}
 * Output redirection in %cd mode

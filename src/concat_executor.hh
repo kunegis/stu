@@ -11,6 +11,9 @@
  * Concatenated executors always have exactly one parent.  They are not cached, and they
  * are deleted when done.  Thus, they also don't need the 'done' field.  (But the parent
  * class has it.)  For the same reason, they also cannot appear in cycles.
+ *
+ * Concatenated executors have at least two components.  If they had one, they would
+ * behave likely dynamic executors, except that they would not be cached.
  */
 
 #include "executor.hh"

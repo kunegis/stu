@@ -55,7 +55,7 @@ private:
 	bool finished() const;
 	void launch_stage_normal();
 
-	virtual string get_dynamic_base_dir() const override;
+	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const override;
 };
 
 #endif /* ! CONCAT_EXECUTOR_HH */

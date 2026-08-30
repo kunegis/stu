@@ -1,6 +1,7 @@
 #include "concat_executor.hh"
 
 #include "place.hh"
+#include "show.hh"
 #include "show_dep.hh"
 #include "show_flags.hh"
 #include "trace.hh"
@@ -181,7 +182,16 @@ void Concat_Executor::notify_result(
 	}
 }
 
-string Concat_Executor::get_dynamic_base_dir() const
+string Concat_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const
 {
-	return dynamic_base_dir;
+	TRACE_FUNCTION(show_trace(dep));
+	TRACE("child= %s", child ? show_trace(child) : "NULL");
+	TRACE("for_rebase= %s", frmt("%d", for_rebase));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
+	
+	if (! child || child->index == 0) {
+		return dynamic_base_dir;
+	} else {
+		return "";
+	}
 }

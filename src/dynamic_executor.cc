@@ -170,7 +170,7 @@ void Dynamic_Executor::notify_result(
 	}
 }
 
-string Dynamic_Executor::get_dynamic_base_dir() const
+string Dynamic_Executor::get_dynamic_base_dir(shared_ptr <const Dep>, bool) const
 {
 	return dynamic_base_dir;
 }

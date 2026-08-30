@@ -137,16 +137,17 @@ void Executor::read_dynamic(
 		top->top= top_top;
 
 		std::vector <shared_ptr <const Dep> > deps_new;
-		string parent_base_dir= dynamic_executor->get_dynamic_base_dir(); // TODO rename dynamic_base_dir
-		TRACE("parent_base_dir= '%s'", parent_base_dir);
+		string dynamic_base_dir= dynamic_executor->get_dynamic_base_dir(
+			dep_target, true);
+		TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;
 			TRACE("j= %s", show_trace(j));
 			shared_ptr <Dep> j_new= j->clone();
 			j_new->top= top;
 			shared_ptr <const Dep> k= j_new;
-			if (! parent_base_dir.empty()) {
-				k= rebase(k, parent_base_dir);
+			if (! dynamic_base_dir.empty()) {
+				k= rebase(k, dynamic_base_dir);
 			}
 			TRACE("k= %s", show_trace(k));
 			deps_new.push_back(k);
@@ -945,7 +946,7 @@ bool Executor::check_clash_with_target_flags(
 	return false;
 }
 
-string Executor::get_dynamic_base_dir() const
+string Executor::get_dynamic_base_dir(shared_ptr <const Dep>, bool) const
 {
 	if (rule) {
 		return rule->base_dir;
@@ -964,15 +965,7 @@ Proceed Executor::connect(
 	assert(! to <Root_Dep> (dep_child));
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
-
-	string dynamic_base_dir= get_dynamic_base_dir();
-//	if (base_dir.empty()) {
-//		if (rule) {
-//			base_dir= rule->base_dir;
-//		} else {
-//			base_dir= "";
-//		}
-//	}
+	string dynamic_base_dir= get_dynamic_base_dir(dep_child, false);
 	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 	
 	Executor *child= get_executor(dep_child, dynamic_base_dir);

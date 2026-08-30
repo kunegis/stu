@@ -49,7 +49,7 @@ private:
 	Done done;
 	string dynamic_base_dir;
 
-	virtual string get_dynamic_base_dir() const override;
+	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const override;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

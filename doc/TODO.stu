@@ -63,6 +63,7 @@ B = {...}
 
 * In -j mode, multiple commands with different base directories are ru nin parallel.
 * A %cd dynamic dependency, which contains '(A B C) () list.(A B C).xyz', i.e., various non-normalized dependencies.
+* tests/long-0.7-2000 produces unallowed files: tmp1.stu tmp2.stu
 
 #
 # %include -d

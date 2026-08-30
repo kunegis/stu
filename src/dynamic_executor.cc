@@ -3,8 +3,10 @@
 Dynamic_Executor::Dynamic_Executor(
 	shared_ptr <const Dynamic_Dep> dep_,
 	Executor *parent,
-	int &error_additional)
-	: dep(dep_)
+	int &error_additional,
+	string dynamic_base_dir_)
+	: dep(dep_),
+	  dynamic_base_dir(dynamic_base_dir_)
 {
 	TRACE_FUNCTION();
 	assert(dep_);
@@ -166,4 +168,9 @@ void Dynamic_Executor::notify_result(
 	} else {
 		unreachable();
 	}
+}
+
+string Dynamic_Executor::get_dynamic_base_dir() const
+{
+	return dynamic_base_dir;
 }

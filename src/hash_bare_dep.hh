@@ -7,7 +7,7 @@
 // TODO check which functions to move to .cc
 
 class Hash_Bare_Dep
-// TODO rename Plain -> something else ('plain' already has another meaning)
+// TODO rename Hash_Dep
 {
 public:
 	explicit

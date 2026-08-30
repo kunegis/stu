@@ -19,7 +19,10 @@ class Concat_Executor
 	: public Executor
 {
 public:
-	Concat_Executor(shared_ptr <const Concat_Dep> dep_, Executor *parent);
+	Concat_Executor(
+		shared_ptr <const Concat_Dep> dep_,
+		Executor *parent,
+		string dynamic_base_dir);
 	~Concat_Executor()= default;
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
@@ -47,9 +50,12 @@ private:
 
 	Stage stage;
 	std::vector <shared_ptr <Compound_Dep> > collected;
+	string dynamic_base_dir;
 
 	bool finished() const;
 	void launch_stage_normal();
+
+	virtual string get_dynamic_base_dir() const override;
 };
 
 #endif /* ! CONCAT_EXECUTOR_HH */

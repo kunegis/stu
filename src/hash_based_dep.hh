@@ -39,6 +39,7 @@
 #include "hash_dep_utils.hh"
 
 class Hash_Based_Dep
+// TODO rename Based_Hash_Dep
 {
 public:
 	explicit

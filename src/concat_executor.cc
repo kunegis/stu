@@ -7,8 +7,9 @@
 
 Concat_Executor::Concat_Executor(
 	shared_ptr <const Concat_Dep> dep_,
-	Executor *parent)
-	: dep(dep_), stage(ST_DYNAMIC)
+	Executor *parent,
+	string dynamic_base_dir_)
+	: dep(dep_), stage(ST_DYNAMIC), dynamic_base_dir(dynamic_base_dir_)
 {
 	TRACE_FUNCTION();
 	TRACE("dep_= %s", show_trace(dep_));
@@ -177,4 +178,9 @@ void Concat_Executor::notify_result(
 	} else {
 		unreachable();
 	}
+}
+
+string Concat_Executor::get_dynamic_base_dir() const
+{
+	return dynamic_base_dir;
 }

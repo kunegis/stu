@@ -23,8 +23,8 @@ public:
 	Dynamic_Executor(
 		shared_ptr <const Dynamic_Dep> dep_,
 		Executor *parent,
-		int &error_additional);
-//		string parent_base_dir_);
+		int &error_additional,
+		string dynamic_base_dir);
 	/* ERR_ADDITIONAL is only set:
 	 * - When the dynamic contains a plain dependency for which there are multiple
 	 *   matching rules.
@@ -47,7 +47,9 @@ public:
 private:
 	const shared_ptr <const Dynamic_Dep> dep;
 	Done done;
-//	string parent_base_dir;
+	string dynamic_base_dir;
+
+	virtual string get_dynamic_base_dir() const override;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

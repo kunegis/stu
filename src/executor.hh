@@ -81,7 +81,7 @@ public:
 	std::map <Executor *, shared_ptr <const Dep> > &get_parents() { return parents; }
 	std::set <Executor *> get_children() { return children; }
 	shared_ptr <const Rule> get_rule() const { return rule; }
-	string get_parent_base_dir() const;
+//	string get_parent_base_dir() const;
 
 	virtual bool want_delete() const;
 
@@ -189,7 +189,7 @@ protected:
 	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
 	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
 
-	Executor *get_executor(shared_ptr <const Dep> dep, string parent_base_dir);
+	Executor *get_executor(shared_ptr <const Dep> dep, string dynamic_base_dir);
 	/* Get an existing Executor or create a new one.  Return null on errors. */
 
 	void check_waited() const {
@@ -228,6 +228,8 @@ protected:
 	 * file does not exist.  Return FALSE when children should be started.  Return
 	 * FALSE in executor types that are not affected. */
 
+	virtual string get_dynamic_base_dir() const { return ""; }
+	
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the file system
 	 * should be newer than this. */

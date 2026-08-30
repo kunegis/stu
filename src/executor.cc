@@ -137,7 +137,7 @@ void Executor::read_dynamic(
 		top->top= top_top;
 
 		std::vector <shared_ptr <const Dep> > deps_new;
-		string parent_base_dir= dynamic_executor->get_parent_base_dir();
+		string parent_base_dir= dynamic_executor->get_dynamic_base_dir();
 		TRACE("parent_base_dir= '%s'", parent_base_dir);
 		for (auto &j: deps) {
 			if (!j) continue;
@@ -157,7 +157,7 @@ void Executor::read_dynamic(
 	}
 }
 
-Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_dir)
+Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base_dir)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
@@ -169,7 +169,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
 		TRACE("Creating Concat_Executor");
-		Concat_Executor *executor= new Concat_Executor(concat_dep, this);
+		Concat_Executor *executor= new Concat_Executor(concat_dep, this, dynamic_base_dir);
 		assert(executor);
 		return executor;
 	}
@@ -182,7 +182,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 		Dynamic_Executor *executor= new Dynamic_Executor(
 			to <const Dynamic_Dep> (dep),
 			this,
-			error_additional);
+			error_additional,
+			dynamic_base_dir);
 		assert(executor);
 		if (error_additional) {
 			should_not_happen();
@@ -205,7 +206,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 	const Hash_Bare_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
 	const Hash_Based_Dep target_for_cache=
-		get_target_for_cache(hash_dep, parent_base_dir);
+		get_target_for_cache(hash_dep, dynamic_base_dir);
 	auto it= executors_by_dep.find(target_for_cache);
 
 	if (it != executors_by_dep.end()) {
@@ -313,7 +314,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string parent_base_
 		executor= new Dynamic_Executor(
 			to <Dynamic_Dep> (dep),
 			this,
-			error_additional);
+			error_additional,
+			dynamic_base_dir);
 	}
 
 	if (error_additional) {
@@ -419,13 +421,13 @@ void Executor::operator<<(string text) const
 	}
 }
 
-string Executor::get_parent_base_dir() const
-/* All parents have the same base dir -- use the first returned */
-{
-	const Executor *e= get_parents().begin()->first;
-	if (! e->get_rule()) return "";
-	return e->get_rule()->base_dir;
-}
+//string Executor::get_parent_base_dir() const
+///* All parents have the same base dir -- use the first returned */
+//{
+//	const Executor *e= get_parents().begin()->first;
+//	if (! e->get_rule()) return "";
+//	return e->get_rule()->base_dir;
+//}
 
 bool Executor::want_delete() const
 {

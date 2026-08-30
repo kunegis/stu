@@ -1,5 +1,3 @@
-A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
-A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...} 
 A = [list.dir/C] {...}  %cd list.dir  C {...}
 * Output redirection in %cd mode

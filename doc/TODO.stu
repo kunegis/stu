@@ -65,6 +65,8 @@ A: [@dir/x] {...}
 @x: B;
 B = {...}
 
+* In -j mode, multiple commands with different base directories are ru nin parallel.
+
 #
 # %include -d
 #

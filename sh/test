@@ -636,7 +636,7 @@ do
 				echo >&3 "Second invocation...correct"
 			else
 				test_fail "Second invocation did no result in 'Targets are up to date'"
-				>&2 echo STDOUT:
+				>&2 echo stdout:
 				>&2 printf '/---------\n'
 				>&2 cat list.def.out
 				>&2 printf '\\---------\n'

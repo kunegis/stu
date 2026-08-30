@@ -23,7 +23,7 @@ Dynamic_Executor::Dynamic_Executor(
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-		Hash_Bare_Dep hash_dep_base(inner_plain_dep->object.flags,
+		Hash_Bare_Dep hash_dep_2(inner_plain_dep->object.flags,
 			inner_plain_dep->object.name.unparametrized());
 		// TODO rename to avoid 'base'
 		Hash_Bare_Dep hash_dep= dep->get_target();
@@ -33,7 +33,7 @@ Dynamic_Executor::Dynamic_Executor(
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Plain_Dep> target_plain_dep;
 			shared_ptr <const Rule> r=
-				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
+				rule_set.get(hash_dep_2, param_rule, mapping_parameter,
 					dep->get_place(), target_plain_dep, target_index);
 		} catch (int e) {
 			assert(e);
@@ -44,10 +44,10 @@ Dynamic_Executor::Dynamic_Executor(
 		}
 		Hash_Based_Dep hash_dep_with_parent_base_dir(hash_dep);
 		if (parent->get_rule()) {
-			// TODO can it ever happen that parent->rule is null?
-			string base_dir= parent->get_rule()->base_dir;
+//			string base_dir= parent->get_rule()->base_dir;
 			hash_dep_with_parent_base_dir=
-				Hash_Based_Dep(base_dir, hash_dep_with_parent_base_dir);
+				Hash_Based_Dep(dynamic_base_dir,
+					hash_dep_with_parent_base_dir);
 		}
 		executors_by_dep[hash_dep_with_parent_base_dir]= {target_index, this};
 	}

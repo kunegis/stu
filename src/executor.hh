@@ -228,7 +228,7 @@ protected:
 	 * file does not exist.  Return FALSE when children should be started.  Return
 	 * FALSE in executor types that are not affected. */
 
-	virtual string get_dynamic_base_dir() const { return ""; }
+	virtual string get_dynamic_base_dir() const;
 	
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the file system

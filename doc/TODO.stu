@@ -1,4 +1,10 @@
-* Same as 2.19-0034, but with concatenation next to each dynamic dependency, i.e. [X] -> Y.[X]
+* 2.19-0035
+
+A: dir/B {...}
+dir/C = D;
+D = {content}
+%cd dir
+B = C;
 
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[C] {...} # 2.19-0034
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-n C] {...} 
@@ -66,6 +72,7 @@ A: [@dir/x] {...}
 B = {...}
 
 * In -j mode, multiple commands with different base directories are ru nin parallel.
+* A %cd dynamic dependency, which contains '(A B C) () list.(A B C).xyz', i.e., various non-normalized dependencies.
 
 #
 # %include -d
@@ -554,4 +561,8 @@ VALUE
 #
 # Check that we are not performing double-canonicalization, i.e., run canonicalize()
 # multiple times on same input, or on output of canonicalize().
+#
+
+#
+# Maybe merge stu-utils into the stu repo
 #

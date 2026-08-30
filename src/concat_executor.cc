@@ -13,6 +13,7 @@ Concat_Executor::Concat_Executor(
 {
 	TRACE_FUNCTION();
 	TRACE("dep_= %s", show_trace(dep_));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 	assert(dep);
 	assert(dep->is_normalized());
 	assert(parent);

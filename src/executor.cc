@@ -161,6 +161,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir); 
 
 	/*
 	 * Non-cached executors
@@ -944,6 +945,15 @@ bool Executor::check_clash_with_target_flags(
 	return false;
 }
 
+string Executor::get_dynamic_base_dir() const
+{
+	if (rule) {
+		return rule->base_dir;
+	} else {
+		return "";
+	}
+}
+
 Proceed Executor::connect(
 	shared_ptr <const Dep> dep_this,
 	shared_ptr <const Dep> dep_child)
@@ -955,20 +965,17 @@ Proceed Executor::connect(
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
 
-	// TODO rename dynamic_base_dir
-	string base_dir= get_dynamic_base_dir();
-	if (base_dir.empty()) {
-		if (rule) {
-			base_dir= rule->base_dir;
-		} else {
-			base_dir= "";
-		}
-	}
-	TRACE("base_dir= '%s'", base_dir);
+	string dynamic_base_dir= get_dynamic_base_dir();
+//	if (base_dir.empty()) {
+//		if (rule) {
+//			base_dir= rule->base_dir;
+//		} else {
+//			base_dir= "";
+//		}
+//	}
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 	
-	Executor *child= get_executor(
-		dep_child,
-		base_dir);
+	Executor *child= get_executor(dep_child, dynamic_base_dir);
 	if (!child) return 0;
 	children.insert(child);
 	if (dep_child->flags.get_flags() & F_RESULT_NOTIFY) {

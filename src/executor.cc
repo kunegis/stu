@@ -954,12 +954,15 @@ Proceed Executor::connect(
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 	if (check_clash_without_target_flags(dep_child)) return 0;
 
-	string base_dir;
-	if (rule) {
-		base_dir= rule->base_dir;
-	} else {
-		base_dir= "";
+	string base_dir= get_dynamic_base_dir();
+	if (base_dir.empty()) {
+		if (rule) {
+			base_dir= rule->base_dir;
+		} else {
+			base_dir= "";
+		}
 	}
+	TRACE("base_dir= '%s'", base_dir);
 	
 	Executor *child= get_executor(
 		dep_child,

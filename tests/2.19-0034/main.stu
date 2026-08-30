@@ -17,7 +17,7 @@ A: list.dir list.dir/B
 
 B: [[C]]
 {
-	cp D B
+	cp E B
 }
 
 D = {E}

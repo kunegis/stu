@@ -116,7 +116,7 @@ void Concat_Executor::notify_variable(
 
 void Concat_Executor::launch_stage_normal()
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show_trace(dep));
 	assert(stage == ST_DYNAMIC);
 	++stage;
 	assert(stage == ST_NORMAL);
@@ -188,8 +188,9 @@ string Concat_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool 
 	TRACE("child= %s", child ? show_trace(child) : "NULL");
 	TRACE("for_rebase= %s", frmt("%d", for_rebase));
 	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
+	TRACE("child->index= %s", frmt("%zd", child->index));
 
-	if (! child || child->index == 0) {
+	if (! child || child->index <= 0) {
 		return dynamic_base_dir;
 	} else {
 		return "";

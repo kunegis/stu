@@ -26,9 +26,7 @@ conf/CXX: sh/configure
 src/version.hh: VERSION sh/mkversion
 	sh/mkversion >src/version.hh
 
-## TODO remove -save-temps
 CXXFLAGS_DEBUG= \
-    -save-temps \
     -ggdb -O0 -Werror -Wall -Wextra -Wpedantic \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral -Wsuggest-attribute=format \

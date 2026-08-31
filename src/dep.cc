@@ -241,7 +241,7 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_marker("]");
 #ifndef NDEBUG
 	if (rendering & R_SHOW_INDEX && index >= 0) {
-		parts.append_marker("_");
+		parts.append_marker(":");
 		parts.append_text(frmt("%zd", index));
 	}
 #endif

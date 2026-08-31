@@ -1,19 +1,17 @@
-# TOPIC: a = d/b;  d/c {...}  %cd d  b: list.[c] {...}
-
-A: list.dir list.dir/B
+A: d d/B
 {
-	cp list.dir/B A
+	cp d/B A
 	grep -q -F -x -e 'content' A
 }
 
->list.dir/C:  list.dir
+>d/C:  d
 {
 	echo D
 }
 
--p list.dir { mkdir -p list.dir ; }
+-p d { mkdir -p d ; }
 
-%cd list.dir
+%cd d
 
 B: list.[list.[C]]
 {

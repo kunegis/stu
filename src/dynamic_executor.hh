@@ -10,7 +10,7 @@
  * Each dynamic executor corresponds to an exact dynamic dependency, taking into account
  * all flags.  This is as opposed to file executors, where multiple file dependencies
  * share a single executor object.
- * 
+ *
  * Parent base dir:  Each dynamic executor must remember the base dir of the rule that
  * included it.  Different dynamic executors are used for the same object name, if they
  * have different base dirs.  Hash_Dep also includes the parent base dir.

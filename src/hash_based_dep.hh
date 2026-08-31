@@ -12,9 +12,9 @@
  *     string.  Zero if there is no base dir.
  *   - [K * word_t] Dynamic words; the number K is equal to the dynamic multiplicity of
  *     the dependency, and may be zero.  F_DYNAMIC is set in each word.  They also contain
- *     other flags from F_WORD. 
+ *     other flags from F_WORD.
  *   - [word_t] A plain word; F_DYNAMIC is not set.  Also contains other flags from
- *     F_WORD, including F_PHONY. 
+ *     F_WORD, including F_PHONY.
  *   - The name of the contained object.  Always non-empty and '\0'-terminated.  The
  *     terminating '\0' is part of the std::string if there is a base dir, and the
  *     implicit terminating '\0' if not.
@@ -44,7 +44,7 @@ class Hash_Based_Dep
 public:
 	explicit
 	Hash_Based_Dep(std::string_view text_): text(text_) {
-		check(); 
+		check();
 	}
 	/* TEXT_ is the full text field of this Hash_Dep */
 
@@ -66,7 +66,7 @@ public:
 
 	Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_based_dep);
 	Hash_Based_Dep(Hash_Bare_Dep d);
-	
+
 	const string &get_text() const { return text; }
 	string &get_text() { return text; }
 	const char *get_text_c_str() const { return text.c_str(); }
@@ -165,7 +165,7 @@ public:
 			? text.data() + (*(const word_size_t *)text.data())
 			: nullptr;
 	}
-	
+
 	bool operator==(const Hash_Based_Dep &d) const { return text == d.text; }
 	bool operator!=(const Hash_Based_Dep &d) const { return text != d.text; }
 	void canonicalize_plain(); /* In-place, knowing it is plain */

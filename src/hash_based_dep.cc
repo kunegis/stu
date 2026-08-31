@@ -45,7 +45,7 @@ Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 		text.data() + hash_dep.text.size() + 1,
 		base_dir.data(),
 		base_dir.size());
-	check(); 
+	check();
 }
 
 Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
@@ -170,33 +170,18 @@ size_t Hash_Based_Dep::get_dynamic_depth() const
 	return ret;
 }
 
-
 void Hash_Based_Dep::check() const
 /* The minimum length of TEXT is sizeof(word_t)+1: One word indicating a non-dynamic
  * target, and a text of length one.  (The text cannot be empty.) */
 {
 	TRACE_FUNCTION();
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
-	word_size_t b= *(const word_size_t *)text.data();
+	word_size_t b= *(const word_size_t *)text.data(); //
 	TRACE("b= %s", frmt("%zu", b)); //
 	TRACE("text.size()= %s", frmt("%zu", text.size())); //
 	TRACE("(b < text.size())= %s", frmt("%d", b < text.size())); //
 	TRACE("text.size()(2)= %s", frmt("%zu", text.size())); //
 	TRACE("b(2)= %s", frmt("%zu", b)); //
-	TRACE("static_cast <bool> (b < text.size())= %s", frmt("%d", static_cast <bool> (b < text.size()))); //
-
-	//
-//	int *pp= nullptr;
-//	*pp= 1;
-
-	//
-	bool yyy= true;
-	assert(yyy);
-
-//	bool xxx= b < text.size(); //
-//	TRACE("xxx= %s", frmt("%d", xxx)); //
-//	assert(xxx); //
-//	assert((b < text.size())); // XXX fix
 }
-		
+
 #endif /* ! NDEBUG */

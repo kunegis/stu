@@ -162,7 +162,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
-	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir); 
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 
 	/*
 	 * Non-cached executors
@@ -967,7 +967,7 @@ Proceed Executor::connect(
 	if (check_clash_without_target_flags(dep_child)) return 0;
 	string dynamic_base_dir= get_dynamic_base_dir(dep_child, false);
 	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
-	
+
 	Executor *child= get_executor(dep_child, dynamic_base_dir);
 	if (!child) return 0;
 	children.insert(child);
@@ -1023,7 +1023,7 @@ void Executor::check_unparametrized(
 
 	parameter_place << fmt(
 		"dynamic dependency %s must not contain parameter %s",
-		show(Hash_Bare_Dep(0, hash_dep)), 
+		show(Hash_Bare_Dep(0, hash_dep)),
 		show(Prefix_View("$", parameter_name)));
 	Hash_Bare_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;

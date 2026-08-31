@@ -84,7 +84,7 @@ enum
 
 	F_BASE                  = 1 << I_BASE,
 	/* Contains base dir (only used in Hash_Dep) */
-	
+
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
 

@@ -241,10 +241,10 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_marker("]");
 #ifndef NDEBUG
 	if (rendering & R_SHOW_INDEX && index >= 0) {
-		parts.append_marker(":");
+		parts.append_marker("#");
 		parts.append_text(frmt("%zd", index));
 	}
-#endif
+#endif /* ! NDEBUG */
 }
 
 Hash_Bare_Dep Dynamic_Dep::get_target() const
@@ -278,6 +278,12 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	parts.append_marker("[");
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
 	parts.append_marker("]");
+#ifndef NDEBUG
+	if (rendering & R_SHOW_INDEX && index >= 0) {
+		parts.append_marker("#");
+		parts.append_text(frmt("%zd", index));
+	}
+#endif /* ! NDEBUG */
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(
@@ -341,6 +347,12 @@ void Concat_Dep::render(Parts &parts, Rendering rendering) const
 #endif /* ! NDEBUG */
 	for (const shared_ptr <const Dep> &d: deps)
 		d->render(parts, rendering);
+#ifndef NDEBUG
+	if (rendering & R_SHOW_INDEX && index >= 0) {
+		parts.append_marker("#");
+		parts.append_text(frmt("%zd", index));
+	}
+#endif /* ! NDEBUG */
 }
 
 #ifndef NDEBUG
@@ -621,6 +633,12 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 	}
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator(")");
+#ifndef NDEBUG
+	if (rendering & R_SHOW_INDEX && index >= 0) {
+		parts.append_marker("#");
+		parts.append_text(frmt("%zd", index));
+	}
+#endif /* ! NDEBUG */
 }
 
 shared_ptr <const Dep> Root_Dep::instantiate( /* unreachable */

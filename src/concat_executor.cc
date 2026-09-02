@@ -143,9 +143,11 @@ void Concat_Executor::launch_stage_normal()
 		/* Add -% flag */
 		f2->flags.add_unplaced_index(I_RESULT_COPY);
 
-		/* Add flags from self */
+		/* Add metadata from self */
+		// TODO merge this into new function Dep::add_metadata()
 		f2->flags.add(dep->flags, F_WORD & ~F_DYNAMIC);
-
+		f2->index= dep->index;
+		
 		f2->flags.add(f->flags);
 		push(f2);
 	}

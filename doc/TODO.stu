@@ -1,6 +1,3 @@
-* Dynamic_Dep::render():  output index; also for other Dep subclasses.
-* 2.19-0035
-
 * Like 2.19-0035, but with list.[[X]]
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}
@@ -560,4 +557,8 @@ VALUE
 
 #
 # Maybe merge stu-utils into the stu repo
+#
+
+#
+# Tutorial as PDF, HTML, and also as source files.
 #

@@ -45,7 +45,6 @@ Dynamic_Executor::Dynamic_Executor(
 		}
 		Hash_Based_Dep hash_dep_with_parent_base_dir(hash_dep);
 		if (parent->get_rule()) {
-//			string base_dir= parent->get_rule()->base_dir;
 			hash_dep_with_parent_base_dir=
 				Hash_Based_Dep(dynamic_base_dir,
 					hash_dep_with_parent_base_dir);

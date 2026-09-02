@@ -263,8 +263,6 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 		try {
 			Hash_Bare_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic() &= F_PHONY;
-//			hash_dep_without_flags= Hash_Dep(base_dir, hash_dep_without_flags);
-//			...; // prepend calling_base_dir
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
@@ -422,14 +420,6 @@ void Executor::operator<<(string text) const
 		depp_old->get_place() << msg;
 	}
 }
-
-//string Executor::get_parent_base_dir() const
-///* All parents have the same base dir -- use the first returned */
-//{
-//	const Executor *e= get_parents().begin()->first;
-//	if (! e->get_rule()) return "";
-//	return e->get_rule()->base_dir;
-//}
 
 bool Executor::want_delete() const
 {

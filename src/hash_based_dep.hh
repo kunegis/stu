@@ -57,7 +57,7 @@ public:
 		assert((flags & ~F_PHONY) == 0);
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(! name.empty());
-		check(); // RM
+//		check(); // RM
 	}
 
 	Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target);
@@ -84,7 +84,7 @@ public:
 
 	// TODO move to .cc
 	bool is_any_file() const {
-		check(); //
+//		check(); //
 		size_t i= 0;
 		while (get_word(i) & F_DYNAMIC) {
 			++i;
@@ -94,7 +94,7 @@ public:
 
 	// TODO move to .cc
 	bool is_any_phony() const {
-		check(); //
+//		check(); //
 		size_t i= 0;
 		while (get_word(i) & F_DYNAMIC) {
 			++i;
@@ -124,7 +124,7 @@ public:
 	// TODO move to .cc
 	const char *get_name_c_str_any() const
 	{
-		check(); //
+//		check(); //
 		const char *ret= text.c_str() + sizeof(word_size_t);
 		while ((*(const word_t *)ret) & F_DYNAMIC)
 			ret += sizeof(word_t);
@@ -140,27 +140,25 @@ public:
 		check();
 		assert((get_word(0) & F_DYNAMIC) == 0);
 		return *(word_t *)(text.data() + sizeof(word_size_t));
-//		return *(word_t *)&text[0];
 	}
 
 	Flags get_front_word_nondynamic() const {
 		check();
 		assert((get_word(0) & F_DYNAMIC) == 0);
 		return *(const word_t *)(text.data() + sizeof(word_size_t));
-//		return *(const word_t *)&text[0];
 	}
 
 	Flags get_word(size_t i) const
 	/* For access to any front word */
 	{
-		check(); //
+//		check(); //
 		assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
 		return ((const word_t *)&text[sizeof(word_size_t)])[i];
 	}
 
 	const char *get_base_dir() const
 	{
-		check(); //
+//		check(); //
 		return (*(const word_size_t *)text.data()) != 0
 			? text.data() + (*(const word_size_t *)text.data())
 			: nullptr;
@@ -172,8 +170,6 @@ public:
 
 	// TODO these two functions should not be needed if we always have constructors
 	// that properly use std::string(size_t, '\0').
-//	static string string_from_word(Flags flags);
-//	/* Return a string of length sizeof(word_t) containing the given flags */
 
 #ifndef NDEBUG
 	void canonicalize(); /* In-place */

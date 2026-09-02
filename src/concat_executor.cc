@@ -147,7 +147,7 @@ void Concat_Executor::launch_stage_normal()
 		// TODO merge this into new function Dep::add_metadata()
 		f2->flags.add(dep->flags, F_WORD & ~F_DYNAMIC);
 		f2->index= dep->index;
-		
+
 		f2->flags.add(f->flags);
 		push(f2);
 	}

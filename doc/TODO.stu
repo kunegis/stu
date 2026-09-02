@@ -1,4 +1,3 @@
-A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}
 * Output redirection in %cd mode
 * Input redirection in %cd mode
@@ -70,6 +69,8 @@ list.B = {...}
 * In -j mode, multiple commands with different base directories are ru nin parallel.
 * A %cd dynamic dependency, which contains '(A B C) () list.(A B C).xyz', i.e., various non-normalized dependencies.
 * tests/long-0.7-2000 produces unallowed files: tmp1.stu tmp2.stu
+
+$name.data {...}  %cd d  $name.data {...}  # Both can be used; no error due to duplicate rule
 
 #
 # %include -d

@@ -91,7 +91,6 @@ void Trace::trace(const char *filename, int line, Args... args)
 	FILE *file= get_current()->file;
 	if (!file) return;
 	string prefix= get_current()->get_prefix();
-//	fprintf(stderr, "TRACE trace prefix='%s'\n", prefix.c_str());
 	string text= fmt(args...);
 	string full_line= prefix + text;
 	print(file, filename, line, full_line.c_str());

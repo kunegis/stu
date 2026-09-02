@@ -81,7 +81,6 @@ public:
 	std::map <Executor *, shared_ptr <const Dep> > &get_parents() { return parents; }
 	std::set <Executor *> get_children() { return children; }
 	shared_ptr <const Rule> get_rule() const { return rule; }
-//	string get_parent_base_dir() const;
 
 	virtual bool want_delete() const;
 
@@ -230,7 +229,7 @@ protected:
 
 	// TODO if bool arg is never used, remove it
 	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const;
-	/* CHILD is null when called for dependency from dynamic dependency. 
+	/* CHILD is null when called for dependency from dynamic dependency.
 	 * FOR_REBASE: true: for rebasing name of content in dynamic dependency. false:
 	 * for determining base dir of child executor. */
 

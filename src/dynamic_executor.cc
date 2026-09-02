@@ -9,6 +9,7 @@ Dynamic_Executor::Dynamic_Executor(
 	  dynamic_base_dir(dynamic_base_dir_)
 {
 	TRACE_FUNCTION();
+	TRACE("dynamic_base_dir='%s'", dynamic_base_dir);
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
@@ -158,8 +159,11 @@ void Dynamic_Executor::notify_result(
 			shared_ptr <Dep> j_new= j->clone();
 			/* Add -% flag */
 			j_new->flags.add_unplaced_flags(F_RESULT_COPY);
-			/* Add flags from self */
+			/* Add metadata from self */
+			// TODO merge this into new function Dep::add_metadata()
 			j_new->flags.add(dep->flags, F_WORD & ~F_DYNAMIC);
+			j_new->index= dep->index;
+
 			j= j_new;
 			push(j);
 		}
@@ -170,7 +174,10 @@ void Dynamic_Executor::notify_result(
 	}
 }
 
-string Dynamic_Executor::get_dynamic_base_dir(shared_ptr <const Dep>, bool) const
+string Dynamic_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool) const
 {
+	TRACE_FUNCTION();
+	TRACE("child= %s", show_trace(child));
+	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 	return dynamic_base_dir;
 }

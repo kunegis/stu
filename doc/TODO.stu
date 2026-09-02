@@ -1,7 +1,8 @@
-* Like 2.19-0200, but with list.[[X]] # 2.19-0202
 * Like 2.19-0200, but with [[X]].data
 * Like 2.19-0200, but with [list.[X]]
 * Like 2.19-0200, but with [[X].data]
+* Like 2.19-0200, but with list.[[X].data]
+* Like 2.19-0200, but with list.[[list.X]]
 * Like 2.19-0200, but with list.[list.[X].data].data
 A = list.dir/B;  list.dir/C {...}  %cd list.dir  B=[-0 C] {...}
 A = [list.dir/C] {...}  %cd list.dir  C {...}

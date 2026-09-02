@@ -230,7 +230,9 @@ protected:
 
 	// TODO if bool arg is never used, remove it
 	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const;
-	/* CHILD is null when called for dependency from dynamic dependency */
+	/* CHILD is null when called for dependency from dynamic dependency. 
+	 * FOR_REBASE: true: for rebasing name of content in dynamic dependency. false:
+	 * for determining base dir of child executor. */
 
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the file system

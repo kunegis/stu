@@ -186,15 +186,20 @@ void Concat_Executor::notify_result(
 
 string Concat_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const
 {
+	// TODO CHILD is always non-null.  add asserta and simplify "! child".
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("child= %s", child ? show_trace(child) : "NULL");
 	TRACE("for_rebase= %s", frmt("%d", for_rebase));
 	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
 	TRACE("child->index= %s", frmt("%zd", child->index));
 
-	if (! child || child->index <= 0) {
-		return dynamic_base_dir;
+	if (for_rebase) {
+		if (! child || child->index <= 0) {
+			return dynamic_base_dir;
+		} else {
+			return "";
+		}
 	} else {
-		return "";
+		return dynamic_base_dir;
 	}
 }

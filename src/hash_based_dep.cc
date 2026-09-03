@@ -94,9 +94,7 @@ void Hash_Based_Dep::canonicalize_plain()
 {
 	TRACE_FUNCTION();
 	check();
-//	TRACE("text(1)= %s", show(text)); //
 	const char *base_dir= get_base_dir();
-//	TRACE("base_dir= %s", base_dir ? base_dir : "<NULL>"); //
 	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
 	assert(! ((*(word_t *)p) & F_DYNAMIC));
 	p += sizeof(word_t);
@@ -113,8 +111,25 @@ void Hash_Based_Dep::canonicalize_plain()
 	} else {
 		text.resize(p - text.data());
 	}
-//	TRACE("text(2)= %s", show(text)); //
 	check();
+}
+
+bool Hash_Based_Dep::is_any_file() const
+{
+	size_t i= 0;
+	while (get_word(i) & F_DYNAMIC) {
+		++i;
+	}
+	return (get_word(i) & F_PHONY) == 0;
+}
+
+bool Hash_Based_Dep::is_any_phony() const
+{
+	size_t i= 0;
+	while (get_word(i) & F_DYNAMIC) {
+		++i;
+	}
+	return get_word(i) & F_PHONY;
 }
 
 void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
@@ -176,12 +191,6 @@ void Hash_Based_Dep::check() const
 {
 	TRACE_FUNCTION();
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
-//	word_size_t b= *(const word_size_t *)text.data(); //
-//	TRACE("b= %s", frmt("%zu", b)); //
-//	TRACE("text.size()= %s", frmt("%zu", text.size())); //
-//	TRACE("(b < text.size())= %s", frmt("%d", b < text.size())); //
-//	TRACE("text.size()(2)= %s", frmt("%zu", text.size())); //
-//	TRACE("b(2)= %s", frmt("%zu", b)); //
 }
 
 #endif /* ! NDEBUG */

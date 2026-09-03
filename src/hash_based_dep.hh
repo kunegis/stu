@@ -82,26 +82,8 @@ public:
 		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == F_PHONY;
 	}
 
-	// TODO move to .cc
-	bool is_any_file() const {
-//		check(); //
-		size_t i= 0;
-		while (get_word(i) & F_DYNAMIC) {
-			++i;
-		}
-		return (get_word(i) & F_PHONY) == 0;
-	}
-
-	// TODO move to .cc
-	bool is_any_phony() const {
-//		check(); //
-		size_t i= 0;
-		while (get_word(i) & F_DYNAMIC) {
-			++i;
-		}
-		return get_word(i) & F_PHONY;
-	}
-
+	bool is_any_file() const;
+	bool is_any_phony() const;
 	void render(Parts &, Rendering= 0) const;
 
 	string get_name_nondynamic() const

@@ -1,0 +1,16 @@
+# TOPIC: %cd >
+
+A: d d/B
+{
+	cp d/B A
+	grep -q -F -x -e 'abcdefgh' A
+}
+
+-p d { mkdir d ; }
+
+%cd d
+
+>B
+{
+	echo abcdefgh
+}

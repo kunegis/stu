@@ -1,4 +1,3 @@
-* Output redirection in %cd mode
 * Input redirection in %cd mode
 A: ddd/B;  %cd ddd  B { mkdir . ; }  # Does not work; cd to the directory fails
 A: ddd ddd/B;  -p ddd { touch ddd; }  %cd ddd B { echo bbb >B ; }  # Works

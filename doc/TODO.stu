@@ -1,4 +1,3 @@
-A: ddd/B;  %cd ddd  B { mkdir . ; }  # Does not work; cd to the directory fails
 A: ddd ddd/B;  -p ddd { touch ddd; }  %cd ddd B { echo bbb >B ; }  # Works
 * add to https://codeberg.org/brib/slopfree-software-index (Need to add statement to README or doc/)
 A: list.dir list.dir/A { cp list.dir/A A ; } -p list.dir {mkdir -p list.dir;} %cd list.dir A {echo CORRECT >A; } # Two rules with target 'A' in different directories

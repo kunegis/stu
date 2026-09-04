@@ -1,0 +1,14 @@
+# TOPIC Two rules with target 'A' in different %cd directories
+
+A: list.dir list.dir/A
+{
+	cp list.dir/A A
+	grep -q -F -x -e 'CORRECT' A
+}
+
+-p list.dir {mkdir -p list.dir;}
+
+%cd list.dir
+
+A
+{echo CORRECT >A; } 

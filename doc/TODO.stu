@@ -1,5 +1,3 @@
-A: list.dir data.a list.dir/data.b {...}  $dir/data.$x {...}  -p list.dir {...}  %cd list.dir  data.b {...}  # The parametrized rule is used for both data.a and data.b
-* Concatenation in a %cd rule
 A: list.dir [VAR=list.dir/V] {...}  -p list.dir {...}  %cd list.dir  V {...}
 A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V {...}
 * A dependency that starts with slash is used in a %cd rule: The base directory must not be appended

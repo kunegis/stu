@@ -431,6 +431,7 @@ void Job::create_child_env(
 	}
 
 	for (auto &i: mapping) {
+		TRACE("key='%s' value='%s'", i.first, i.second);
 		cov_tag("Job_List::create_child_env");
 		char *v= (char *)malloc(i.first.size() + i.second.size() + 2);
 		if (!v) {

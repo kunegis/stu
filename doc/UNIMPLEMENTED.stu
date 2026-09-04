@@ -37,18 +37,18 @@ file: --argument first_file --argument [FILES] command
 }
 
 #
+# Allow dir/@phony.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b.
+#
+
+#
 # A flag which means "delete this file at the end of the Stu run".
 #
 
 A: B.utf8 { ... ; }
 --temp >B.utf8 <B { recode ... ; }
 B;
-
-#
-# Allow dir/@phony.  Will allow dir/(a b @c @d).
-#
-# a/@b is equivalent to @a/b.
-#
 
 #
 # Nested/inline rules.  Good for dependencies that are used only once.  This is

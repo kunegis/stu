@@ -1,3 +1,4 @@
+# TOPIC: exponential runtime without caching
 #
 # This example is designed to have exponential runtime if no caching is
 # implemented.     

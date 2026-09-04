@@ -1,4 +1,4 @@
-
+# TOPIC: $[a]
 A: $[B] {
     [ "$B" = CORRECT ] || {
 	echo >&2 "$0:  *** variable \$B is not set correctly"

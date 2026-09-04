@@ -84,6 +84,10 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
+		if (f->variable_name.empty()) {
+			// XXX
+//			f->variable_name= f->object.name;
+		}
 		f->object.name.prepend_text(base_dir + sep);
 		f->object.name.canonicalize();
 		return f;

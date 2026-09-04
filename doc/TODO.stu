@@ -1,4 +1,8 @@
-A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V {...}
+* Maybe: make it an error to have parametrized variable dependency name (0.4-0014)
+* 2.19-0045:  variable name should be 'V', not 'list.dir/V'
+** Code is already in base.cc (XXX)
+* Like 2.19-0045, but with $[V$suffix], where $suffix is a parameter
+
 * A dependency that starts with slash is used in a %cd rule: The base directory must not be appended
 ...  %cd list.dir  V {...} B: $[V] {...}  # Set the variable $V in the command, from file list.dir/V
 * Trace of a filename in a %cd rule: target, dependency, dynamic dep, copy dep.
@@ -65,6 +69,7 @@ list.B = {...}
 * In -j mode, multiple commands with different base directories are ru nin parallel.
 * A %cd dynamic dependency, which contains '(A B C) () list.(A B C).xyz', i.e., various non-normalized dependencies.
 * tests/long-0.7-2000 produces unallowed files: tmp1.stu tmp2.stu
+* tests/long-0.2-2001/abcdefghijklmno: unallowed file created during testing
 
 $name.data {...}  %cd d  $name.data {...}  # Both can be used; no error due to duplicate rule
 
@@ -78,7 +83,8 @@ Y = {222}
 
 * '%cd' in the middle of a single line between two
   rules (to make sure the base directory is not lin-based) 
-
+A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
+  
 #
 # %include -d
 #

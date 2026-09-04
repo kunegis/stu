@@ -1,0 +1,13 @@
+>A: list.dir $[VAR=list.dir/V]
+{
+	[ "$VAR" = uvwxyz ]
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+V
+{
+	echo uvwxyz >V
+}

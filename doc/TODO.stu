@@ -1,4 +1,3 @@
-A: list.dir [VAR=list.dir/V] {...}  -p list.dir {...}  %cd list.dir  V {...}
 A: list.dir list.dir/B {...}  -p list.dir {...}  %cd list.dir  B: $[V] {...}  V {...}
 * A dependency that starts with slash is used in a %cd rule: The base directory must not be appended
 ...  %cd list.dir  V {...} B: $[V] {...}  # Set the variable $V in the command, from file list.dir/V

@@ -2,7 +2,7 @@
 #define NAME_HH
 
 /*
- * The possibly parametrized name of a file or phony.  A name has N >= 0 parameters.  When
+ * An optionally parametrized name of a file or phony.  A name has N >= 0 parameters.  When
  * N > 0, the name is parametrized, otherwise it is unparametrized.  A name consists of
  * N+1 static text elements (in the variable TEXTS) and N parameters (in PARAMETERS),
  * which are interleaved.  For instance when N = 2, the name is given by

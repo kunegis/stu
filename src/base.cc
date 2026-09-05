@@ -85,8 +85,9 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
 		if (f->variable_name.empty()) {
-			// XXX
-//			f->variable_name= f->object.name;
+			/* Variable dependencies are always unparametrized */
+			assert(f->object.name.get_n() == 0);
+			f->variable_name= f->object.name.unparametrized();
 		}
 		f->object.name.prepend_text(base_dir + sep);
 		f->object.name.canonicalize();

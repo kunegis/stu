@@ -11,7 +11,7 @@ void render(Dynamic_Variable_View v, Parts &parts, Rendering)
 
 string show_trace(const shared_ptr <const Dep> &dep)
 {
-	return show(dep, S_DEBUG, R_SHOW_FLAGS | R_SHOW_INDEX);
+	return show(dep, S_TRACE, R_SHOW_FLAGS | R_SHOW_INDEX);
 }
 
 string show_trace(const shared_ptr <Dep> &dep)

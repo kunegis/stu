@@ -112,7 +112,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 bool Dynamic_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();
-	TRACE("flags= %s; done= %s", show(Flags_View(flags), S_DEBUG), done.show());
+	TRACE("flags= %s; done= %s", show(Flags_View(flags), S_TRACE), done.show());
 	bool ret= done.is_done_from_flags(flags);
 	TRACE("ret= %s", frmt("%d", ret));
 	return ret;

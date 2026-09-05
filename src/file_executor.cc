@@ -327,7 +327,7 @@ bool File_Executor::remove_if_existing(bool output)
 		 * newer timestamp. */
 
 		if (output) {
-			string text_filename= ::show(filename, S_DEBUG);
+			string text_filename= ::show(filename, S_TRACE);
 			print_error_reminder(fmt("removing file %s because command failed",
 					::show(filename)));
 		}

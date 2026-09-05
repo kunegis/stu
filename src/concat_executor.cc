@@ -127,7 +127,7 @@ void Concat_Executor::launch_stage_normal()
 		TRACE("collected[%s]= %s", frmt("%zu", i), show(collected[i]));
 		c->deps.at(i)= move(collected[i]);
 	}
-	TRACE("c= %s", show(c, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("c= %s", show(c, S_TRACE, R_SHOW_FLAGS));
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	c->normalize(deps, e);

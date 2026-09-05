@@ -148,7 +148,7 @@ string show_trace(const Hash_Based_Dep &hash_dep)
 {
 	Parts parts;
 	render(hash_dep, parts, R_SHOW_FLAGS);
-	return show(parts, S_DEBUG);
+	return show(parts, S_TRACE);
 }
 
 void Hash_Based_Dep::canonicalize()

@@ -84,7 +84,7 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
-		if (f->variable_name.empty()) {
+		if (f->variable_name.empty() && f->flags.get_flags() & F_VARIABLE) {
 			/* Variable dependencies are always unparametrized */
 			assert(f->object.name.get_n() == 0);
 			f->variable_name= f->object.name.unparametrized();

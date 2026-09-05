@@ -1,0 +1,2 @@
+main.stu:6:5: no rule to build "d/X", needed by "d/B"
+main.stu:1:6: "d/B" is needed by "A"

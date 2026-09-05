@@ -1,0 +1,6 @@
+A: d d/B;
+-p d { mkdir -p d ; }
+
+%cd d
+
+B = X;

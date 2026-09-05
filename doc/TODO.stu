@@ -1,4 +1,3 @@
-...  %cd list.dir  V {...} B: $[V] {...}  # Set the variable $V in the command, from file list.dir/V
 * Trace of a filename in a %cd rule: target, dependency, dynamic dep, copy dep.
 %cd list.dir  ${dir}/file # Do we prepend the base dir to ${dir}? -> maybe we need a new flag to prevent that.  Or automatically recognize that a name starts with ""${param}"/"
 * Compound dep used in a %cd rule

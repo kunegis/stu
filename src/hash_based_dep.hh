@@ -60,9 +60,9 @@ public:
 //		check(); // RM
 	}
 
-	Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target);
-	/* Makes the given target once more dynamic with the given flags, which must *not*
-	 * contain the 'dynamic' flag. */
+//	Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target);
+//	/* Makes the given target once more dynamic with the given flags, which must *not*
+//	 * contain the 'dynamic' flag. */
 
 	Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_based_dep);
 	Hash_Based_Dep(Hash_Bare_Dep d);

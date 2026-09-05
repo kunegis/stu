@@ -1,0 +1,13 @@
+A: list.dir list.dir/B
+{
+}
+
+-p list.dir { mkdir -p list.dir ; }
+
+%cd list.dir
+
+B = C;
+
+>C: <D { cat ; }
+
+D: X;

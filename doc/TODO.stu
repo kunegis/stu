@@ -1,8 +1,6 @@
-* Make it an error to have parametrized variable dependency name (0.4-1015)
 * Like 0.4-1015, but in a dynamic dependency
 * 2.19-0045:  variable name should be 'V', not 'list.dir/V'
 ** Code is already in base.cc (XXX)
-* Like 2.19-0045, but with $[V$suffix], where $suffix is a parameter
 
 * A dependency that starts with slash is used in a %cd rule: The base directory must not be appended
 ...  %cd list.dir  V {...} B: $[V] {...}  # Set the variable $V in the command, from file list.dir/V

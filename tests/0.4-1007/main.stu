@@ -1,4 +1,4 @@
-
+# TOPIC: $['a=a']
 #
 # Names of dynamic variable dependencies cannot contain the equal sign. 
 #

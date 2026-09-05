@@ -86,6 +86,7 @@ A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
 * Like 2.19-0200, but with: [X]  X={[Y]}  # And all prefix/suffix combinations
 * %cd list.dir  $[<A]
 * 0.4: $[V="list.dir/V=A"] # when specifying a name, the file can contain slash and equal
+* 2.7.70-1* tests: check all whether they should be moved to another version number
 
 #
 # %include -d

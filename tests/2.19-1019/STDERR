@@ -1,0 +1,1 @@
+main.stu:3:1: target A.${x}.${x} must not contain duplicate parameter $x

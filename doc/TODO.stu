@@ -1,4 +1,4 @@
-* Error message with a filename in a %cd rule: target, dependency, dynamic dep, copy dep.
+* Error message with a filename in a %cd rule: dependency, dynamic dep, copy dep.
 %cd list.dir  ${dir}/file # Do we prepend the base dir to ${dir}? -> maybe we need a new flag to prevent that.  Or automatically recognize that a name starts with ""${param}"/"
 * Compound dep used in a %cd rule
 * main.stu does %cd immediately and then a rule.  The default rule is %cd rule.

@@ -1,0 +1,4 @@
+d/D:1:1: no rule to build "d/X", needed by [d/D]
+d/C:1:1: [d/D] is needed by [d/C]
+main.stu:6:6: [[d/C]] is needed by "d/B"
+main.stu:1:6: "d/B" is needed by "A"

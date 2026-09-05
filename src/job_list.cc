@@ -20,6 +20,7 @@ File_Executor *Job_List::find(pid_t pid, size_t &index)
 	/* No File_Executor is registered for the PID that just finished.  Should not
 	 * happen, but since the PID value came from outside this process, we better
 	 * handle this case gracefully, i.e., do nothing. */
+	// TODO remove should_not_happen() and write a PRELOAD.cc test for it
 	should_not_happen();
 	print_warning(Place(),
 		frmt("the function waitpid(2) returned the invalid process ID %jd",

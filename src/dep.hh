@@ -160,9 +160,9 @@ public:
 
 	Place place;
 
-	// TODO this should maybe become its own subclass
 	string variable_name;
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
+	// TODO this should maybe become its own subclass
 
 	explicit
 	Plain_Dep(const Placed_Object &object_)

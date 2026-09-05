@@ -162,6 +162,9 @@ void Dep::check() const
 			assert((plain_this->object.flags & F_PHONY) == 0);
 			assert(plain_this->flags.get_flags() & F_VARIABLE);
 		}
+		if (! plain_this->flags.get_flags() & F_VARIABLE) {
+			assert(plain_this->object.name.get_n() == 0);
+		}
 	}
 
 	if (auto dynamic_this= dynamic_cast <const Dynamic_Dep *> (this)) {

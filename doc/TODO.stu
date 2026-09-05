@@ -1,4 +1,5 @@
-* Maybe: make it an error to have parametrized variable dependency name (0.4-0014)
+* Make it an error to have parametrized variable dependency name (0.4-1015)
+* Like 0.4-1015, but in a dynamic dependency
 * 2.19-0045:  variable name should be 'V', not 'list.dir/V'
 ** Code is already in base.cc (XXX)
 * Like 2.19-0045, but with $[V$suffix], where $suffix is a parameter
@@ -84,7 +85,10 @@ Y = {222}
 * '%cd' in the middle of a single line between two
   rules (to make sure the base directory is not lin-based) 
 A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
-  
+* Like 2.19-0200, but with: [X]  X={[Y]}  # And all prefix/suffix combinations
+* %cd list.dir  $[<A]
+* 0.4: $[V="list.dir/V=A"] # when specifying a name, the file can contain slash and equal
+
 #
 # %include -d
 #

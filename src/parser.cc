@@ -860,6 +860,13 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		variable_name= name->unparametrized();
 		name= is <Name_Token> ();
 		++iter;
+	} else {
+		if (name->get_n() != 0) {
+			name->place << fmt(
+				"variable name %s must be unparametrized",
+				show(*name));
+			throw ERR_LOGICAL;
+		}
 	}
 
 	/* Closing ']' */

@@ -1,0 +1,5 @@
+%cd directory
+
+file:  aaa.$param.bbb
+{
+}

@@ -1,0 +1,2 @@
+main.stu:3:12: parameter $param cannot appear in dependency aaa.${param}.bbb
+main.stu:3:1: because it does not appear in target "file"

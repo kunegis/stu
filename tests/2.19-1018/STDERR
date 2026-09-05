@@ -1,0 +1,3 @@
+ERROR_abcd
+main.stu:14:2: command for "/bin/nonexistingfile_123" failed with exit status 1
+main.stu:3:19: "/bin/nonexistingfile_123" is needed by "A"

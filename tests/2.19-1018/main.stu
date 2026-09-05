@@ -1,0 +1,16 @@
+# TOPIC: %cd a  /b
+
+A: list.directory /bin/nonexistingfile_123
+{
+	exit 77
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+/bin/nonexistingfile_123
+{
+	echo >&2 ERROR_abcd
+	exit 1
+}

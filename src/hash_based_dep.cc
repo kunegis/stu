@@ -123,14 +123,14 @@ bool Hash_Based_Dep::is_any_file() const
 	return (get_word(i) & F_PHONY) == 0;
 }
 
-bool Hash_Based_Dep::is_any_phony() const
-{
-	size_t i= 0;
-	while (get_word(i) & F_DYNAMIC) {
-		++i;
-	}
-	return get_word(i) & F_PHONY;
-}
+//bool Hash_Based_Dep::is_any_phony() const
+//{
+//	size_t i= 0;
+//	while (get_word(i) & F_DYNAMIC) {
+//		++i;
+//	}
+//	return get_word(i) & F_PHONY;
+//}
 
 void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
 {

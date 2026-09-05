@@ -83,7 +83,7 @@ public:
 	}
 
 	bool is_any_file() const;
-	bool is_any_phony() const;
+//	bool is_any_phony() const;
 	void render(Parts &, Rendering= 0) const;
 
 	string get_name_nondynamic() const

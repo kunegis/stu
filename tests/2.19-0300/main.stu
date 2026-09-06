@@ -1,0 +1,16 @@
+A: list.directory list.x/B
+{
+	cp list.x/B A
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+$dir/B
+{
+	pwd
+	printf 'dir="%s"\n' "$dir"
+	mkdir -p -- "$dir"
+	echo correct >"$dir"/B
+}

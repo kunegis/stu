@@ -17,6 +17,15 @@
 #include "place.hh"
 #include "show.hh"
 
+typedef unsigned Name_Flags;
+
+enum
+{
+	NF_SPECIAL_B= 1 << 0,
+	/* Set if special canonicalization rule (b) is known to apply to the name */
+};
+
+
 class Name
 {
 public:
@@ -43,6 +52,7 @@ public:
 
 	void append_parameter(string parameter)
 	/* Append a PARAMETER and an empty text.  Do not check that the result is valid. */
+	// TODO to .cc
 	{
 		parameters.push_back(parameter);
 		texts.push_back("");
@@ -52,6 +62,7 @@ public:
 
 	void append_text(string text)
 	/* Append the given text to the last text element */
+	// TODO to .cc
 	{
 		texts[texts.size() - 1] += text;
 	}
@@ -117,6 +128,7 @@ public:
 private:
 	std::vector <string> texts; /* Length = N + 1 */
 	std::vector <string> parameters; /* Length = N */
+	Name_Flags name_flags= 0;
 };
 
 void render(const Name &name, Parts &parts, Rendering rendering= 0)
@@ -125,7 +137,6 @@ void render(const Name &name, Parts &parts, Rendering rendering= 0)
 }
 
 class Placed_Name
-/* A possibly parametrized name annotated with places */
 	: public Name
 {
 public:
@@ -154,9 +165,9 @@ public:
 	}
 
 	void append_parameter(string parameter, const Place &place_parameter);
-	/* Append the given PARAMETER and an empty text */
 
-	shared_ptr <Placed_Name> instantiate(const std::map <string, string> &mapping) const;
+	shared_ptr <Placed_Name> instantiate(
+		const std::map <string, string> &mapping) const;
 	/* In the returned object, the PLACES vector is empty */
 };
 

@@ -51,6 +51,7 @@ void Base_Stack::pop()
 string Base_Stack::rebase(string filename) const
 {
 	TRACE_FUNCTION();
+	TRACE("filename= '%s'", filename);
 	TRACE("base_dir='%s'", base_dir);
 	if (base_dir.empty()) return filename;
 
@@ -63,12 +64,12 @@ string Base_Stack::rebase(string filename) const
 bool is_absolute_for_base(const Name &name)
 /* Starts with '/' text, or with param followed by '/' text */
 {
-	return
-		(name.get_texts()[0].size() != 0 && name.get_texts()[0][0] == '/') ||
-		(name.get_texts()[0].empty() &&
-			name.get_n() != 0 &&
-			name.get_texts()[1].size() &&
-			name.get_texts()[1][0] == '/');
+	return name.get_texts()[0].size() != 0 && name.get_texts()[0][0] == '/';
+//		||
+//		(name.get_texts()[0].empty() &&
+//			name.get_n() != 0 &&
+//			name.get_texts()[1].size() &&
+//			name.get_texts()[1][0] == '/');
 }
 
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
@@ -77,10 +78,17 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 	TRACE("d= %s", show_trace(d));
 	TRACE("base_dir='%s'", base_dir);
 	assert(d);
-	if (base_dir.empty()) return d;
+	if (base_dir.empty()) {
+		TRACE("return %s", show_trace(d));
+		return d;
+	}
 
 	if (shared_ptr <const Plain_Dep> e= to <const Plain_Dep> (d)) {
-		if (is_absolute_for_base(e->object.name)) return d;
+		if (is_absolute_for_base(e->object.name)) {
+			TRACE("Is absolute for base");
+			TRACE("return %s", show_trace(d));
+			return d;
+		}
 		bool end_in_slash= base_dir[base_dir.size()-1] == '/';
 		string sep= end_in_slash ? "" : "/";
 		shared_ptr <Plain_Dep> f= to <Plain_Dep> (e->clone());
@@ -91,10 +99,12 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 		}
 		f->object.name.prepend_text(base_dir + sep);
 		f->object.name.canonicalize();
+		TRACE("return %s", show_trace((shared_ptr <const Dep>)f));
 		return f;
 	} else if (shared_ptr <const Dynamic_Dep> e2= to <const Dynamic_Dep> (d)) {
 		shared_ptr <Dynamic_Dep> f= to <Dynamic_Dep> (e2->clone());
 		f->dep= rebase(f->dep, base_dir);
+		TRACE("return %s", show_trace(f));
 		return f;
 	} else if (shared_ptr <const Concat_Dep> e3= to <const Concat_Dep> (d)) {
 		shared_ptr <Concat_Dep> f= to <Concat_Dep> (e3->clone());
@@ -102,11 +112,13 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 			f->deps[0]= rebase(f->deps[0], base_dir);
 		for (size_t i= 1; i < f->deps.size(); ++i)
 			f->deps[i]= rebase_inner(f->deps[i], base_dir);
+		TRACE("return %s", show_trace(f));
 		return f;
 	} else if (shared_ptr <const Compound_Dep> e4= to <const Compound_Dep> (d)) {
 		shared_ptr <Compound_Dep> f= to <Compound_Dep> (e4->clone());
 		for (size_t i= 0; i < f->deps.size(); ++i)
 			f->deps[i]= rebase(f->deps[i], base_dir);
+		TRACE("return %s", show_trace((shared_ptr <const Dep>)f));
 		return f;
 	} else {
 		unreachable();

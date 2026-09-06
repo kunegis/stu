@@ -38,7 +38,7 @@ bool Name::match(
  * This implementation takes into account the special rules described in the manpage.
  * Each special rule is referred to by a letter (a, b, c, etc.). */
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show(*this));
 	TRACE("name= '%s'", name);
 	assert(mapping.size() == 0);
 	assert(! name.empty());
@@ -57,11 +57,18 @@ bool Name::match(
 		priority= 1;
 
 	/* $A/bbb matches /bbb with $A set to / */
-	bool special_b_potential= n != 0
+	bool special_b_potential_unbased= n != 0
 		&& texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/';
+	bool special_b_potential_based= name_flags & NF_SPECIAL_B;
 
 	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
 
+	TRACE("name_flags= %s", frmt("%u", name_flags));
+	TRACE("special_a= %s", frmt("%d", special_a));
+	TRACE("special_b_potential_based= %s", frmt("%d", special_b_potential_based));
+	TRACE("special_b_potential_unbased= %s", frmt("%d", special_b_potential_unbased));
+	TRACE("special_c= %s", frmt("%d", special_c));
+	
  restart:
 	TRACE("Start special_c= %s", frmt("%d", special_c));
 	const char *const p_begin= name.c_str();
@@ -72,14 +79,17 @@ bool Name::match(
 	if (! special_a) {
 		TRACE("Not (a)");
 		size_t k= texts[0].size();
-		if ((size_t)(p_end - p) <= k) {
-			TRACE("String is too short for first text");
-			goto failed;
-		}
-		/* Note:  K can be zero here, in which case memcmp() always returns zero,
-		 * i.e., a match. */
-		if (memcmp(p, texts[0].c_str(), k)) {
+		if ((size_t)(p_end - p) <= k || memcmp(p, texts[0].c_str(), k)) {
 			TRACE("String does not start with first text");
+			if (special_b_potential_based) {
+				assert(p < p_end);
+				if (p[0] != '/') {
+					TRACE("Special rule (b), based, but text[0] does not match and name is relative: fail");
+					return false;
+				}
+				anchoring[0]= 0;
+				goto pass;
+			}
 			goto failed;
 		}
 		p += k;
@@ -90,13 +100,13 @@ bool Name::match(
 		assert(texts[0] == "./");
 		anchoring[0]= 0;
 	}
-
+ pass:
 	for (size_t i= 0; i < n; ++i) {
 		TRACE("i= %s, p= '%s', texts[i+1]= %s", frmt("%zu", i), p, texts[i+1]);
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */
 
-		if (special_b_potential && i == 0)
+		if ((special_b_potential_based || special_b_potential_unbased) && i == 0)
 			length_min= 0;
 
 		if (special_c && i == 0) {
@@ -144,7 +154,8 @@ bool Name::match(
 			}
 			string matched= string(p, p_end - p - size_last);
 			if (matched.empty()) {
-				assert(special_b_potential);
+				assert(special_b_potential_based
+					|| special_b_potential_unbased);
 				priority= 1;
 				matched= "/";
 			}
@@ -170,7 +181,8 @@ bool Name::match(
 					goto failed;
 			}
 			if (matched.empty()) {
-				assert(special_b_potential);
+				assert(special_b_potential_based
+					|| special_b_potential_unbased);
 				priority= 1;
 				matched= "/";
 			}
@@ -353,6 +365,9 @@ void Name::prepend_text(string text)
 {
 	TRACE_FUNCTION();
 	TRACE("text= '%s'", text);
+	const size_t n= get_n();
+	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/')
+		name_flags |= NF_SPECIAL_B;
 	texts[0] = text + texts[0];
 }
 

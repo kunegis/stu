@@ -52,29 +52,29 @@ Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
 	: text(string_from_size(0) + d.get_text())
 { }
 
-void Hash_Based_Dep::canonicalize_plain()
-{
-	TRACE_FUNCTION();
-	check();
-	const char *base_dir= get_base_dir();
-	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
-	assert(! ((*(word_t *)p) & F_DYNAMIC));
-	p += sizeof(word_t);
-	p= canonicalize_string(A_BEGIN | A_END, p);
-
-	if (base_dir) {
-		size_t base_dir_len= text.size() - *(word_size_t *)text.data();
-		memmove(
-			p + 1,
-			text.data() + *(word_size_t *)text.data(),
-			base_dir_len);
-		*(word_size_t *)text.data()= p - text.data() + 1;
-		text.resize(p - text.data() + 1 + base_dir_len);
-	} else {
-		text.resize(p - text.data());
-	}
-	check();
-}
+//void Hash_Based_Dep::canonicalize_plain()
+//{
+//	TRACE_FUNCTION();
+//	check();
+//	const char *base_dir= get_base_dir();
+//	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
+//	assert(! ((*(word_t *)p) & F_DYNAMIC));
+//	p += sizeof(word_t);
+//	p= canonicalize_string(A_BEGIN | A_END, p);
+//
+//	if (base_dir) {
+//		size_t base_dir_len= text.size() - *(word_size_t *)text.data();
+//		memmove(
+//			p + 1,
+//			text.data() + *(word_size_t *)text.data(),
+//			base_dir_len);
+//		*(word_size_t *)text.data()= p - text.data() + 1;
+//		text.resize(p - text.data() + 1 + base_dir_len);
+//	} else {
+//		text.resize(p - text.data());
+//	}
+//	check();
+//}
 
 bool Hash_Based_Dep::is_any_file() const
 {

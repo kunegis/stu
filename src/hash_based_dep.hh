@@ -147,7 +147,7 @@ public:
 
 	bool operator==(const Hash_Based_Dep &d) const { return text == d.text; }
 	bool operator!=(const Hash_Based_Dep &d) const { return text != d.text; }
-	void canonicalize_plain(); /* In-place, knowing it is plain */
+//	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 	// TODO these two functions should not be needed if we always have constructors
 	// that properly use std::string(size_t, '\0').

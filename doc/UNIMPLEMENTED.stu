@@ -544,3 +544,9 @@ A { ... }
 
 # dir/main.stu
 B: ../A { ... }
+
+#
+# --silent:  Don't print anything when excuting a command
+#
+
+A: B --silent { ... }

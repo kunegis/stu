@@ -84,7 +84,6 @@ public:
 
 	bool is_any_file() const;
 //	bool is_any_phony() const;
-	void render(Parts &, Rendering= 0) const;
 
 	string get_name_nondynamic() const
 	/* Get the name of the target, knowing that the target is not dynamic */
@@ -154,6 +153,7 @@ public:
 	// that properly use std::string(size_t, '\0').
 
 #ifndef NDEBUG
+	void render(Parts &, Rendering= 0) const;
 	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
@@ -170,9 +170,8 @@ private:
 #endif /* ! NDEBUG */
 };
 
-void render(const Hash_Based_Dep &hash_based_dep, Parts &parts, Rendering rendering= 0);
-
 #ifndef NDEBUG
+void render(const Hash_Based_Dep &hash_based_dep, Parts &parts, Rendering rendering= 0);
 string show_trace(const Hash_Based_Dep &hash_based_dep);
 #endif /* ! NDEBUG */
 

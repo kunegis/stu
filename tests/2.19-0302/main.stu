@@ -1,0 +1,14 @@
+A: list.directory list.directory/build/B
+{
+	cp list.directory/build/B A
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+$dir/build/B
+{
+	mkdir -p -- "$dir"/build
+	echo correct >"$dir"/build/B
+}

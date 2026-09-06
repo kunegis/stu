@@ -52,44 +52,6 @@ Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
 	: text(string_from_size(0) + d.get_text())
 { }
 
-void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
-{
-	check();
-	const char *base_dir= get_base_dir();
-	size_t i;
-	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
-		assert((get_word(i) & F_PHONY) == 0);
-		parts.append_marker("[");
-	}
-	assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
-
-#ifndef NDEBUG
-	if (rendering & R_SHOW_FLAGS)
-		::render(Flags_View(get_word(i) & ~(F_PHONY | F_VARIABLE)),
-			parts, rendering);
-#endif /* ! NDEBUG */
-
-	if (get_word(i) & F_PHONY) {
-		parts.append_marker("@");
-	}
-	size_t start= sizeof(word_size_t) + sizeof(word_t) * (i + 1);
-	parts.append_text(text.substr(
-		start,
-		base_dir
-		? base_dir - text.data() - start - 1
-		: text.size() - start));
-	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
-		parts.append_marker("]");
-	}
-
-	// TODO probably not needed
-	if (base_dir) {
-		parts.append_marker("(");
-		parts.append_text(base_dir);
-		parts.append_marker(")");
-	}
-}
-
 void Hash_Based_Dep::canonicalize_plain()
 {
 	TRACE_FUNCTION();
@@ -132,11 +94,6 @@ bool Hash_Based_Dep::is_any_file() const
 //	return get_word(i) & F_PHONY;
 //}
 
-void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
-{
-	hash_dep.render(parts, rendering);
-}
-
 size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_dep) const
 {
 	return std::hash <string> ()(hash_based_dep.get_text());
@@ -144,11 +101,42 @@ size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_
 
 #ifndef NDEBUG
 
-string show_trace(const Hash_Based_Dep &hash_dep)
+void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
 {
-	Parts parts;
-	render(hash_dep, parts, R_SHOW_FLAGS);
-	return show(parts, S_TRACE);
+	check();
+	const char *base_dir= get_base_dir();
+	size_t i;
+	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
+		assert((get_word(i) & F_PHONY) == 0);
+		parts.append_marker("[");
+	}
+	assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
+
+#ifndef NDEBUG
+	if (rendering & R_SHOW_FLAGS)
+		::render(Flags_View(get_word(i) & ~(F_PHONY | F_VARIABLE)),
+			parts, rendering);
+#endif /* ! NDEBUG */
+
+	if (get_word(i) & F_PHONY) {
+		parts.append_marker("@");
+	}
+	size_t start= sizeof(word_size_t) + sizeof(word_t) * (i + 1);
+	parts.append_text(text.substr(
+		start,
+		base_dir
+		? base_dir - text.data() - start - 1
+		: text.size() - start));
+	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
+		parts.append_marker("]");
+	}
+
+	// TODO probably not needed
+	if (base_dir) {
+		parts.append_marker("(");
+		parts.append_text(base_dir);
+		parts.append_marker(")");
+	}
 }
 
 void Hash_Based_Dep::canonicalize()
@@ -191,6 +179,18 @@ void Hash_Based_Dep::check() const
 {
 	TRACE_FUNCTION();
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
+}
+
+void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
+{
+	hash_dep.render(parts, rendering);
+}
+
+string show_trace(const Hash_Based_Dep &hash_dep)
+{
+	Parts parts;
+	render(hash_dep, parts, R_SHOW_FLAGS);
+	return show(parts, S_TRACE);
 }
 
 #endif /* ! NDEBUG */

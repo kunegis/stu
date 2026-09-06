@@ -1,6 +1,4 @@
 * 2.19-x3xx: %cd list.dir  ${dir}/file
-** Matching a relative path in the %cd dir: list.directory/B # 2.19-0301
-** Matching a relative path in a subdir of the %cd dir: list.directory/build/B
 ** Matching an abolute path: works
 ** Matching a filename without slashes: B # Does not work
 ** Interaction with special rule (a):  "%cd ." # rebase should not prepend anything
@@ -71,6 +69,7 @@ list.B = {...}
 
 * In -j mode, multiple commands with different base directories are ru nin parallel.
 * A %cd dynamic dependency, which contains '(A B C) () list.(A B C).xyz', i.e., various non-normalized dependencies.
+
 * tests/long-0.7-2000 produces unallowed files: tmp1.stu tmp2.stu
 * tests/long-0.2-2001/abcdefghijklmno: unallowed file created during testing
 

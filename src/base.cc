@@ -1,12 +1,20 @@
 #include "base.hh"
 
+#include "canonicalize.hh"
+#include "format.hh"
 #include "show_dep.hh"
 #include "trace.hh"
 
 void Base_Stack::build_base_dir()
+// TODO it may be unnecessary to call canonicalize_string(), if the directories are
+// already canonicalized.  In that case, it's enough to ignore the '.' entries.
 {
+	TRACE_FUNCTION();
+	TRACE("dirs.size()= %s", frmt("%zu", dirs.size()));
+
 	if (dirs.empty()) {
 		base_dir= "";
+		TRACE("base_dir= '%s'", base_dir);
 		return;
 	}
 
@@ -16,6 +24,13 @@ void Base_Stack::build_base_dir()
 	for (size_t j= i + 1; j < dirs.size(); ++j) {
 		base_dir += '/' + dirs[j];
 	}
+	
+	char *end= canonicalize_string(A_BEGIN | A_END, base_dir.data());
+	base_dir.resize(end - base_dir.data());
+
+	if (base_dir == ".") base_dir= "";
+
+	TRACE("base_dir= '%s'", base_dir);
 }
 
 void Base_Stack::push(string dir)

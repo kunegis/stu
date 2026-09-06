@@ -1,4 +1,3 @@
-* main.stu does %cd immediately and then a rule.  The default rule is %cd rule.
 * In %cd rule:  dependency /aaa[B] is not rebased because it is absolute
 * Canonicalization:  A: list.dir/x/y;  %cd list.dir//x  y {...}  # The rule for 'y' must match the dependency.
 * Canonicalization:  A: list.dir//x/y;  %cd list.dir/./x  y {...}  # The rule for 'y' must match the dependency.

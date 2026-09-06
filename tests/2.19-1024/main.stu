@@ -1,0 +1,6 @@
+% cd /bin
+
+target_file
+{
+	exit 77
+}

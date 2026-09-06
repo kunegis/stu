@@ -1,0 +1,21 @@
+A: d d/B
+{
+	cp d/B A
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+%cd d
+
+B: list.(1 2 3)
+{
+	cat list.1 list.2 list.3 >B
+}
+
+>list.$n
+{
+	echo "$n$n$n"
+}

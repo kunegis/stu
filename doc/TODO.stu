@@ -93,6 +93,8 @@ A=B; %cd . %cd . %cd . $dir/B {...} # Works
 * A: B  %cd /  $dir  # Matches with dir='/'
 * A: B  %cd /  $dir/  # Matches with dir='/'
 
+%cd dir  /bin/jshfkshfksjfkjshfd { pwd ; ...} # Check that pwd outputs something ending in "/dir" (even though the target is absolute and not rebased)
+
 #
 # %include -d
 #

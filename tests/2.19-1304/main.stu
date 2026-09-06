@@ -1,0 +1,12 @@
+A: list.directory B
+{
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+$dir/B
+{
+	exit 77
+}

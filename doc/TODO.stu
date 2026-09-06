@@ -1,5 +1,4 @@
 * 2.19-x3xx: %cd list.dir  ${dir}/file
-** Matching a filename without slashes: B # Does not work
 ** Interaction with special rule (a):  "%cd ." # rebase should not prepend anything
 ** A: B  %cd /  $dir/B  # Matches with dir='/'
 ** A: B  %cd directory  $dir  # Matches with dir='directory'
@@ -92,6 +91,7 @@ A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
 * Like 0.4-1015, but in a dynamic dependency
 * A dependency "./aaa" in a %cd rule (same as "aaa")
 * When a name does not match a rule, Name::match() is called twice.  It should not.
+A = %cd # Error
 
 #
 # %include -d

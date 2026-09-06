@@ -1,10 +1,14 @@
 * 2.19-x3xx: %cd list.dir  ${dir}/file
 ** Matching a relative path in the %cd dir: list.directory/B # 2.19-0301
-*** Name::match:  Need to handle aaa/$dir/bbb case to give $dir=''
 ** Matching a relative path in a subdir of the %cd dir: list.directory/build/B
 ** Matching an abolute path: works
 ** Matching a filename without slashes: B # Does not work
 ** Interaction with special rule (a):  "%cd ." # rebase should not prepend anything
+** A: B  %cd /  $dir/B  # Matches with dir='/'
+** A: B  %cd directory  $dir  # Matches with dir='directory'
+** A: B  %cd directory  $dir/  # Matches with dir='directory'
+** A: B  %cd /  $dir  # Matches with dir='/'
+** A: B  %cd /  $dir/  # Matches with dir='/'
 
 * Compound dep used in a %cd rule
 * main.stu does %cd immediately and then a rule.  The default rule is %cd rule.
@@ -89,6 +93,7 @@ A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
 * 2.7.70-1* tests: check all whether they should be moved to another version number
 * Like 0.4-1015, but in a dynamic dependency
 * A dependency "./aaa" in a %cd rule (same as "aaa")
+* When a name does not match a rule, Name::match() is called twice.  It should not.
 
 #
 # %include -d

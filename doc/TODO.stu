@@ -1,11 +1,10 @@
-* 2.19-03xx: %cd list.dir  ${dir}/file
-** Matching a relative path not inside the %cd dir # 2.19-0300
-*** Rule should not match because executed in list.directory.  
-** Matching a relative path in the %cd dir
-** Matching a relative path in a subdir of the %cd dir
-** Matching an abolute path
-** Matching a filename without slashes
-** Interaction with special rule (a):  "%cd ."
+* 2.19-x3xx: %cd list.dir  ${dir}/file
+** Matching a relative path in the %cd dir: list.directory/B # 2.19-0301
+*** Name::match:  Need to handle aaa/$dir/bbb case to give $dir=''
+** Matching a relative path in a subdir of the %cd dir: list.directory/build/B
+** Matching an abolute path: works
+** Matching a filename without slashes: B # Does not work
+** Interaction with special rule (a):  "%cd ." # rebase should not prepend anything
 
 * Compound dep used in a %cd rule
 * main.stu does %cd immediately and then a rule.  The default rule is %cd rule.

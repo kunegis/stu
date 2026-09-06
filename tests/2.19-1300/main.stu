@@ -1,0 +1,22 @@
+A: list.directory list.x/B
+{
+	cp list.x/B A
+}
+
+-p list.directory { mkdir -p list.directory ; }
+
+%cd list.directory
+
+$dir/B
+{
+	pwd
+	printf 'dir="%s"\n' "$dir"
+	mkdir -p -- "$dir"
+	echo correct >"$dir"/B
+}
+
+#
+# The rule for $dir/B does not match list.x/B because the rule is defined ub
+# "list.directory" -- since the command of the rule will be executed in $dir/B, there is
+# no sensible value of $dir that Stu could pass to the job.
+#

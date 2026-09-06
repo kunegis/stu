@@ -366,8 +366,10 @@ void Name::prepend_text(string text)
 	TRACE_FUNCTION();
 	TRACE("text= '%s'", text);
 	const size_t n= get_n();
-	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/')
+	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
 		name_flags |= NF_SPECIAL_B;
+		TRACE("name_flags= %s", frmt("%u", name_flags));
+	}
 	texts[0] = text + texts[0];
 }
 

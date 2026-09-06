@@ -23,11 +23,10 @@ public:
 		assert(! name.empty());
 	}
 
-	Hash_Bare_Dep(Flags flags, const Hash_Bare_Dep &target)
-	// TODO rename arg target -> d
-	/* Makes the given target once more dynamic with the given
-	 * flags, which must *not* contain the 'dynamic' flag. */
-		: text(string_from_word(flags | F_DYNAMIC) + target.text)
+	Hash_Bare_Dep(Flags flags, const Hash_Bare_Dep &d)
+	/* Makes the given target once more dynamic with the given flags, which must *not*
+	 * contain the 'dynamic' flag. */
+		: text(string_from_word(flags | F_DYNAMIC) + d.text)
 	{
 		assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
 		assert(flags < (1 << C_WORD));

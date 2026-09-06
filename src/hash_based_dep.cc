@@ -1,32 +1,5 @@
 #include "hash_based_dep.hh"
 
-//Hash_Based_Dep::Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target)
-//{
-//	assert((flags & (F_DYNAMIC | F_PHONY)) == 0);
-//	assert(flags < (1 << C_WORD));
-
-//	const char *base_dir= target.get_base_dir();
-//	if (base_dir) {
-//		text= string(sizeof(word_t) + target.text.size(), '\0');
-//		*(word_size_t *)text.data()=
-//			sizeof(word_t) + *(const word_size_t *)target.text.data();
-//		get_front_word_any()= flags | F_DYNAMIC;
-//		memcpy(
-//			text.data() + sizeof(word_size_t) + sizeof(word_t),
-//			target.text.data() + sizeof(word_size_t),
-//			target.text.size() - sizeof(word_size_t));
-//	} else {
-//		text= string(sizeof(word_t) + target.text.size(), '\0');
-//		get_front_word_any()= flags | F_DYNAMIC;
-//		memcpy(
-//			text.data() + sizeof(word_size_t) + sizeof(word_t),
-//			target.text.data() + sizeof(word_size_t),
-//			target.text.size() - sizeof(word_size_t));
-//	}
-
-//	check();
-//}
-
 Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {
@@ -51,48 +24,6 @@ Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
 	: text(string_from_size(0) + d.get_text())
 { }
-
-//void Hash_Based_Dep::canonicalize_plain()
-//{
-//	TRACE_FUNCTION();
-//	check();
-//	const char *base_dir= get_base_dir();
-//	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
-//	assert(! ((*(word_t *)p) & F_DYNAMIC));
-//	p += sizeof(word_t);
-//	p= canonicalize_string(A_BEGIN | A_END, p);
-//
-//	if (base_dir) {
-//		size_t base_dir_len= text.size() - *(word_size_t *)text.data();
-//		memmove(
-//			p + 1,
-//			text.data() + *(word_size_t *)text.data(),
-//			base_dir_len);
-//		*(word_size_t *)text.data()= p - text.data() + 1;
-//		text.resize(p - text.data() + 1 + base_dir_len);
-//	} else {
-//		text.resize(p - text.data());
-//	}
-//	check();
-//}
-
-//bool Hash_Based_Dep::is_any_file() const
-//{
-//	size_t i= 0;
-//	while (get_word(i) & F_DYNAMIC) {
-//		++i;
-//	}
-//	return (get_word(i) & F_PHONY) == 0;
-//}
-
-//bool Hash_Based_Dep::is_any_phony() const
-//{
-//	size_t i= 0;
-//	while (get_word(i) & F_DYNAMIC) {
-//		++i;
-//	}
-//	return get_word(i) & F_PHONY;
-//}
 
 size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_dep) const
 {

@@ -80,11 +80,6 @@ bool is_absolute_for_base(const Name &name)
 /* Starts with '/' text, or with param followed by '/' text */
 {
 	return name.get_texts()[0].size() != 0 && name.get_texts()[0][0] == '/';
-//		||
-//		(name.get_texts()[0].empty() &&
-//			name.get_n() != 0 &&
-//			name.get_texts()[1].size() &&
-//			name.get_texts()[1][0] == '/');
 }
 
 shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)

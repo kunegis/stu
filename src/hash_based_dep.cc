@@ -76,14 +76,14 @@ Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
 //	check();
 //}
 
-bool Hash_Based_Dep::is_any_file() const
-{
-	size_t i= 0;
-	while (get_word(i) & F_DYNAMIC) {
-		++i;
-	}
-	return (get_word(i) & F_PHONY) == 0;
-}
+//bool Hash_Based_Dep::is_any_file() const
+//{
+//	size_t i= 0;
+//	while (get_word(i) & F_DYNAMIC) {
+//		++i;
+//	}
+//	return (get_word(i) & F_PHONY) == 0;
+//}
 
 //bool Hash_Based_Dep::is_any_phony() const
 //{

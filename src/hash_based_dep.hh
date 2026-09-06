@@ -82,7 +82,7 @@ public:
 		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == F_PHONY;
 	}
 
-	bool is_any_file() const;
+//	bool is_any_file() const;
 //	bool is_any_phony() const;
 
 	string get_name_nondynamic() const

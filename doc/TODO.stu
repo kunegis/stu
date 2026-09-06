@@ -1,5 +1,4 @@
 * 2.19-x3xx: %cd list.dir  ${dir}/file
-** Matching an abolute path: works
 ** Matching a filename without slashes: B # Does not work
 ** Interaction with special rule (a):  "%cd ." # rebase should not prepend anything
 ** A: B  %cd /  $dir/B  # Matches with dir='/'

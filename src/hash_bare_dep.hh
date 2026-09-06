@@ -48,6 +48,7 @@ public:
 		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == F_PHONY;
 	}
 
+	// TODO unused -- remove
 	bool is_any_file() const {
 		size_t i= 0;
 		while (get_word(i) & F_DYNAMIC) {

@@ -70,7 +70,7 @@ bool Name::match(
 	TRACE("special_a= %s", frmt("%d", special_a));
 	TRACE("special_b_potential_based= %s", frmt("%d", special_b_potential_based));
 	TRACE("special_b_potential_unbased= %s", frmt("%d", special_b_potential_unbased));
-	
+
  restart:
 	TRACE("Start special_b_second_pass= %s", frmt("%d", special_b_second_pass));
 	TRACE("Start special_c= %s", frmt("%d", special_c));

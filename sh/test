@@ -137,6 +137,8 @@
 # Note: we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
+. sh/util.sh
+
 ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG TOPIC VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 VARIANT=${VARIANT:-debug}
@@ -468,12 +470,8 @@ do
 
 					# Check that NOTINCONTENT is not found in the error output
 					if [ -e NOTINCONTENT ]; then
-						## TODO use: Not grep -q -F -f
-						cat NOTINCONTENT | while IFS= read -r line ; do
-							if grep -q -F -e "$line" "$target" ; then
-								test_fail "'$line' was found in target, but should not be there (NOTINCONTENT)"
-							fi
-						done
+						Not grep -q -F -f NOTINCONTENT -- "$target" ||
+							test_fail "String from NOTINCONTENT found in target $target"
 					fi
 				fi
 			else

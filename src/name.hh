@@ -25,7 +25,6 @@ enum
 	/* Set if special canonicalization rule (b) is known to apply to the name */
 };
 
-
 class Name
 {
 public:

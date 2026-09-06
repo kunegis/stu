@@ -24,7 +24,7 @@ void Base_Stack::build_base_dir()
 	for (size_t j= i + 1; j < dirs.size(); ++j) {
 		base_dir += '/' + dirs[j];
 	}
-	
+
 	char *end= canonicalize_string(A_BEGIN | A_END, base_dir.data());
 	base_dir.resize(end - base_dir.data());
 

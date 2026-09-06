@@ -591,3 +591,9 @@ VALUE
 #
 # Tutorial as PDF, HTML, and also as source files.
 #
+
+#
+# sh/test.sh:  When calling EXEC, set $PATH to include sh/, so:
+#  * EXEC can do ". test.sh" without "../../"
+#  * test.sh can do ". util.sh" and doesn't need to define its own version of "Not"
+#

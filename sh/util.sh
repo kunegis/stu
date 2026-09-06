@@ -1,11 +1,12 @@
 Not() # <command> ...
-# Inverses the exit status 0 and 1.  Useful on commands like grep, to make "set -e" work
-# when testing that grep should NOT find something.
 {
+	Not_has_e=
+	case "$-" in *e*) Not_has_e=1 ;; esac
+
 	set +e
 	"$@"
 	exitstatus=$?
-	set -e
+	[ "$Not_has_e" ] && set -e
 
 	if [ "$exitstatus" = 0 ]
 	then

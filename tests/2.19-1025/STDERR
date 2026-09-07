@@ -1,0 +1,4 @@
+main.stu:12:4: no rule to build "/aaabbb", needed by [list.directory/B]
+main.stu:12:9: [list.directory/B] is needed by /aaa[list.directory/B]
+main.stu:12:4: /aaa[list.directory/B] is needed by "list.directory/X"
+main.stu:1:19: "list.directory/X" is needed by "A"

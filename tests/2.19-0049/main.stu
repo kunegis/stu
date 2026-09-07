@@ -1,0 +1,17 @@
+A: list.dir/x list.dir//x/y
+{
+	cp list.dir//x/y A
+	grep -q -F -x -e 1234 A
+}
+
+-p list.dir/x
+{
+	mkdir -p list.dir/x
+}
+
+%cd list.dir/./x
+
+y
+{
+	echo 1234 >y
+}

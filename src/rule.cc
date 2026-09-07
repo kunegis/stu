@@ -4,7 +4,7 @@ Rule::Rule(
 	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
-	string base_dir_,
+	string base_,
 	bool is_content_,
 	const Placed_Name &name_input_,
 	const Placed_Name &name_output_)
@@ -12,14 +12,14 @@ Rule::Rule(
 	  deps(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
-	  base_dir(base_dir_),
+	  base(base_),
 	  name_input(name_input_),
 	  name_output(name_output_),
 	  is_content(is_content_)
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show(targets_[0]));
-	TRACE("base_dir= '%s'", base_dir_);
+	TRACE("base_dir= '%s'", base_);
 	assert(targets.size() != 0);
 
 	/* Check that all dependencies only include
@@ -44,12 +44,12 @@ Rule::Rule(
 Rule::Rule(
 	shared_ptr <const Plain_Dep> target_,
 	shared_ptr <const Placed_Name> copy_src_,
-	string base_dir_,
+	string base_,
 	const Place &place_persistent,
 	const Place &place_optional)
 	: targets{target_},
 	  place(target_->place),
-	  base_dir(base_dir_),
+	  base(base_),
 	  is_content(false),
 	  copy_src(*copy_src_),
 	  copy_dst(target_->object.name)
@@ -77,7 +77,7 @@ Rule::Rule(
 	std::vector <shared_ptr <const Dep> > &&deps_,
 	const Place &place_,
 	const shared_ptr <const Command> &command_,
-	string base_dir_,
+	string base_,
 	const Placed_Name &name_input_,
 	const Placed_Name &name_output_,
 	bool is_content_,
@@ -87,7 +87,7 @@ Rule::Rule(
 	  deps(deps_),
 	  place(place_),
 	  command(command_),
-	  base_dir(base_dir_),
+	  base(base_),
 	  name_input(name_input_),
 	  name_output(name_output_),
 	  is_content(is_content_),
@@ -128,23 +128,16 @@ shared_ptr <const Rule> Rule::instantiate(
 	shared_ptr <Placed_Name> new_copy_dst= copy_dst.instantiate(mapping);
 
 	return std::make_shared <Rule> (
-		move(new_targets),
-		move(new_deps),
-		place,
-		command,
-		base_dir,
-		*new_name_input,
-		*new_name_output,
-		is_content,
-		*new_copy_src,
-		*new_copy_dst);
+		move(new_targets), move(new_deps), place, command, base,
+		*new_name_input, *new_name_output, is_content,
+		*new_copy_src, *new_copy_dst);
 }
 
 shared_ptr <const Rule> Rule::rebase() const
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show_trace(targets[0]));
-	if (base_dir.empty()) return shared_from_this();
+	if (base.empty()) return shared_from_this();
 
 	std::vector <shared_ptr <const Plain_Dep> > new_targets= targets;
 
@@ -153,16 +146,9 @@ shared_ptr <const Rule> Rule::rebase() const
 		new_deps.push_back(rebase(deps[i]));
 
 	shared_ptr <Rule> ret= std::make_shared <Rule> (
-		std::move(new_targets),
-		std::move(new_deps),
-		place,
-		command,
-		base_dir,
-		name_input,
-		name_output,
-		is_content,
-		copy_src,
-		copy_dst);
+		std::move(new_targets), std::move(new_deps),
+		place, command, base, name_input, name_output, is_content,
+		copy_src, copy_dst);
 
 	return ret;
 }

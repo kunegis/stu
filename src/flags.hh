@@ -83,7 +83,8 @@ enum
 	/* Object is symlink and should not be dereferenced */
 
 	F_BASE                  = 1 << I_BASE,
-	/* Contains base dir (only used in Hash_Dep) */
+	/* Contains base (only used in Hash_Dep) */
+	// TODO Is this used?
 
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */

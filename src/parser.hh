@@ -123,7 +123,7 @@ public:
 private:
 	std::vector <shared_ptr <Token> > &tokens;
 	std::vector <shared_ptr <Token> > ::iterator &iter;
-	string base_dir;
+	string base;
 	const Place place_end;
 
 	Parser(std::vector <shared_ptr <Token> > &tokens_,

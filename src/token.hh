@@ -148,10 +148,10 @@ class CD_Token
 	: public Token
 {
 public:
-	const string base_dir;
+	const string base;
 	Place place;
 
-	CD_Token(Environment, const Place &, string base_dir_); /* Push */
+	CD_Token(Environment, const Place &, string base_); /* Push */
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;

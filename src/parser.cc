@@ -194,13 +194,7 @@ shared_ptr <Rule> Parser::parse_rule(
 	}
 
 	return std::make_shared <Rule> (
-		move(targets),
-		deps,
-		command,
-		base_dir,
-		is_content,
-		name_input,
-		name_output);
+		move(targets), deps, command, base, is_content, name_input, name_output);
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -324,10 +318,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	append_copy(*name_copy_src, targets[0]->object.name);
 
 	return std::make_shared <Rule> (
-		targets[0],
-		name_copy_src,
-		base_dir,
-		place_flag_persistent,
+		targets[0], name_copy_src, base, place_flag_persistent,
 		place_flag_optional);
 }
 
@@ -502,7 +493,7 @@ bool Parser::parse_target(
 	}
 	if (target_first == nullptr) {
 		target_first= target;
-		target_first= to <const Plain_Dep> (rebase(target_first, base_dir));
+		target_first= to <const Plain_Dep> (rebase(target_first, base));
 		TRACE("target_first= %s", show_trace(target_first));
 		assert(target_first);
 	}
@@ -1311,8 +1302,8 @@ void Parser::parse_rule_list(
 	while (iter != tokens.end()) {
 		for (; is <CD_Token> (); ++iter) {
 			shared_ptr <CD_Token> cd_token= is <CD_Token> ();
-			base_dir= cd_token->base_dir;
-			TRACE("base_dir= '%s'", base_dir);
+			base= cd_token->base;
+			TRACE("base_dir= '%s'", base);
 		}
 #ifndef NDEBUG
 		const auto iter_begin= iter;

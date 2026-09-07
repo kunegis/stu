@@ -952,7 +952,7 @@ void Tokenizer::parse_environment_variable(Placed_Name &name)
 		TRACE("PWD= '%s'", buf.c_str());
 		string pwd= buf.c_str();
 		if (base_stack) {
-			string base_dir= base_stack->get_base_dir();
+			string base_dir= base_stack->get_base();
 			if (! base_dir.empty()) {
 				if (base_dir[0] == '/') {
 					pwd= base_dir;
@@ -1603,7 +1603,7 @@ void Tokenizer::parse_cd_directive(
 		}
 		base_stack->pop();
 		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-			base_stack->get_base_dir()));
+			base_stack->get_base()));
 		return;
 	}
 
@@ -1630,7 +1630,7 @@ void Tokenizer::parse_cd_directive(
 
 	base_stack->push(name_string);
 	tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-		base_stack->get_base_dir()));
+		base_stack->get_base()));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

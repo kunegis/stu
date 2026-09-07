@@ -9,12 +9,12 @@
 Concat_Executor::Concat_Executor(
 	shared_ptr <const Concat_Dep> dep_,
 	Executor *parent,
-	string dynamic_base_dir_)
-	: dep(dep_), stage(ST_DYNAMIC), dynamic_base_dir(dynamic_base_dir_)
+	string dynamic_base_)
+	: dep(dep_), stage(ST_DYNAMIC), dynamic_base(dynamic_base_)
 {
 	TRACE_FUNCTION();
 	TRACE("dep_= %s", show_trace(dep_));
-	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
 	assert(dep);
 	assert(dep->is_normalized());
 	assert(parent);
@@ -184,22 +184,24 @@ void Concat_Executor::notify_result(
 	}
 }
 
-string Concat_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const
+string Concat_Executor::get_dynamic_base(
+	shared_ptr <const Dep> child,
+	bool for_rebase) const
 {
 	// TODO CHILD is always non-null.  add asserta and simplify "! child".
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("child= %s", child ? show_trace(child) : "NULL");
 	TRACE("for_rebase= %s", frmt("%d", for_rebase));
-	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
 	TRACE("child->index= %s", frmt("%zd", child->index));
 
 	if (for_rebase) {
 		if (! child || child->index <= 0) {
-			return dynamic_base_dir;
+			return dynamic_base;
 		} else {
 			return "";
 		}
 	} else {
-		return dynamic_base_dir;
+		return dynamic_base;
 	}
 }

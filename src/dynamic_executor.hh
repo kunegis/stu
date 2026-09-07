@@ -11,9 +11,9 @@
  * all flags.  This is as opposed to file executors, where multiple file dependencies
  * share a single executor object.
  *
- * Parent base dir:  Each dynamic executor must remember the base dir of the rule that
+ * Parent base:  Each dynamic executor must remember the base directory of the rule that
  * included it.  Different dynamic executors are used for the same object name, if they
- * have different base dirs.  Hash_Dep also includes the parent base dir.
+ * have different bases.  Hash_Dep also includes the parent base.
  */
 
 class Dynamic_Executor
@@ -24,7 +24,7 @@ public:
 		shared_ptr <const Dynamic_Dep> dep_,
 		Executor *parent,
 		int &error_additional,
-		string dynamic_base_dir);
+		string dynamic_base);
 	/* ERR_ADDITIONAL is only set:
 	 * - When the dynamic contains a plain dependency for which there are multiple
 	 *   matching rules.
@@ -47,9 +47,9 @@ public:
 private:
 	const shared_ptr <const Dynamic_Dep> dep;
 	Done done;
-	string dynamic_base_dir;
+	string dynamic_base;
 
-	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const override;
+	virtual string get_dynamic_base(shared_ptr <const Dep> child, bool for_rebase) const override;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

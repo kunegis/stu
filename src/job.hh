@@ -34,7 +34,7 @@ public:
 		const std::map <string, string> &mapping,
 		const Placed_Name &input,
 		const Placed_Name &output,
-		string base_dir,
+		string base,
 		const Place &place_command);
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
@@ -45,7 +45,7 @@ public:
 	pid_t start_copy(
 		const Placed_Name &target,
 		string source,
-		string base_dir);
+		string base);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
@@ -79,7 +79,7 @@ private:
 	/* The job that is in the foreground, or -1 when none is */
 
 	static void ask_continue(pid_t pid);
-	static void perform_cd(string base_dir);
+	static void perform_cd(string base);
 	static void create_child_env(const std::map <string, string> &mapping);
 	static const char **create_child_argv(
 		const Place &place_command,

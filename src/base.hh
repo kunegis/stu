@@ -5,8 +5,6 @@
  * The base directory can be empty, in which case no 'cd' is needed.
  */
 
-// TODO 'base dir' should be changed to 'base' everywhere.
-
 #include <vector>
 
 #include "dep.hh"
@@ -17,7 +15,7 @@ public:
 	bool empty() const { return dirs.empty(); }
 	void push(string dir);
 	void pop();
-	string get_base_dir() const { return base_dir; }
+	string get_base() const { return base; }
 	string rebase(string filename) const;
 
 private:
@@ -25,14 +23,14 @@ private:
 	/* - Components are not ""
 	 * - Components only end in slash if they consist only of slashes */
 
-	string base_dir;
+	string base;
 
-	void build_base_dir();
+	void build_base();
 };
 
 bool is_absolute_for_base(const Name &);
 
-shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir);
-shared_ptr <const Dep> rebase_inner(shared_ptr <const Dep> d, string base_dir);
+shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base);
+shared_ptr <const Dep> rebase_inner(shared_ptr <const Dep> d, string base);
 
 #endif /* ! BASE_HH */

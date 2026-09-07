@@ -9,16 +9,16 @@
  *
  * TEXT is a linear representation of the target.  It contains, from left to right:
  *   - [word_size_t] the starting address of the base directory.  As an index in the
- *     string.  Zero if there is no base dir.
+ *     string.  Zero if there is no base.
  *   - [K * word_t] Dynamic words; the number K is equal to the dynamic multiplicity of
  *     the dependency, and may be zero.  F_DYNAMIC is set in each word.  They also contain
  *     other flags from F_WORD.
  *   - [word_t] A plain word; F_DYNAMIC is not set.  Also contains other flags from
  *     F_WORD, including F_PHONY.
  *   - The name of the contained object.  Always non-empty and '\0'-terminated.  The
- *     terminating '\0' is part of the std::string if there is a base dir, and the
+ *     terminating '\0' is part of the std::string if there is a base, and the
  *     implicit terminating '\0' if not.
- *   - (optional) A base dir.  A string of length at least one.  Terminated by the
+ *   - (optional) A base directory.  A string of length at least one.  Terminated by the
  *     std::string's implicit terminating '\0'.
  *
  * A non-based non-dynamic dependency is represented as a zero size_t, then a type word_t
@@ -28,8 +28,8 @@
  * and the string representation of the contained dependency.
  *
  * Any of the word_t elements may contain additional flag bits, but only those from F_WORD.
- * There may be '\0' bytes in the size_t/word_t values, but the base dir and object name do not
- * contain '\0', as that is invalid in names.  The base dir and name proper (excluding
+ * There may be '\0' bytes in the size_t/word_t values, but the base and object name do not
+ * contain '\0', as that is invalid in names.  The base and name proper (excluding
  * front words) are non-empty, i.e., are at least one byte long.
  *
  * The empty std::string denotes a "null" value for the type Hash_Dep, or equivalently the
@@ -49,7 +49,7 @@ public:
 	/* TEXT_ is the full text field of this Hash_Dep */
 
 	Hash_Based_Dep(Flags flags, string name)
-	/* A plain target; no base dir */
+	/* A plain target; no base directory */
 		// TODO use direct std::string constructor with correct length, then
 		// assign content directly
 		: text(string_from_size(0) + string_from_word(flags) + name)
@@ -57,14 +57,9 @@ public:
 		assert((flags & ~F_PHONY) == 0);
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(! name.empty());
-//		check(); // RM
 	}
 
-//	Hash_Based_Dep(Flags flags, const Hash_Based_Dep &target);
-//	/* Makes the given target once more dynamic with the given flags, which must *not*
-//	 * contain the 'dynamic' flag. */
-
-	Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_based_dep);
+	Hash_Based_Dep(string base, Hash_Based_Dep hash_based_dep);
 	Hash_Based_Dep(Hash_Bare_Dep d);
 
 	const string &get_text() const { return text; }
@@ -137,9 +132,8 @@ public:
 		return ((const word_t *)&text[sizeof(word_size_t)])[i];
 	}
 
-	const char *get_base_dir() const
+	const char *get_base() const
 	{
-//		check(); //
 		return (*(const word_size_t *)text.data()) != 0
 			? text.data() + (*(const word_size_t *)text.data())
 			: nullptr;

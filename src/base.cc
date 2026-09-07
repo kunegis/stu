@@ -5,7 +5,7 @@
 #include "show_dep.hh"
 #include "trace.hh"
 
-void Base_Stack::build_base_dir()
+void Base_Stack::build_base()
 // TODO it may be unnecessary to call canonicalize_string(), if the directories are
 // already canonicalized.  In that case, it's enough to ignore the '.' entries.
 {
@@ -13,24 +13,24 @@ void Base_Stack::build_base_dir()
 	TRACE("dirs.size()= %s", frmt("%zu", dirs.size()));
 
 	if (dirs.empty()) {
-		base_dir= "";
-		TRACE("base_dir= '%s'", base_dir);
+		base= "";
+		TRACE("base_dir= '%s'", base);
 		return;
 	}
 
 	size_t i= dirs.size() - 1;
 	while (i && dirs[i][0] != '/') --i;
-	base_dir= dirs[i];
+	base= dirs[i];
 	for (size_t j= i + 1; j < dirs.size(); ++j) {
-		base_dir += '/' + dirs[j];
+		base += '/' + dirs[j];
 	}
 
-	char *end= canonicalize_string(A_BEGIN | A_END, base_dir.data());
-	base_dir.resize(end - base_dir.data());
+	char *end= canonicalize_string(A_BEGIN | A_END, base.data());
+	base.resize(end - base.data());
 
-	if (base_dir == ".") base_dir= "";
+	if (base == ".") base= "";
 
-	TRACE("base_dir= '%s'", base_dir);
+	TRACE("base= '%s'", base);
 }
 
 void Base_Stack::push(string dir)
@@ -51,29 +51,29 @@ void Base_Stack::push(string dir)
 	TRACE("After canonicalization: dir= '%s'", dir);
 	assert(! dir.empty());
 	dirs.push_back(dir);
-	build_base_dir();
+	build_base();
 }
 
 void Base_Stack::pop()
 {
 	TRACE_FUNCTION();
 	assert(! dirs.empty());
-	base_dir= "";
+	base= "";
 	dirs.pop_back();
-	build_base_dir();
+	build_base();
 }
 
 string Base_Stack::rebase(string filename) const
 {
 	TRACE_FUNCTION();
 	TRACE("filename= '%s'", filename);
-	TRACE("base_dir='%s'", base_dir);
-	if (base_dir.empty()) return filename;
+	TRACE("base_dir='%s'", base);
+	if (base.empty()) return filename;
 
 	if (is_absolute_for_base(filename)) return filename;
-	bool end_in_slash= base_dir[base_dir.size()-1] == '/';
+	bool end_in_slash= base[base.size()-1] == '/';
 	string sep= end_in_slash ? "" : "/";
-	return base_dir + sep + filename;
+	return base + sep + filename;
 }
 
 bool is_absolute_for_base(const Name &name)

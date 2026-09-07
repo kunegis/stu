@@ -123,7 +123,7 @@ public:
 	/* Set before calling main_loop() */
 
 	static Hash_Based_Dep get_target_for_cache(
-		Hash_Bare_Dep hash_dep, string base_dir);
+		Hash_Bare_Dep hash_dep, string base);
 	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.  Only used for finding
 	 * cycles. */
@@ -188,7 +188,7 @@ protected:
 	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
 	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
 
-	Executor *get_executor(shared_ptr <const Dep> dep, string dynamic_base_dir);
+	Executor *get_executor(shared_ptr <const Dep> dep, string dynamic_base);
 	/* Get an existing Executor or create a new one.  Return null on errors. */
 
 	void check_waited() const {
@@ -228,10 +228,10 @@ protected:
 	 * FALSE in executor types that are not affected. */
 
 	// TODO if bool arg is never used, remove it
-	virtual string get_dynamic_base_dir(shared_ptr <const Dep> child, bool for_rebase) const;
+	virtual string get_dynamic_base(shared_ptr <const Dep> child, bool for_rebase) const;
 	/* CHILD is null when called for dependency from dynamic dependency.
 	 * FOR_REBASE: true: for rebasing name of content in dynamic dependency. false:
-	 * for determining base dir of child executor. */
+	 * for determining base of child executor. */
 
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the file system

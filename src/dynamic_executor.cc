@@ -4,12 +4,12 @@ Dynamic_Executor::Dynamic_Executor(
 	shared_ptr <const Dynamic_Dep> dep_,
 	Executor *parent,
 	int &error_additional,
-	string dynamic_base_dir_)
+	string dynamic_base_)
 	: dep(dep_),
-	  dynamic_base_dir(dynamic_base_dir_)
+	  dynamic_base(dynamic_base_)
 {
 	TRACE_FUNCTION();
-	TRACE("dynamic_base_dir='%s'", dynamic_base_dir);
+	TRACE("dynamic_base_dir='%s'", dynamic_base);
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
@@ -46,7 +46,7 @@ Dynamic_Executor::Dynamic_Executor(
 		Hash_Based_Dep hash_dep_with_parent_base_dir(hash_dep);
 		if (parent->get_rule()) {
 			hash_dep_with_parent_base_dir=
-				Hash_Based_Dep(dynamic_base_dir,
+				Hash_Based_Dep(dynamic_base,
 					hash_dep_with_parent_base_dir);
 		}
 		executors_by_dep[hash_dep_with_parent_base_dir]= {target_index, this};
@@ -173,10 +173,10 @@ void Dynamic_Executor::notify_result(
 	}
 }
 
-string Dynamic_Executor::get_dynamic_base_dir(shared_ptr <const Dep> child, bool) const
+string Dynamic_Executor::get_dynamic_base(shared_ptr <const Dep> child, bool) const
 {
 	TRACE_FUNCTION();
 	TRACE("child= %s", show_trace(child));
-	TRACE("dynamic_base_dir= '%s'", dynamic_base_dir);
-	return dynamic_base_dir;
+	TRACE("dynamic_base_dir= '%s'", dynamic_base);
+	return dynamic_base;
 }

@@ -48,7 +48,7 @@ public:
 	 * does not have a command, i.e., ends in a semicolon ';'.  For content rules, the
 	 * content of the file (not optional). */
 
-	const string base_dir;
+	const string base;
 	/* The base directory is also contained in TARGETS and DEPS.  Empty when no cd
 	 * needed. */
 
@@ -71,7 +71,7 @@ public:
 		std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 		const std::vector <shared_ptr <const Dep> > &deps_,
 		shared_ptr <const Command> command_,
-		string base_dir,
+		string base,
 		bool is_content_,
 		const Placed_Name &name_input_,
 		const Placed_Name &name_output_);
@@ -80,7 +80,7 @@ public:
 	Rule(
 		shared_ptr <const Plain_Dep> target_,
 		shared_ptr <const Placed_Name> copy_src_,
-		string base_dir,
+		string base,
 		const Place &place_persistent,
 		const Place &place_optional);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
@@ -90,7 +90,7 @@ public:
 		std::vector <shared_ptr <const Dep> > &&deps_,
 		const Place &place_,
 		const shared_ptr <const Command> &command_,
-		string base_dir_,
+		string base_,
 		const Placed_Name &name_input_,
 		const Placed_Name &name_output_,
 		bool is_content_,
@@ -125,7 +125,7 @@ public:
 	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
 	shared_ptr <const Rule> rebase() const;
 	shared_ptr <const Dep> rebase(shared_ptr <const Dep> d) const {
-		return ::rebase(d, base_dir);
+		return ::rebase(d, base);
 	}
 };
 

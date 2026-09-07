@@ -3,7 +3,7 @@
 Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {
-	assert(! hash_dep.get_base_dir());
+	assert(! hash_dep.get_base());
 	if (base_dir.empty()) {
 		text= hash_dep.text;
 		return;
@@ -35,7 +35,7 @@ size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_
 void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
 {
 	check();
-	const char *base_dir= get_base_dir();
+	const char *base_dir= get_base();
 	size_t i;
 	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
 		assert((get_word(i) & F_PHONY) == 0);
@@ -75,7 +75,7 @@ void Hash_Based_Dep::canonicalize()
 {
 	TRACE_FUNCTION();
 	check();
-	const char *base_dir= get_base_dir();
+	const char *base_dir= get_base();
 	TRACE("base_dir= %s", base_dir ? base_dir : "<NULL>");
 	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
 	while ((*(word_t *)p) & F_DYNAMIC)

@@ -1,4 +1,3 @@
-%cd ./
 %cd dir/.
 %cd dir/./
 %cd dir/./.

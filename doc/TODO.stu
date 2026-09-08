@@ -81,16 +81,21 @@ A: $[dir/V] {...}  # Error because 'dir/V' can't be a variable name (for <2.19)
 A = %cd # Error
 A=B; %cd . %cd . $dir/B {...} # Works
 A=B; %cd . %cd . %cd . $dir/B {...} # Works
-%cd $dir/aaa # Error
+%cd $dir/aaa # Error (no parameters allowed)
 %cd aaa//bbb # Check that the directory is canonicalized
 
 * A: B  %cd /  $dir/B  # Matches with dir='/'
-* A: B  %cd directory  $dir  # Matches with dir='directory'
-* A: B  %cd directory  $dir/  # Matches with dir='directory'
+* A: B  %cd directory  $dir  # Matches with dir='directory' ?
+* A: B  %cd directory  $dir/  # Matches with dir='directory' ?
 * A: B  %cd /  $dir  # Matches with dir='/'
 * A: B  %cd /  $dir/  # Matches with dir='/'
 
 %cd dir  /bin/jshfkshfksjfkjshfd { pwd ; ...} # Check that pwd outputs something ending in "/dir" (even though the target is absolute and not rebased)
+A: dir/B  %cd dir//  B {...}
+A: dir/B  %cd dir///  B {...}
+A: dir//B  %cd dir  B {...}
+A: dir//B  %cd dir/  B {...}
+A: dir//B  %cd dir//  B {...}
 
 #
 # %include -d

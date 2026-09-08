@@ -22,7 +22,8 @@ typedef unsigned Name_Flags;
 enum
 {
 	NF_SPECIAL_B= 1 << 0,
-	/* Set if special canonicalization rule (b) is known to apply to the name */
+	/* Set if special canonicalization rule (b) is known to apply to the name.  If
+	 * set, the name is of the form <text>/$param/<...> */
 };
 
 class Name
@@ -57,7 +58,7 @@ public:
 		texts.push_back("");
 	}
 
-	void prepend_text(string text);
+	void prepend_base(string text);
 
 	void append_text(string text)
 	/* Append the given text to the last text element */

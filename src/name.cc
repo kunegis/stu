@@ -239,12 +239,9 @@ bool Name::match(
 		goto restart;
 	} else if (special_b_potential_based) {
 		TRACE("Restart (b)");
-		// TODO probably the condition is always true -- check and make assert
-		if (texts[0][texts[0].size()-1] == '/' && texts[1][0] == '/') {
-			special_b_second_pass= true;
-			goto restart;
-		}
-		return false;
+		assert (texts[0][texts[0].size()-1] == '/' && texts[1][0] == '/');
+		special_b_second_pass= true;
+		goto restart;
 	} else {
 		TRACE("ret= false");
 		return false;
@@ -377,10 +374,11 @@ bool Name::equals_same_length(const Name &that) const
 	return true;
 }
 
-void Name::prepend_text(string text)
+void Name::prepend_base(string text)
 {
 	TRACE_FUNCTION();
 	TRACE("text= '%s'", text);
+	assert(! text.empty() && text[text.size()-1] == '/');
 	const size_t n= get_n();
 	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
 		name_flags |= NF_SPECIAL_B;

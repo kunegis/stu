@@ -107,7 +107,7 @@ shared_ptr <const Dep> rebase(shared_ptr <const Dep> d, string base_dir)
 			assert(f->object.name.get_n() == 0);
 			f->variable_name= f->object.name.unparametrized();
 		}
-		f->object.name.prepend_text(base_dir + sep);
+		f->object.name.prepend_base(base_dir + sep);
 		f->object.name.canonicalize();
 		TRACE("return %s", show_trace((shared_ptr <const Dep>)f));
 		return f;

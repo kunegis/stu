@@ -1,5 +1,6 @@
 Not() # <command> ...
 {
+	# Limitation: this cannot be ued recursively.
 	Not_has_e=
 	case "$-" in *e*) Not_has_e=1 ;; esac
 

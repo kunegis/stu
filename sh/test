@@ -551,12 +551,12 @@ do
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -e NOTINSTDERR ]; then
-			## TODO use a single grep: Not grep -F -f NOTINSTDERR
-			cat NOTINSTDERR | while IFS= read -r line ; do
-				if grep -q -F -e "$line" list.def.err ; then
-					test_fail "'$line' was found in error output, but should not be there (NOTINSTDERR)"
-				fi
-			done
+			Not grep -q -F -f NOTINSTDERR -- list.def.err ||
+##			cat NOTINSTDERR | while IFS= read -r line ; do
+##				if grep -q -F -e "$line" list.def.err ; then
+				test_fail "String from NOTINSTDERR found in error output"
+##				fi
+##			done
 		fi
 
 		# TTYSTDOUTERR / INTTYSTDOUTERR

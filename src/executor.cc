@@ -24,7 +24,7 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Hash_Based_Dep, std::pair <Target_Index, Executor *> >
+std::unordered_map <Based_Hash_Dep, std::pair <Target_Index, Executor *> >
 	Executor::executors_by_dep;
 
 void Executor::read_dynamic(
@@ -207,7 +207,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 
 	const Hash_Bare_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
-	const Hash_Based_Dep target_for_cache=
+	const Based_Hash_Dep target_for_cache=
 		get_target_for_cache(hash_dep, dynamic_base_dir);
 	auto it= executors_by_dep.find(target_for_cache);
 
@@ -801,7 +801,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Hash_Based_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string base_dir)
+Based_Hash_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string base_dir)
 // TODO arg: rename dynamic_base_dir
 {
 	if (hash_dep.is_file()) {
@@ -812,7 +812,7 @@ Hash_Based_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string bas
 		hash_dep.get_front_word_any() &= (word_t)F_CACHE;
 	}
 
-	return Hash_Based_Dep(base_dir, hash_dep);
+	return Based_Hash_Dep(base_dir, hash_dep);
 }
 
 shared_ptr <const Dep> Executor::append_top(

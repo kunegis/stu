@@ -43,10 +43,10 @@ Dynamic_Executor::Dynamic_Executor(
 			raise(e);
 			return;
 		}
-		Hash_Based_Dep hash_dep_with_parent_base_dir(hash_dep);
+		Based_Hash_Dep hash_dep_with_parent_base_dir(hash_dep);
 		if (parent->get_rule()) {
 			hash_dep_with_parent_base_dir=
-				Hash_Based_Dep(dynamic_base,
+				Based_Hash_Dep(dynamic_base,
 					hash_dep_with_parent_base_dir);
 		}
 		executors_by_dep[hash_dep_with_parent_base_dir]= {target_index, this};

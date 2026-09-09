@@ -9,6 +9,7 @@ using std::string;
 using std::shared_ptr;
 
 #include "base.cc"
+#include "based_hash_dep.cc"
 #include "buffer.cc"
 #include "buffering.cc"
 #include "canonicalize.cc"
@@ -25,7 +26,6 @@ using std::shared_ptr;
 #include "flags.cc"
 #include "format.cc"
 #include "hash_bare_dep.cc"
-#include "hash_based_dep.cc"
 #include "hash_dep_utils.cc"
 #include "hints.cc"
 #include "invocation.cc"

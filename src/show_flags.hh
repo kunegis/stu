@@ -1,8 +1,8 @@
 #ifndef SHOW_FLAGS_HH
 #define SHOW_FLAGS_HH
 
-#include "show.hh"
 #include "placed_flags.hh"
+#include "show.hh"
 
 class Flag_View
 {

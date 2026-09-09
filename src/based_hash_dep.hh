@@ -1,5 +1,5 @@
-#ifndef HASH_BASED_DEP_HH
-#define HASH_BASED_DEP_HH
+#ifndef BASED_HASH_DEP_HH
+#define BASED_HASH_DEP_HH
 
 /*
  * Representation of a simple dependency, used as the key for caching of Executor objects.
@@ -38,17 +38,16 @@
 
 #include "hash_dep_utils.hh"
 
-class Hash_Based_Dep
-// TODO rename Based_Hash_Dep
+class Based_Hash_Dep
 {
 public:
 	explicit
-	Hash_Based_Dep(std::string_view text_): text(text_) {
+	Based_Hash_Dep(std::string_view text_): text(text_) {
 		check();
 	}
 	/* TEXT_ is the full text field of this Hash_Dep */
 
-	Hash_Based_Dep(Flags flags, string name)
+	Based_Hash_Dep(Flags flags, string name)
 	/* A plain target; no base directory */
 		// TODO use direct std::string constructor with correct length, then
 		// assign content directly
@@ -59,8 +58,8 @@ public:
 		assert(! name.empty());
 	}
 
-	Hash_Based_Dep(string base, Hash_Based_Dep hash_based_dep);
-	Hash_Based_Dep(Hash_Bare_Dep d);
+	Based_Hash_Dep(string base, Based_Hash_Dep hash_based_dep);
+	Based_Hash_Dep(Hash_Bare_Dep d);
 
 	const string &get_text() const { return text; }
 	string &get_text() { return text; }
@@ -139,8 +138,8 @@ public:
 			: nullptr;
 	}
 
-	bool operator==(const Hash_Based_Dep &d) const { return text == d.text; }
-	bool operator!=(const Hash_Based_Dep &d) const { return text != d.text; }
+	bool operator==(const Based_Hash_Dep &d) const { return text == d.text; }
+	bool operator!=(const Based_Hash_Dep &d) const { return text != d.text; }
 //	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 	// TODO these two functions should not be needed if we always have constructors
@@ -165,15 +164,15 @@ private:
 };
 
 #ifndef NDEBUG
-void render(const Hash_Based_Dep &hash_based_dep, Parts &parts, Rendering rendering= 0);
-string show_trace(const Hash_Based_Dep &hash_based_dep);
+void render(const Based_Hash_Dep &hash_based_dep, Parts &parts, Rendering rendering= 0);
+string show_trace(const Based_Hash_Dep &hash_based_dep);
 #endif /* ! NDEBUG */
 
 namespace std {
-	template <> struct hash <Hash_Based_Dep>
+	template <> struct hash <Based_Hash_Dep>
 	{
-		size_t operator()(const Hash_Based_Dep &hash_based_dep) const;
+		size_t operator()(const Based_Hash_Dep &based_hash_dep) const;
 	};
 }
 
-#endif /* ! HASH_BASED_DEP_HH */
+#endif /* ! BASED_HASH_DEP_HH */

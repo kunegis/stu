@@ -1,6 +1,8 @@
-#include "hash_based_dep.hh"
+#include "based_hash_dep.hh"
 
-Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
+#include "show_flags.hh"
+
+Based_Hash_Dep::Based_Hash_Dep(string base_dir, Based_Hash_Dep hash_dep)
 	: text(hash_dep.text.size() + 1 + base_dir.size(), 0)
 {
 	assert(! hash_dep.get_base());
@@ -21,18 +23,18 @@ Hash_Based_Dep::Hash_Based_Dep(string base_dir, Hash_Based_Dep hash_dep)
 	check();
 }
 
-Hash_Based_Dep::Hash_Based_Dep(Hash_Bare_Dep d)
+Based_Hash_Dep::Based_Hash_Dep(Hash_Bare_Dep d)
 	: text(string_from_size(0) + d.get_text())
 { }
 
-size_t std::hash <Hash_Based_Dep> ::operator()(const Hash_Based_Dep &hash_based_dep) const
+size_t std::hash <Based_Hash_Dep> ::operator()(const Based_Hash_Dep &based_hash_dep) const
 {
-	return std::hash <string> ()(hash_based_dep.get_text());
+	return std::hash <string> ()(based_hash_dep.get_text());
 }
 
 #ifndef NDEBUG
 
-void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
+void Based_Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
 	check();
 	const char *base_dir= get_base();
@@ -70,7 +72,7 @@ void Hash_Based_Dep::render(Parts &parts, Rendering rendering) const
 	}
 }
 
-void Hash_Based_Dep::canonicalize()
+void Based_Hash_Dep::canonicalize()
 // TODO code is nearly identicaly to NDEBUG function; merge
 {
 	TRACE_FUNCTION();
@@ -97,14 +99,14 @@ void Hash_Based_Dep::canonicalize()
 	check();
 }
 
-size_t Hash_Based_Dep::get_dynamic_depth() const
+size_t Based_Hash_Dep::get_dynamic_depth() const
 {
 	size_t ret;
 	for (ret= 0; get_word(ret) & F_DYNAMIC; ++ret);
 	return ret;
 }
 
-void Hash_Based_Dep::check() const
+void Based_Hash_Dep::check() const
 /* The minimum length of TEXT is sizeof(word_t)+1: One word indicating a non-dynamic
  * target, and a text of length one.  (The text cannot be empty.) */
 {
@@ -112,12 +114,12 @@ void Hash_Based_Dep::check() const
 	assert(text.size() > sizeof(word_size_t) + sizeof(word_t));
 }
 
-void render(const Hash_Based_Dep &hash_dep, Parts &parts, Rendering rendering)
+void render(const Based_Hash_Dep &hash_dep, Parts &parts, Rendering rendering)
 {
 	hash_dep.render(parts, rendering);
 }
 
-string show_trace(const Hash_Based_Dep &hash_dep)
+string show_trace(const Based_Hash_Dep &hash_dep)
 {
 	Parts parts;
 	render(hash_dep, parts, R_SHOW_FLAGS);

@@ -1,0 +1,16 @@
+# TOPIC: %cd a/./
+
+A: list.d list.d/B
+{
+	cp list.d/B A
+	grep -q -F -x -e correct A
+}
+
+-p list.d
+{
+	mkdir -p list.d
+}
+
+%cd list.d/./
+
+B = {correct}

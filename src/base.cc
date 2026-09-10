@@ -25,7 +25,7 @@ void Base_Stack::build_base()
 		base += '/' + dirs[j];
 	}
 
-	char *end= canonicalize_string(A_BEGIN | A_END, base.data());
+	char *end= canonicalize_string(base.data(), A_BEGIN | A_END);
 	base.resize(end - base.data());
 
 	if (base == ".") base= "";

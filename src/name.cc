@@ -355,7 +355,7 @@ void Name::canonicalize()
 			canonicalize_flags |= A_BEGIN;
 		if (i == get_n())
 			canonicalize_flags |= A_END;
-		const char *q= canonicalize_string(canonicalize_flags, p);
+		const char *q= canonicalize_string(p, canonicalize_flags);
 		texts[i].resize(q - p);
 	}
 }

@@ -83,7 +83,7 @@ void Based_Hash_Dep::canonicalize()
 	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);
 	p += sizeof(word_t);
-	p= canonicalize_string(A_BEGIN | A_END, p);
+	p= canonicalize_string(p, A_BEGIN | A_END);
 
 	if (base_dir) {
 		size_t base_dir_len= text.size() - *(word_size_t *)text.data();

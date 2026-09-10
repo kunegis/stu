@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
+char *canonicalize_string(char *p, Canonicalize_Flags canonicalize_flags)
 {
 	/*
 	 * Fold '/'

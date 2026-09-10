@@ -44,8 +44,7 @@ enum
 	A_END    = 1 << 1,
 };
 
-char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p);
-// TODO 'p' should be the first argument.
+char *canonicalize_string(char *p, Canonicalize_Flags canonicalize_flags);
 /* Canonicalize the string starting at P in-place.  Return the end (\0) of the new string.
  * The operation never increases the size of the string.  P is \0-terminated, on input and
  * output. */

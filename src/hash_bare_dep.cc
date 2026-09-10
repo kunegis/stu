@@ -31,7 +31,7 @@ void Hash_Bare_Dep::canonicalize()
 	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);
 	p += sizeof(word_t);
-	p= canonicalize_string(A_BEGIN | A_END, p);
+	p= canonicalize_string(p, A_BEGIN | A_END);
 	text.resize(p - b);
 }
 
@@ -49,7 +49,7 @@ void Hash_Bare_Dep::canonicalize_plain()
 	char *b= (char *)text.c_str(), *p= b;
 	assert(! ((*(word_t *)p) & F_DYNAMIC));
 	p += sizeof(word_t);
-	p= canonicalize_string(A_BEGIN | A_END, p);
+	p= canonicalize_string(p, A_BEGIN | A_END);
 	text.resize(p - b);
 }
 

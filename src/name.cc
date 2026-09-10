@@ -374,6 +374,12 @@ bool Name::equals_same_length(const Name &that) const
 	return true;
 }
 
+void Name::append_parameter(string parameter)
+{
+	parameters.push_back(parameter);
+	texts.push_back("");
+}
+
 void Name::prepend_base(string text)
 {
 	TRACE_FUNCTION();
@@ -385,6 +391,11 @@ void Name::prepend_base(string text)
 		TRACE("name_flags= %s", frmt("%u", name_flags));
 	}
 	texts[0] = text + texts[0];
+}
+
+void Name::append_text(string text)
+{
+	texts[texts.size() - 1] += text;
 }
 
 void Name::append(const Name &name)

@@ -50,22 +50,11 @@ public:
 	const std::vector <string> &get_texts() const { return texts; }
 	const std::vector <string> &get_parameters() const { return parameters; }
 
-	void append_parameter(string parameter)
+	void append_parameter(string parameter);
 	/* Append a PARAMETER and an empty text.  Do not check that the result is valid. */
-	// TODO to .cc
-	{
-		parameters.push_back(parameter);
-		texts.push_back("");
-	}
-
 	void prepend_base(string text);
-
-	void append_text(string text)
+	void append_text(string text);
 	/* Append the given text to the last text element */
-	// TODO to .cc
-	{
-		texts[texts.size() - 1] += text;
-	}
 
 	void append(const Name &name);
 	/* Append another parametrized name.  Check that the result is valid. */

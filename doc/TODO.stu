@@ -1,6 +1,5 @@
-%cd   \<newline>   - # With actual newline
-* "%cd -" inside dynamic dependency
-%cd- # Does this work?
+* "%cd -" inside dynamic dependency # ?
+%cd- # Does this work? (should not)
 %cd -X # Error, not just '%cd -' followed by 'X' (keep syntax for future extension)
 * 10 times "%cd aaa" followed by 10 times "%cd -"
 $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR

@@ -1,0 +1,11 @@
+A: B
+{
+	cp B A
+	grep -q -F -x -e correct A
+}
+
+%cd directory_123
+
+%cd                                                                        -
+
+B = {correct}

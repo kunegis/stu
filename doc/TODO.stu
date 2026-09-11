@@ -1,4 +1,3 @@
-%cd      - # With many spaces
 %cd   \<newline>   - # With actual newline
 * "%cd -" inside dynamic dependency
 %cd- # Does this work?
@@ -90,6 +89,7 @@ A: dir//B  %cd dir  B {...}
 A: dir//B  %cd dir/  B {...}
 A: dir//B  %cd dir//  B {...}
 A: d/B  %cd d/././  ./B {...}
+%cd   <newline>  - # Does this work?
 
 #
 # %include -d

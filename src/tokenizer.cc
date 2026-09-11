@@ -1368,7 +1368,7 @@ void Tokenizer::parse_directive(
 	skip_space(skipped_actual_space);
 	const char *const p_name= p;
 	Place place_directive= current_place();
-	while (p < p_end && isalnum(*p)) ++p;
+	while (p < p_end && (isalnum(*p) || *p == '_' || *p == '-')) ++p;
 
 	if (p == p_name) {
 		if (p < p_end)

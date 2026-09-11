@@ -61,11 +61,11 @@ bool Name::match(
 	bool special_b_potential_unbased= n != 0
 		&& texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/';
 	bool special_b_potential_based= name_flags & NF_SPECIAL_B;
+
+	/* We are in the second pass for Special Rule (b)/(c) */
 	bool special_b_second_pass= false;
-
-	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
-	// TODO rename special_c_second_pass
-
+	bool special_c_second_pass= false;
+	
 	TRACE("name_flags= %s", frmt("%u", name_flags));
 	TRACE("special_a= %s", frmt("%d", special_a));
 	TRACE("special_b_potential_based= %s", frmt("%d", special_b_potential_based));
@@ -73,7 +73,7 @@ bool Name::match(
 
  restart:
 	TRACE("Start special_b_second_pass= %s", frmt("%d", special_b_second_pass));
-	TRACE("Start special_c= %s", frmt("%d", special_c));
+	TRACE("Start special_c_second_pass= %s", frmt("%d", special_c_second_pass));
 	const char *const p_begin= name.c_str();
 	const char *const p_end= name.c_str() + name.size();
 	const char *p= p_begin;
@@ -117,7 +117,7 @@ bool Name::match(
 			assert(p > p_begin);
 			continue;
 		}
-		if (special_c && i == 0) {
+		if (special_c_second_pass && i == 0) {
 			ret[parameters[i]]= ".";
 
 			if (i == n - 1) {
@@ -213,7 +213,7 @@ bool Name::match(
 
  failed:
 	TRACE("Failed");
-	if (special_c || special_b_second_pass)
+	if (special_c_second_pass || special_b_second_pass)
 		return false;
 
 	/*
@@ -234,7 +234,7 @@ bool Name::match(
 
 	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
 		TRACE("Restart (c)");
-		special_c= true;
+		special_c_second_pass= true;
 		priority= -1;
 		goto restart;
 	} else if (special_b_potential_based) {

@@ -1,20 +1,19 @@
-#ifndef HASH_BARE_DEP_HH
-#define HASH_BARE_DEP_HH
+#ifndef HASH_DEP_HH
+#define HASH_DEP_HH
 
 #include "flags.hh"
 #include "hash_dep_utils.hh"
 
 // TODO check which functions to move to .cc
 
-class Hash_Bare_Dep
-// TODO rename Hash_Dep
+class Hash_Dep
 {
 public:
 	explicit
-	Hash_Bare_Dep(std::string_view text_): text(text_) { }
+	Hash_Dep(std::string_view text_): text(text_) { }
 	/* TEXT_ is the full text field of this Hash_Dep */
 
-	Hash_Bare_Dep(Flags flags, string name)
+	Hash_Dep(Flags flags, string name)
 	/* A plain target */
 		: text(string_from_word(flags) + name)
 	{
@@ -23,7 +22,7 @@ public:
 		assert(! name.empty());
 	}
 
-	Hash_Bare_Dep(Flags flags, const Hash_Bare_Dep &d)
+	Hash_Dep(Flags flags, const Hash_Dep &d)
 	/* Makes the given target once more dynamic with the given flags, which must *not*
 	 * contain the 'dynamic' flag. */
 		: text(string_from_word(flags | F_DYNAMIC) + d.text)
@@ -115,8 +114,8 @@ public:
 		return ((const word_t *)&text[0])[i];
 	}
 
-	bool operator==(const Hash_Bare_Dep &target) const { return text == target.text; }
-	bool operator!=(const Hash_Bare_Dep &target) const { return text != target.text; }
+	bool operator==(const Hash_Dep &target) const { return text == target.text; }
+	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
 	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 #ifndef NEBUG
@@ -137,17 +136,17 @@ private:
 	}
 };
 
-void render(const Hash_Bare_Dep &hash_bare_dep, Parts &parts, Rendering rendering= 0);
+void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering= 0);
 
 #ifndef NDEBUG
-string show_trace(const Hash_Bare_Dep &hash_bare_dep);
+string show_trace(const Hash_Dep &hash_dep);
 #endif /* ! NDEBUG */
 
 namespace std {
-	template <> struct hash <Hash_Bare_Dep>
+	template <> struct hash <Hash_Dep>
 	{
-		size_t operator()(const Hash_Bare_Dep &hash_bare_dep) const;
+		size_t operator()(const Hash_Dep &hash_dep) const;
 	};
 }
 
-#endif /* ! HASH_BARE_DEP_HH */
+#endif /* ! HASH_DEP_HH */

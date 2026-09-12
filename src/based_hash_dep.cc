@@ -23,7 +23,7 @@ Based_Hash_Dep::Based_Hash_Dep(string base_dir, Based_Hash_Dep hash_dep)
 	check();
 }
 
-Based_Hash_Dep::Based_Hash_Dep(Hash_Bare_Dep d)
+Based_Hash_Dep::Based_Hash_Dep(Hash_Dep d)
 	: text(string_from_size(0) + d.get_text())
 { }
 

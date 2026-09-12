@@ -1,6 +1,6 @@
-#include "hash_bare_dep.hh"
+#include "hash_dep.hh"
 
-void Hash_Bare_Dep::render(Parts &parts, Rendering rendering) const
+void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
 	size_t i;
 	for (i= 0; get_word(i) & F_DYNAMIC; ++i) {
@@ -25,7 +25,7 @@ void Hash_Bare_Dep::render(Parts &parts, Rendering rendering) const
 
 #ifndef NDEBUG
 
-void Hash_Bare_Dep::canonicalize()
+void Hash_Dep::canonicalize()
 {
 	char *b= (char *)text.c_str(), *p= b;
 	while ((*(word_t *)p) & F_DYNAMIC)
@@ -35,7 +35,7 @@ void Hash_Bare_Dep::canonicalize()
 	text.resize(p - b);
 }
 
-size_t Hash_Bare_Dep::get_dynamic_depth() const
+size_t Hash_Dep::get_dynamic_depth() const
 {
 	size_t ret;
 	for (ret= 0; get_word(ret) & F_DYNAMIC; ++ret);
@@ -44,7 +44,7 @@ size_t Hash_Bare_Dep::get_dynamic_depth() const
 
 #endif /* ! NDEBUG */
 
-void Hash_Bare_Dep::canonicalize_plain()
+void Hash_Dep::canonicalize_plain()
 {
 	char *b= (char *)text.c_str(), *p= b;
 	assert(! ((*(word_t *)p) & F_DYNAMIC));
@@ -53,13 +53,13 @@ void Hash_Bare_Dep::canonicalize_plain()
 	text.resize(p - b);
 }
 
-void render(const Hash_Bare_Dep &hash_dep, Parts &parts, Rendering rendering)
+void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering)
 {
 	hash_dep.render(parts, rendering);
 }
 
 #ifndef NDEBUG
-string show_trace(const Hash_Bare_Dep &hash_dep)
+string show_trace(const Hash_Dep &hash_dep)
 {
 	Parts parts;
 	render(hash_dep, parts, R_SHOW_FLAGS);
@@ -67,7 +67,7 @@ string show_trace(const Hash_Bare_Dep &hash_dep)
 }
 #endif /* ! NDEBUG */
 
-size_t std::hash <Hash_Bare_Dep> ::operator()(const Hash_Bare_Dep &hash_dep) const
+size_t std::hash <Hash_Dep> ::operator()(const Hash_Dep &hash_dep) const
 {
 	return std::hash <string> ()(hash_dep.get_text());
 }

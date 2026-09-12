@@ -132,7 +132,7 @@ public:
 
 	virtual void render(Parts &, Rendering= 0) const= 0;
 
-	virtual Hash_Bare_Dep get_target() const= 0;
+	virtual Hash_Dep get_target() const= 0;
 	/* Only called for non-compound and non-parametrized dependencies. */
 #ifndef NDEBUG
 	virtual bool is_normalized() const= 0;
@@ -221,7 +221,7 @@ public:
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	void render(Parts &, Rendering= 0) const override;
 
-	Hash_Bare_Dep get_target() const override;
+	Hash_Dep get_target() const override;
 	/* Does not preserve the F_VARIABLE bit */
 
 #ifndef NDEBUG
@@ -282,7 +282,7 @@ public:
 	}
 
 	void render(Parts &, Rendering= 0) const override;
-	Hash_Bare_Dep get_target() const override;
+	Hash_Dep get_target() const override;
 
 	unsigned get_depth() const {
 		if (to <Dynamic_Dep> (dep))
@@ -333,7 +333,7 @@ public:
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override;
 	void render(Parts &, Rendering= 0) const override;
-	Hash_Bare_Dep get_target() const override;
+	Hash_Dep get_target() const override;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
 					     shared_ptr <const Dep> b,
@@ -410,7 +410,7 @@ public:
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override { return place; }
 	void render(Parts &, Rendering= 0) const override;
-	Hash_Bare_Dep get_target() const override { unreachable(); }
+	Hash_Dep get_target() const override { unreachable(); }
 #ifndef NDEBUG
 	bool is_normalized() const override { return false; }
 #endif /* ! NDEBUG */
@@ -428,7 +428,7 @@ public:
 	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 	const Place &get_place() const override;
 	void render(Parts &parts, Rendering= 0) const override;
-	Hash_Bare_Dep get_target() const override { unreachable(); }
+	Hash_Dep get_target() const override { unreachable(); }
 #ifndef NDEBUG
 	bool is_normalized() const override { return true; }
 #endif /* ! NDEBUG */

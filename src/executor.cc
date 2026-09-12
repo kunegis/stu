@@ -41,7 +41,7 @@ void Executor::read_dynamic(
 	assert(dynamic_executor);
 	const Placed_Object &object= to <Plain_Dep> (dep_target)->object;
 	assert(object.name.get_n() == 0);
-	const Hash_Bare_Dep hash_dep= object.unparametrized();
+	const Hash_Dep hash_dep= object.unparametrized();
 
 	try {
 		/* Check:  variable dependencies are not allowed in multiply dynamic
@@ -88,12 +88,12 @@ void Executor::read_dynamic(
 
 			/* Check that there are no input dependencies */
 			if (! input.empty()) {
-				Hash_Bare_Dep hash_dep_dynamic(0, hash_dep);
+				Hash_Dep hash_dep_dynamic(0, hash_dep);
 				place_input << fmt(
 					"dynamic dependency %s must not contain input redirection %s",
 					show(hash_dep_dynamic),
 					show(Prefix_View("<", input)));
-				Hash_Bare_Dep hash_dep_file= hash_dep;
+				Hash_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
 					&= ~F_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
@@ -205,7 +205,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 	 * Cached executors
 	 */
 
-	const Hash_Bare_Dep hash_dep= dep->get_target();
+	const Hash_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
 	const Based_Hash_Dep target_for_cache=
 		get_target_for_cache(hash_dep, dynamic_base_dir);
@@ -261,7 +261,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 		shared_ptr <const Plain_Dep> target_plain_dep;
 		Target_Index target_index;
 		try {
-			Hash_Bare_Dep hash_dep_without_flags= hash_dep;
+			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic() &= F_PHONY;
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
@@ -801,7 +801,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Based_Hash_Dep Executor::get_target_for_cache(Hash_Bare_Dep hash_dep, string base_dir)
+Based_Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string base_dir)
 // TODO arg: rename dynamic_base_dir
 {
 	if (hash_dep.is_file()) {
@@ -1000,7 +1000,7 @@ bool Executor::same_dependency_for_print(
 
 void Executor::check_unparametrized(
 	shared_ptr <const Dep> &j,
-	Hash_Bare_Dep hash_dep,
+	Hash_Dep hash_dep,
 	bool &found_error)
 {
 	TRACE_FUNCTION();
@@ -1013,9 +1013,9 @@ void Executor::check_unparametrized(
 
 	parameter_place << fmt(
 		"dynamic dependency %s must not contain parameter %s",
-		show(Hash_Bare_Dep(0, hash_dep)),
+		show(Hash_Dep(0, hash_dep)),
 		show(Prefix_View("$", parameter_name)));
-	Hash_Bare_Dep hash_dep_base= hash_dep;
+	Hash_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_PHONY;
 	hash_dep_base.get_front_word_nondynamic()
 		|= (hash_dep.get_front_word_nondynamic() & F_PHONY);

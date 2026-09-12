@@ -221,9 +221,9 @@ bool Plain_Dep::find_parameter(
 	return true;
 }
 
-Hash_Bare_Dep Plain_Dep::get_target() const
+Hash_Dep Plain_Dep::get_target() const
 {
-	Hash_Bare_Dep ret= object.unparametrized();
+	Hash_Dep ret= object.unparametrized();
 	ret.get_front_word_nondynamic() |= (word_t)(flags.get_flags() & F_WORD);
 	return ret;
 }
@@ -250,7 +250,7 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 #endif /* ! NDEBUG */
 }
 
-Hash_Bare_Dep Dynamic_Dep::get_target() const
+Hash_Dep Dynamic_Dep::get_target() const
 {
 	string text;
 	const Dep *d= this;
@@ -268,7 +268,7 @@ Hash_Bare_Dep Dynamic_Dep::get_target() const
 	text += string_from_word(f);
 	text += sin->object.unparametrized().get_name_nondynamic();
 
-	return Hash_Bare_Dep(text);
+	return Hash_Dep(text);
 }
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
@@ -464,7 +464,7 @@ void Concat_Dep::normalize_concat(
 	}
 }
 
-Hash_Bare_Dep Concat_Dep::get_target() const /* unreachable */
+Hash_Dep Concat_Dep::get_target() const /* unreachable */
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	unreachable();

@@ -122,8 +122,7 @@ public:
 	// TODO maybe this should be in rule.hh
 	/* Set before calling main_loop() */
 
-	static Based_Hash_Dep get_target_for_cache(
-		Hash_Bare_Dep hash_dep, string base);
+	static Based_Hash_Dep get_target_for_cache(Hash_Dep hash_dep, string base);
 	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.  Only used for finding
 	 * cycles. */
@@ -260,7 +259,7 @@ private:
 
 	void check_unparametrized(
 		shared_ptr <const Dep> &dep,
-		Hash_Bare_Dep hash_bare_dep,
+		Hash_Dep hash_dep,
 		bool &found_error);
 
 	static bool same_dependency_for_print(shared_ptr <const Dep> d1,

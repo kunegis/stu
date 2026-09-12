@@ -283,7 +283,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 }
 
 shared_ptr <const Rule> Rule_Set::get(
-	Hash_Bare_Dep hash_dep,
+	Hash_Dep hash_dep,
 	shared_ptr <const Rule> &param_rule,
 	std::map <string, string> &mapping_parameter,
 	const Place &place,
@@ -313,7 +313,7 @@ shared_ptr <const Rule> Rule_Set::get(
 		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto ta: rule->targets) {
-			Hash_Bare_Dep t(ta->object.unparametrized());
+			Hash_Dep t(ta->object.unparametrized());
 			t.canonicalize();
 			if (t == hash_dep)
 				found= true;
@@ -427,7 +427,7 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 	for (size_t i= 0; i < rule->targets.size(); ++i) {
 		TRACE("i= %s", frmt("%zu", i));
 		auto &t= rule->targets[i];
-		Hash_Bare_Dep hash_dep= t->object.unparametrized();
+		Hash_Dep hash_dep= t->object.unparametrized();
 		TRACE("hash_dep= %s", show_trace(hash_dep));
 		if (rules_unparam.count(hash_dep)) {
 			t->place <<
@@ -495,7 +495,7 @@ bool Found_Rule::operator<(const Found_Rule &that) const
 }
 
 void Best_Rule_Finder::check(
-	const Hash_Bare_Dep &hash_dep,
+	const Hash_Dep &hash_dep,
 	shared_ptr <const Rule> rule,
 	Target_Index target_index)
 {

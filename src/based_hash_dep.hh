@@ -59,7 +59,7 @@ public:
 	}
 
 	Based_Hash_Dep(string base, Based_Hash_Dep hash_based_dep);
-	Based_Hash_Dep(Hash_Bare_Dep d);
+	Based_Hash_Dep(Hash_Dep d);
 
 	const string &get_text() const { return text; }
 	string &get_text() { return text; }

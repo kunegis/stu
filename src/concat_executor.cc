@@ -190,7 +190,7 @@ string Concat_Executor::get_dynamic_base(
 {
 	// TODO CHILD is always non-null.  add asserta and simplify "! child".
 	TRACE_FUNCTION(show_trace(dep));
-	TRACE("child= %s", child ? show_trace(child) : "NULL");
+	TRACE("child= %s", child ? show_trace(child) : "<null>");
 	TRACE("for_rebase= %s", frmt("%d", for_rebase));
 	TRACE("dynamic_base_dir= '%s'", dynamic_base);
 	TRACE("child->index= %s", frmt("%zd", child->index));

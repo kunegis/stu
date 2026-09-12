@@ -78,7 +78,7 @@ void Based_Hash_Dep::canonicalize()
 	TRACE_FUNCTION();
 	check();
 	const char *base_dir= get_base();
-	TRACE("base_dir= %s", base_dir ? base_dir : "<NULL>");
+	TRACE("base_dir= %s", base_dir ? base_dir : "<null>");
 	char *b= (char *)text.c_str() + sizeof(word_size_t), *p= b;
 	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);

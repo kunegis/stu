@@ -49,8 +49,8 @@ public:
 
 	Based_Hash_Dep(Flags flags, string name)
 	/* A plain target; no base directory */
-		// TODO use direct std::string constructor with correct length, then
-		// assign content directly
+	// TODO use direct std::string constructor with correct length, then
+	// assign content directly
 		: text(string_from_size(0) + string_from_word(flags) + name)
 	{
 		assert((flags & ~F_PHONY) == 0);
@@ -76,9 +76,6 @@ public:
 		return (get_word(0) & (F_DYNAMIC | F_PHONY)) == F_PHONY;
 	}
 
-//	bool is_any_file() const;
-//	bool is_any_phony() const;
-
 	string get_name_nondynamic() const
 	/* Get the name of the target, knowing that the target is not dynamic */
 	{
@@ -99,7 +96,6 @@ public:
 	// TODO move to .cc
 	const char *get_name_c_str_any() const
 	{
-//		check(); //
 		const char *ret= text.c_str() + sizeof(word_size_t);
 		while ((*(const word_t *)ret) & F_DYNAMIC)
 			ret += sizeof(word_t);
@@ -126,7 +122,6 @@ public:
 	Flags get_word(size_t i) const
 	/* For access to any front word */
 	{
-//		check(); //
 		assert(text.size() > sizeof(word_size_t) + sizeof(word_t) * (i + 1));
 		return ((const word_t *)&text[sizeof(word_size_t)])[i];
 	}
@@ -140,7 +135,6 @@ public:
 
 	bool operator==(const Based_Hash_Dep &d) const { return text == d.text; }
 	bool operator!=(const Based_Hash_Dep &d) const { return text != d.text; }
-//	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 	// TODO these two functions should not be needed if we always have constructors
 	// that properly use std::string(size_t, '\0').

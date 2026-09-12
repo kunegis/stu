@@ -1,4 +1,3 @@
-* 10 times "%cd aaa" followed by 10 times "%cd -"
 $ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
 $ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash

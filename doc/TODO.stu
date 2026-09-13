@@ -1,4 +1,3 @@
-$ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash
 * A %cd rule contains a dependency or target '../file', which is also referenced in the non-cd part
 * Multiply nested '%include -d'-like %cd+%include combinations

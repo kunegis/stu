@@ -49,6 +49,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			break;
 
 		case 'F':
+			TRACE("Option -F");
 			had_option_f= true;
 			Parser::get_string(optarg, Executor::rule_set,
 				target_first, true);

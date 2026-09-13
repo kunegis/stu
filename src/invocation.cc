@@ -51,7 +51,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		case 'F':
 			had_option_f= true;
 			Parser::get_string(optarg, Executor::rule_set,
-				target_first);
+				target_first, true);
 			break;
 
 		case 'n':

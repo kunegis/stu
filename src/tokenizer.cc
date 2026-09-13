@@ -252,7 +252,8 @@ void Tokenizer::parse_tokens_string(
 	Context context,
 	Place &place_end,
 	string string_,
-	const Place &place_string)
+	const Place &place_string,
+	bool use_base)
 {
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
@@ -260,7 +261,7 @@ void Tokenizer::parse_tokens_string(
 
 	Tokenizer tokenizer(
 		tokens, backtraces, filenames, includes,
-		place_string, false,
+		place_string, use_base,
 		string_.c_str(), string_.size());
 	tokenizer.parse_tokens(context, place_string);
 	place_end= tokenizer.current_place();
@@ -1582,6 +1583,8 @@ void Tokenizer::parse_cd_directive(
 	const Place &place_percent)
 {
 	TRACE_FUNCTION();
+	TRACE("use_base= %s", frmt("%d", use_base));
+	TRACE("context= %s", frmt("%d", context));
 	assert(use_base || context == DYNAMIC);
 	Environment environment_= 0;
 

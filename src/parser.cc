@@ -1260,12 +1260,14 @@ void Parser::get_file(
 void Parser::get_string(
 	const char *s,
 	Rule_Set &rule_set,
-	shared_ptr <const Plain_Dep> &target_first)
+	shared_ptr <const Plain_Dep> &target_first,
+	bool use_base)
 {
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Tokenizer::parse_tokens_string(
-		tokens, Tokenizer::OPTION_F, place_end, s, Place(Place::Type::OPTION, 'F'));
+		tokens, Tokenizer::OPTION_F, place_end, s,
+		Place(Place::Type::OPTION, 'F'), use_base);
 
 	std::vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end, target_first);
@@ -1281,7 +1283,7 @@ void Parser::add_deps_option_C(
 	Place place_end;
 	Tokenizer::parse_tokens_string(
 		tokens, Tokenizer::OPTION_C, place_end, string_,
-		Place(Place::Type::OPTION, 'C'));
+		Place(Place::Type::OPTION, 'C'), false);
 
 	std::vector <shared_ptr <const Dep> > deps_option;
 	Placed_Name input; /* remains empty */

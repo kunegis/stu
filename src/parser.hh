@@ -110,7 +110,8 @@ public:
 	static void get_string(
 		const char *s,
 		Rule_Set &rule_set,
-		shared_ptr <const Plain_Dep> &target_first);
+		shared_ptr <const Plain_Dep> &target_first,
+		bool use_base);
 	/* Read rules from a string; same argument semantics as the other get_*()
 	 * functions. */
 

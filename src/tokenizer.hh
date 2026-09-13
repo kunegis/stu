@@ -41,7 +41,8 @@ public:
 		Context context,
 		Place &place_end,
 		string string_,
-		const Place &place_string);
+		const Place &place_string,
+		bool use_base);
 
 	static void parse_tokens_arg(
 		std::vector <shared_ptr <Token> > &tokens,

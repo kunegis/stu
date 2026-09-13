@@ -5,7 +5,7 @@ mkdir list.directory
 
 {
 	printf 'A={correct}\n'
-} >list.stu
+} >list.directory/list.stu
 
 ../../bin/stu.test -F '%cd list.directory' -f list.stu
 

@@ -88,6 +88,7 @@ A: d/B  %cd d/././  ./B {...}
 %cd   <newline>  - # Does this work?
 %cd_ # Error: invalid directive 'cd_'
 %cd -- # Error: reserved for future extension (cd all the way up) (create entry in TODO/UNIMPLEMENTED)
+%cd - # In a dynamic dependency (error)
 
 #
 # %include -d
@@ -609,3 +610,7 @@ A { ... }
 
 # dir/main.stu
 B: ../A { ... }
+
+#
+# An option that does the same as -F '%cd <dir>'.  I.e., -X <dir>.  Long name --cd.
+#

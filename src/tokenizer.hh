@@ -69,7 +69,8 @@ private:
 	const char *const p_end; /* End of input */
 
 	Environment environment= E_WHITESPACE; /* For the next token */
-	Base_Stack *base_stack;
+	bool use_base;
+//	Base_Stack *base_stack;
 
 	Tokenizer(
 		std::vector <shared_ptr <Token> > &tokens_,
@@ -77,7 +78,8 @@ private:
 		std::vector <string> &filenames_,
 		std::set <string> &includes_,
 		const Place &place_base_,
-		Base_Stack *base_stack_,
+		bool use_base_,
+//		Base_Stack *base_stack_,
 		const char *p_,
 		size_t length);
 
@@ -142,14 +144,15 @@ private:
 		Context context,
 		Place &place_end,
 		string filename,
-		Base_Stack *base_stack_,
+//		Base_Stack *base_stack_,
 		std::vector <Backtrace> &backtraces,
 		std::vector <string> &filenames,
 		std::set <string> &includes,
 		const Place &place_diagnostic,
 		int fd,
 		bool allow_enoent,
-		bool try_defaut);
+		bool try_defaut,
+		bool use_base);
 	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
 	 * be modified when returning, but is declared as non-const because it is used as
 	 * a stack.

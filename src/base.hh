@@ -18,6 +18,8 @@ public:
 	string get_base() const { return base; }
 	string rebase(string filename) const;
 
+	static Base_Stack base_stack;
+	
 private:
 	std::vector <string> dirs;
 	/* - Components are not ""

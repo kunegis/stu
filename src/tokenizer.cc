@@ -21,13 +21,14 @@ void Tokenizer::parse_tokens_file(
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
 	std::set <string> includes;
-	std::unique_ptr <Base_Stack> base_stack;
-	if (use_base) base_stack= std::make_unique <Base_Stack> ();
+//	std::unique_ptr <Base_Stack> base_stack;
+//	if (use_base) base_stack= std::make_unique <Base_Stack> ();
 
 	parse_tokens_file(
-		tokens, context, place_end, filename, base_stack.get(),
+		tokens, context, place_end, filename,
+//		base_stack.get(),
 		backtraces, filenames, includes,
-		place_diagnostic, fd, allow_enoent, try_default);
+		place_diagnostic, fd, allow_enoent, try_default, use_base);
 }
 
 void Tokenizer::parse_tokens_file(
@@ -35,14 +36,15 @@ void Tokenizer::parse_tokens_file(
 	Context context,
 	Place &place_end,
 	string filename,
-	Base_Stack *base_stack,
+//	Base_Stack *base_stack,
 	std::vector <Backtrace> &backtraces,
 	std::vector <string> &filenames,
 	std::set <string> &includes,
 	const Place &place_diagnostic,
 	int fd,
 	bool allow_enoent,
-	bool try_default)
+	bool try_default,
+	bool use_base)
 {
 	TRACE_FUNCTION();
 	TRACE("filename= '%s'", filename);
@@ -69,8 +71,9 @@ void Tokenizer::parse_tokens_file(
 			assert(fd == -1);
 			fd= 0;
 		} else {
-			if (base_stack) {
-				filename= base_stack->rebase(filename);
+			if (use_base) {
+//			if (base_stack) {
+				filename= Base_Stack::base_stack.rebase(filename);
 				TRACE("Rebased filename='%s'", filename);
 			}
 		}
@@ -164,7 +167,8 @@ void Tokenizer::parse_tokens_file(
 				tokens, backtraces, filenames, includes,
 				Place(Place::Type::INPUT_FILE, (Place::Bits)0,
 					filename, 1, 0),
-				base_stack,
+				use_base,
+//				base_stack,
 				in, in_size);
 			tokenizer.parse_tokens(context, place_diagnostic);
 			place_end= tokenizer.current_place();
@@ -256,7 +260,7 @@ void Tokenizer::parse_tokens_string(
 
 	Tokenizer tokenizer(
 		tokens, backtraces, filenames, includes,
-		place_string, nullptr,
+		place_string, false,
 		string_.c_str(), string_.size());
 	tokenizer.parse_tokens(context, place_string);
 	place_end= tokenizer.current_place();
@@ -951,8 +955,9 @@ void Tokenizer::parse_environment_variable(Placed_Name &name)
 		}
 		TRACE("PWD= '%s'", buf.c_str());
 		string pwd= buf.c_str();
-		if (base_stack) {
-			string base_dir= base_stack->get_base();
+		if (use_base) {
+//		if (base_stack) {
+			string base_dir= Base_Stack::base_stack.get_base();
 			if (! base_dir.empty()) {
 				if (base_dir[0] == '/') {
 					pwd= base_dir;
@@ -1103,7 +1108,8 @@ Tokenizer::Tokenizer(
 	std::vector <string> &filenames_,
 	std::set <string> &includes_,
 	const Place &place_base_,
-	Base_Stack *base_stack_,
+	bool use_base_,
+//	Base_Stack *base_stack_,
 	const char *p_,
 	size_t length)
 	: tokens(tokens_),
@@ -1112,7 +1118,8 @@ Tokenizer::Tokenizer(
 	  includes(includes_),
 	  place_base(place_base_),
 	  line(1), p_line(p_), p(p_), p_end(p_ + length),
-	  base_stack(base_stack_)
+	  use_base(use_base_)
+//	  base_stack(base_stack_)
 {
 	TRACE_FUNCTION();
 	if (length > 0)
@@ -1472,8 +1479,9 @@ void Tokenizer::parse_include_directive(
 		Place place_end_sub;
 		parse_tokens_file(
 			tokens, Tokenizer::SOURCE, place_end_sub,
-			filename_include, base_stack, backtraces, filenames, includes,
-			place_diagnostic, -1, false, true);
+			filename_include,
+			backtraces, filenames, includes,
+			place_diagnostic, -1, false, true, use_base);
 	}
 	backtraces.pop_back();
 	filenames.pop_back();
@@ -1574,7 +1582,7 @@ void Tokenizer::parse_cd_directive(
 	const Place &place_percent)
 {
 	TRACE_FUNCTION();
-	assert(base_stack || context == DYNAMIC);
+	assert(use_base || context == DYNAMIC);
 	Environment environment_= 0;
 
 	if (context == DYNAMIC) {
@@ -1595,15 +1603,16 @@ void Tokenizer::parse_cd_directive(
 				show(Operator_View("%cd")));
 			throw ERR_LOGICAL;
 		}
-		if (base_stack->empty()) {
+		if (!use_base || Base_Stack::base_stack.empty()) {
+//		if (base_stack->empty()) {
 			place_percent << fmt(
 				"no previous directory to %s into",
 				show(Operator_View("%cd -")));
 			throw ERR_LOGICAL;
 		}
-		base_stack->pop();
+		Base_Stack::base_stack.pop();
 		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-			base_stack->get_base()));
+			Base_Stack::base_stack.get_base()));
 		return;
 	}
 
@@ -1628,9 +1637,9 @@ void Tokenizer::parse_cd_directive(
 	}
 	string name_string= name->unparametrized();
 
-	base_stack->push(name_string);
+	Base_Stack::base_stack.push(name_string);
 	tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-		base_stack->get_base()));
+		Base_Stack::base_stack.get_base()));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

@@ -5,6 +5,8 @@
 #include "show_dep.hh"
 #include "trace.hh"
 
+Base_Stack Base_Stack::base_stack;
+
 void Base_Stack::build_base()
 // TODO it may be unnecessary to call canonicalize_string(), if the directories are
 // already canonicalized.  In that case, it's enough to ignore the '.' entries.

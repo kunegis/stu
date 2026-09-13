@@ -30,13 +30,13 @@ x.*
 
 if [ "$1" = --delete ] ; then
 	shift
-	rm -R -f -- $@
+	rm -R -f -- $@ || exit 1
 	exit
 fi
 
 Remove_Files_Slow()
 {
-	rm -Rf -f ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
+	rm -R -f -- ? list.* A.* *.data x.* *SCHTROUMPF* .+-~_ ./*abcdef || exit 1
 	for file in ?? ; do
 		[ "$file" = sh ] && continue
 		rm -R -f -- "$file" || exit 1
@@ -52,7 +52,7 @@ Remove_Files_Fast() # [DIR]...
 			printf '%s/%s\0' "$dir" "$pattern"
 		done
 	done |
-	xargs -0 "$SCRIPT" --delete
+	xargs -0 "$SCRIPT" --delete || exit 1
 }
 
 if [ $# = 0 ] ; then

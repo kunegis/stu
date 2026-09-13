@@ -1,4 +1,5 @@
-$ stu -F '%cd DIR' -f aaa.stu # rules in aaa.stu are interpreted with base dir DIR
+* 2.19-2002: base_stack needs to be global
+
 $ stu -F '%cd' # Error
 %cd $(VAR) # when $VAR starts with a dash
 * A %cd rule contains a dependency or target '../file', which is also referenced in the non-cd part
@@ -86,6 +87,7 @@ A: dir//B  %cd dir//  B {...}
 A: d/B  %cd d/././  ./B {...}
 %cd   <newline>  - # Does this work?
 %cd_ # Error: invalid directive 'cd_'
+%cd -- # Error: reserved for future extension (cd all the way up) (create entry in TODO/UNIMPLEMENTED)
 
 #
 # %include -d

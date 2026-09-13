@@ -18,6 +18,7 @@ public:
 	string get_base() const { return base; }
 	string rebase(string filename) const;
 
+	// TODO since there is just a single object, may as well make all functions static.
 	static Base_Stack base_stack;
 	
 private:

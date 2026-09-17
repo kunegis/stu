@@ -1585,12 +1585,18 @@ void Tokenizer::parse_cd_directive(
 	TRACE_FUNCTION();
 	TRACE("use_base= %s", frmt("%d", use_base));
 	TRACE("context= %s", frmt("%d", context));
-	assert(use_base || context == DYNAMIC);
+	assert(use_base || context == DYNAMIC || context == OPTION_C);
 	Environment environment_= 0;
 
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%cd")));
+		throw ERR_LOGICAL;
+	}
+	if (context == OPTION_C) {
+		place_percent << fmt("%s cannot appear in argument to %s",
+			show(Operator_View("%cd")),
+			show(Operator_View("-C")));
 		throw ERR_LOGICAL;
 	}
 

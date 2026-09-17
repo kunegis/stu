@@ -1,0 +1,14 @@
+A: list.aaa list.aaa/B
+{
+	cp list.aaa/B A
+}
+
+-p list.aaa
+{
+	mkdir -p list.aaa
+}
+
+%cd .
+%cd list.aaa
+
+B = {content}

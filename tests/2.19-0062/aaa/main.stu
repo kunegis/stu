@@ -1,0 +1,7 @@
+@main: B;
+
+%cd bbb
+%include main.stu
+%cd -
+
+B = bbb/C;

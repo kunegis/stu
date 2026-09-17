@@ -1,0 +1,11 @@
+@main: A;
+
+%cd aaa
+%include main.stu
+%cd -
+
+A: aaa/B
+{
+	cp aaa/B A
+	grep -q -F -x -e correct A
+}

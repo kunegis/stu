@@ -264,7 +264,7 @@ preload_prefix()
 File_List()
 # List files that should not be changed by tests.
 {
-	ls -ld tests tests/*/* || {
+	{ ls -l -d tests && ls -l -d tests/*/* | grep -v -E -e '^d' ; } || {
 		echo >&2 "Error creating file list"
 		exit 1
 	}
@@ -706,7 +706,7 @@ output_success
 
 File_List >"$file_list_end"
 diff "$file_list_begin" "$file_list_end" || {
-	echo >&2 "Error tests changes files that should not be changed; see $file_list_begin $file_list_end"
+	echo >&2 "Error: tests haved changed files that should not be changed; see $file_list_begin $file_list_end"
 	exit 1
 }
 

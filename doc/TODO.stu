@@ -1,4 +1,3 @@
-* Two nested '%include -d'-like %cd+%include combinations
 * Syntax error in a file included during %cd:  The trace into the file includes the '%cd' directory
 $ stu -C '%cd DIR' # Error
 * File that ends in a valid '%cd DIR'

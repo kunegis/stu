@@ -1,0 +1,11 @@
+A: d d/B
+{
+	cp d/B A
+}
+
+-p d { mkdir -p d ; }
+
+%cd d
+%cd .
+
+B = {CORRECT}

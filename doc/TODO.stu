@@ -1,4 +1,3 @@
-%cd aaa %cd . # same as: %cd aaa
 %cd . %cd aaa # same as: %cd aaa
 * First rule is %cd command rule and directory already exists; succeeds
 * First rule is %cd copy rule and directory already exists; succeeds

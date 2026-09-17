@@ -953,7 +953,6 @@ void Tokenizer::parse_environment_variable(Placed_Name &name)
 		TRACE("PWD= '%s'", buf.c_str());
 		string pwd= buf.c_str();
 		if (use_base) {
-//		if (base_stack) {
 			string base_dir= Base_Stack::base_stack.get_base();
 			if (! base_dir.empty()) {
 				if (base_dir[0] == '/') {

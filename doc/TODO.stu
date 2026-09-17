@@ -1,4 +1,4 @@
-* Multiply nested '%include -d'-like %cd+%include combinations
+* Two nested '%include -d'-like %cd+%include combinations
 * Syntax error in a file included during %cd:  The trace into the file includes the '%cd' directory
 $ stu -C '%cd DIR' # Error
 * File that ends in a valid '%cd DIR'
@@ -86,7 +86,9 @@ A: d/B  %cd d/././  ./B {...}
 %cd - # In a dynamic dependency (error)
 * Check that we are not performing double-canonicalization, i.e., run canonicalize()
   multiple times on same input, or on output of canonicalize().
-
+* Check that $(PWD) is always the base dir of the rule
+* main.stu: %cd directory %include main.stu   directory/main.stu:  %include main.stu # Error (directory/main.stu included twice)
+* main.stu: %cd directory  %cd -  %include main.stu # Recursive include
 
 #
 # %include -d

@@ -21,12 +21,9 @@ void Tokenizer::parse_tokens_file(
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
 	std::set <string> includes;
-//	std::unique_ptr <Base_Stack> base_stack;
-//	if (use_base) base_stack= std::make_unique <Base_Stack> ();
 
 	parse_tokens_file(
 		tokens, context, place_end, filename,
-//		base_stack.get(),
 		backtraces, filenames, includes,
 		place_diagnostic, fd, allow_enoent, try_default, use_base);
 }
@@ -36,7 +33,6 @@ void Tokenizer::parse_tokens_file(
 	Context context,
 	Place &place_end,
 	string filename,
-//	Base_Stack *base_stack,
 	std::vector <Backtrace> &backtraces,
 	std::vector <string> &filenames,
 	std::set <string> &includes,
@@ -56,16 +52,6 @@ void Tokenizer::parse_tokens_file(
 	enum {TC_MMAP, TC_MALLOC} technique;
 
 	try {
-		if (context == SOURCE) {
-			assert(filenames.size() == 0 ||
-			       filenames[filenames.size() - 1] != filename);
-			assert(includes.count(filename) == 0);
-			includes.insert(filename);
-		} else {
-			assert(filenames.size() == 0);
-			assert(backtraces.size() == 0);
-		}
-
 		/* Map empty string to stdin */
 		if (filename.empty()) {
 			assert(fd == -1);
@@ -76,6 +62,16 @@ void Tokenizer::parse_tokens_file(
 				filename= Base_Stack::base_stack.rebase(filename);
 				TRACE("Rebased filename='%s'", filename);
 			}
+		}
+
+		if (context == SOURCE) {
+			assert(filenames.size() == 0 ||
+			       filenames[filenames.size() - 1] != filename);
+			assert(includes.count(filename) == 0);
+			includes.insert(filename);
+		} else {
+			assert(filenames.size() == 0);
+			assert(backtraces.size() == 0);
 		}
 
 		if (fd < 0) {
@@ -1110,7 +1106,6 @@ Tokenizer::Tokenizer(
 	std::set <string> &includes_,
 	const Place &place_base_,
 	bool use_base_,
-//	Base_Stack *base_stack_,
 	const char *p_,
 	size_t length)
 	: tokens(tokens_),
@@ -1120,7 +1115,6 @@ Tokenizer::Tokenizer(
 	  place_base(place_base_),
 	  line(1), p_line(p_), p(p_), p_end(p_ + length),
 	  use_base(use_base_)
-//	  base_stack(base_stack_)
 {
 	TRACE_FUNCTION();
 	if (length > 0)
@@ -1446,18 +1440,24 @@ void Tokenizer::parse_include_directive(
 		throw ERR_LOGICAL;
 	}
 
-	const string filename_include= name->unparametrized();
+	string filename_include= name->unparametrized();
+	string filename_include_based= filename_include;
+	if (use_base) {
+		// TODO we rebase the name here, but also inside parse_tokens_file().  As
+		// a result, the name is rebased twice.  Make rebase() only be called once.
+		filename_include_based= Base_Stack::base_stack.rebase(filename_include_based);
+	}
 	Backtrace backtrace_stack(name->place,
-		fmt("%s is included from here", show(filename_include)));
+		fmt("%s is included from here", show(filename_include_based)));
 	backtraces.push_back(backtrace_stack);
 	filenames.push_back(place_base.text);
 
-	if (includes.count(filename_include)) {
+	if (includes.count(filename_include_based)) {
 		/* Do nothing -- file was already parsed, or is being parsed.  It is an
 		 * error if a file includes itself directly or indirectly.  It it ignored
 		 * if a file is included a second time non-recursively. */
 		for (auto &i: filenames) {
-			if (filename_include != i)
+			if (filename_include_based != i)
 				continue;
 			std::vector <Backtrace> backtraces_backward;
 			for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
@@ -1465,7 +1465,7 @@ void Tokenizer::parse_include_directive(
 				if (j == backtraces.rbegin()) {
 					backtrace.message= fmt(
 						"recursive inclusion of %s using %s",
-						show(filename_include),
+						show(filename_include_based),
 						show(Operator_View("%include")));
 				}
 				backtraces_backward.push_back(backtrace);

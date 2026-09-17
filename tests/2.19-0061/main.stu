@@ -1,0 +1,11 @@
+@main: A;
+
+%cd directory
+%include main.stu
+%cd -
+
+A: directory/B
+{
+	cp directory/B A
+	grep -q -F -x -e correct A
+}

@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.dir
+
+{
+	printf '%%cd list.dir\n'
+	printf 'B { echo bcde >B ; }\n'
+} >list.stu
+
+../../bin/stu.test -f list.stu
+
+grep -q -F -x -e bcde list.dir/B

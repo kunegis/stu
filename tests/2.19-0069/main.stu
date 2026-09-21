@@ -1,0 +1,29 @@
+A: list.directory B list.directory/D
+{
+	cat list.E list.directory/list.E >A
+	grep -q -F -x -e aaaa list.E
+	grep -q -F -x -e bbbb list.directory/list.E
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+>B: list.directory list.[list.directory/C]
+{
+	cat list.E
+}
+
+list.E = {aaaa}
+
+%cd list.directory
+
+C = {E}
+
+D: list.[C]
+{
+	cp list.E D
+}
+
+list.E = {bbbb}

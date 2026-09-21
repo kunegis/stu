@@ -1,4 +1,3 @@
-* Dynamic dependency [C] used in two different rules that have a different base directory, e.g. as [C] and [d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
 * Dynamic dependency list.[C] used in two different rules that have a different base directory, e.g. as list.[C] and list.[d/C]:  the content of the dynamic dependency must be interpreted in a different base directory.
 * Dynamic dependency [[C]] used in two different rules that have a different base directory, e.g. as [[C]] and [[d/C]]:  the content of the dynamic dependency must be interpreted in a different base directory.
 %cd dir . {...} # Same as "dir {...}", but must fail because chdir fails

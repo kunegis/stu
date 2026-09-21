@@ -1,0 +1,10 @@
+A: d/B
+{
+	...
+}
+
+%cd d
+
+B: nonexistingfile # Make sure error message shows "d/nonexistingfile"
+{
+}

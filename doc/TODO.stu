@@ -1,10 +1,4 @@
 # Names in B are interpreted relatively to A.
-A: list.[@dir/x] {...}
-%cd dir
-@x: B;
-list.B = {...}
-
-# Names in B are interpreted relatively to A.
 A: [@dir/x].data {...}
 %cd dir
 @x: B;

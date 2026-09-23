@@ -1,0 +1,26 @@
+A: d  [[d/C]] d/B
+{
+	cat F d/G >A
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+E = {F}
+
+F = {outer}
+
+%cd d
+
+C = {E}
+
+B: [[C]]
+{
+	cp G B
+}
+
+E = {G}
+
+G = {inner}

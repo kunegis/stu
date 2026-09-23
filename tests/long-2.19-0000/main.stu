@@ -1,0 +1,27 @@
+# TOPIC: In -j mode, multiple commands with different base directories are run in parallel
+
+A: list.directory B list.directory/C
+{
+	cat B list.directory/C >A
+}
+
+-p list.directory
+{
+	mkdir -p list.directory
+}
+
+B
+{
+	[ ! -e list.directory/C ]
+	sleep 1
+	echo bbb>B
+}
+
+%cd list.directory
+
+C
+{
+	[ ! -e ../B ]
+	sleep 1
+	echo ccc >C
+}

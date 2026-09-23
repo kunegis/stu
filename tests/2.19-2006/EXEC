@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.directory_1 list.directory_2
+touch aaa.data list.directory_1/list.bbb list.directory_2/X
+
+../../bin/stu.debug @clean 2>list.err
+
+[ -e list.err ]
+[ ! -s list.err ]
+
+[ ! -e aaa.data ]
+[ ! -e list.directory_1/list.bbb ]
+[ ! -e list.directory_2/X ]

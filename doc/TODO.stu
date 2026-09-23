@@ -1,5 +1,3 @@
-@clean: @dirA/clean @dirB/clean {...} # dirA and dirB have their own @clean rule, defined using %cd
-
 # Names in B are interpreted relatively to A.
 A: [@dir/x] {...}
 %cd dir

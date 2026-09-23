@@ -1,0 +1,33 @@
+# Names from list.dir/B must be present in both . and list.dir/
+
+A: list.dir list.dir/C [list.dir/B]
+{
+	[ -e X ]
+	[ -e Y ]
+	grep -q -F -x -e x_outer X
+	grep -q -F -x -e y_outer Y
+	touch A
+}
+
+-p list.dir
+{
+	mkdir -p list.dir
+}
+
+X = {x_outer}
+Y = {y_outer}
+
+%cd list.dir
+
+C: [B]
+{
+	[ -e X ]
+	[ -e Y ]
+	grep -q -F -x -e x_inner X
+	grep -q -F -x -e y_inner Y
+	touch C
+}
+
+B = {X Y}
+X = {x_inner}
+Y = {y_inner}

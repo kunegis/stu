@@ -1,4 +1,3 @@
-A: list.dir/C [list.dir/B] {...} %cd list.dir  C: [B] {...}  B {...} # Names from list.dir/B must be present in both . and list.dir/
 @clean: @dirA/clean @dirB/clean {...} # dirA and dirB have their own @clean rule, defined using %cd
 
 # Names in B are interpreted relatively to A.

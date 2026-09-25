@@ -1,4 +1,3 @@
-* tests/long-0.7-2000 produces unallowed files: tmp1.stu tmp2.stu
 * tests/long-0.2-2001/abcdefghijklmno: unallowed file created during testing
 
 $name.data {...}  %cd d  $name.data {...}  # Both can be used; no error due to duplicate rule

@@ -146,22 +146,26 @@ shared_ptr <const Dep> rebase_inner(shared_ptr <const Dep> d, string base_dir)
 	assert(! base_dir.empty());
 
 	if (to <const Plain_Dep> (d)) {
+		TRACE("return %s", show_trace(d));
 		return d;
 	} else if (shared_ptr <const Dynamic_Dep> e2= to <const Dynamic_Dep> (d)) {
 		shared_ptr <Dynamic_Dep> f= to <Dynamic_Dep> (e2->clone());
 		f->dep= rebase(f->dep, base_dir);
+		TRACE("return %s", show_trace(f));
 		return f;
 	} else if (shared_ptr <const Concat_Dep> e3= to <const Concat_Dep> (d)) {
 		shared_ptr <Concat_Dep> f= to <Concat_Dep> (e3->clone());
-		if (f->deps.size() != 0)
-			f->deps[0]= rebase(f->deps[0], base_dir);
-		for (size_t i= 1; i < f->deps.size(); ++i)
+//		if (f->deps.size() != 0)
+//			f->deps[0]= rebase(f->deps[0], base_dir);
+		for (size_t i= 0; i < f->deps.size(); ++i)
 			f->deps[i]= rebase_inner(f->deps[i], base_dir);
+		TRACE("return %s", show_trace(f));
 		return f;
 	} else if (shared_ptr <const Compound_Dep> e4= to <const Compound_Dep> (d)) {
 		shared_ptr <Compound_Dep> f= to <Compound_Dep> (e4->clone());
 		for (size_t i= 0; i < f->deps.size(); ++i)
 			f->deps[i]= rebase_inner(f->deps[i], base_dir);
+		TRACE("return %s", show_trace((shared_ptr <const Dep>)f));
 		return f;
 	} else {
 		unreachable();

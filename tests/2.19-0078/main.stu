@@ -1,0 +1,13 @@
+A: d B d/C
+{
+	grep -q -F -x -e bbb B
+	grep -q -F -x -e ccc d/C
+	cat B d/C >A
+}
+
+-p d
+{
+	mkdir -p d
+}
+
+B { echo bbb >B ; } %cd d C { echo ccc >C ; }

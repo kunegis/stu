@@ -1,0 +1,9 @@
+# TOPIC: Check whether Name::match() is called twice
+
+A:  aaa.bbb.ccc
+{
+}
+
+$x.middle.$y
+{
+}

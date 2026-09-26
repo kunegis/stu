@@ -333,13 +333,15 @@ shared_ptr <const Rule> Rule_Set::get(
 
 	/* Search the best parametrized rule, if there is an affix in the rule */
 	for (auto it= rules_param_prefix.find(hash_dep.get_name_nondynamic());
-	     it != rules_param_prefix.end(); ++it) {
+	     it != rules_param_prefix.end(); ++it)
+	{
 		best_rule_finder.check(hash_dep, (*it).second, (*it).first);
 	}
 	string target_reversed= hash_dep.get_name_nondynamic();
 	std::reverse(target_reversed.begin(), target_reversed.end());
 	for (auto it= rules_param_suffix.find(target_reversed);
-	     it != rules_param_suffix.end(); ++it) {
+	     it != rules_param_suffix.end(); ++it)
+	{
 		best_rule_finder.check(hash_dep, (*it).second, (*it).first);
 	}
 
@@ -503,8 +505,8 @@ void Best_Rule_Finder::check(
 	TRACE("hash_dep= %s", show(hash_dep));
 	TRACE("rule= %s", show(rule));
 	TRACE("target_index= %s", frmt("%u", target_index));
-	shared_ptr <const Plain_Dep> t= rule->targets[target_index];
 
+	shared_ptr <const Plain_Dep> t= rule->targets[target_index];
 	assert(t->object.name.get_n() > 0);
 	std::map <string, string> mapping;
 	std::vector <size_t> anchoring;

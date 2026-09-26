@@ -5,3 +5,5 @@ X
 	touch X
 	echo content >SCHTROUMPF
 }
+
+# TOPIC: $[v] # fopen fails

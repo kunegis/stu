@@ -810,13 +810,19 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	shared_ptr <Placed_Name> name= is <Name_Token> ();
 	++iter;
 
-	/* Check that the name does not contain '=' */
+	/* Check that the name does not contain '=', '/' */
 	for (auto &j: name->get_texts()) {
 		if (j.find('=') != string::npos) {
 			name->place << fmt(
 				"name of variable dependency %s must not contain %s",
 				show(*name), show(Operator_View('=')));
 			explain_variable_equal();
+			throw ERR_LOGICAL;
+		}
+		if (j.find('/') != string::npos) {
+			name->place << fmt(
+				"name of variable dependency %s must not contain %s",
+				show(*name), show(Operator_View('/')));
 			throw ERR_LOGICAL;
 		}
 	}

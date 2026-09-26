@@ -1,7 +1,3 @@
-* tests/long-0.2-2001/abcdefghijklmno: unallowed file created during testing
-
-$name.data {...}  %cd d  $name.data {...}  # Both can be used; no error due to duplicate rule
-
 # X is used as a dynamic dependency twice, with different dynamic base dir
 A: [d/X] d/B {...}
 Y = {111}

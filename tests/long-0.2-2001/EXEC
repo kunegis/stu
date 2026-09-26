@@ -15,7 +15,7 @@ Test()
 	rm -f abcdefghijklmno
 
 	set +e
-	../../bin/stu.test -f list.stu abcdefghijklmno >list.out 2>list.err
+	../../../bin/stu.test -f list.stu abcdefghijklmno >list.out 2>list.err
 	exitstatus=$?
 	set -e
 
@@ -32,6 +32,9 @@ Test()
 		Error "Expected result 'yes' or 'no', got '$result'"
 	fi
 }
+
+mkdir list.directory
+cd list.directory
 
 while IFS= read -r line ; do
 	printf '%s\n' "$line" | grep -q -E -e '^[[:space:]]*(#|$)' && continue
@@ -63,7 +66,7 @@ $right : { echo >&2 ERROR ; exit 1 ; }
 $left  : { touch abcdefghijklmno ; }
 EOF
 	Test
-done <list
+done <../list
 
 rm -f abcdefghijklmno
 

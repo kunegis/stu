@@ -1,4 +1,3 @@
-* A dependency "./aaa" in a %cd rule (same as "aaa")
 * When a name does not match a rule, Name::match() is called twice.  It should not.
 A = %cd # Error
 A=B; %cd . %cd . $dir/B {...} # Works

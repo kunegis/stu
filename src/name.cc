@@ -65,7 +65,7 @@ bool Name::match(
 	/* We are in the second pass for Special Rule (b)/(c) */
 	bool special_b_second_pass= false;
 	bool special_c_second_pass= false;
-	
+
 	TRACE("name_flags= %s", frmt("%u", name_flags));
 	TRACE("special_a= %s", frmt("%d", special_a));
 	TRACE("special_b_potential_based= %s", frmt("%d", special_b_potential_based));

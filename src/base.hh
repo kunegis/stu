@@ -20,7 +20,7 @@ public:
 
 	// TODO since there is just a single object, may as well make all functions static.
 	static Base_Stack base_stack;
-	
+
 private:
 	std::vector <string> dirs;
 	/* - Components are not ""

@@ -14,4 +14,3 @@ echo '1234' >list.dir/"V=A"
 
 [ -e A ]
 grep -q -F -x -e 1234 A
-

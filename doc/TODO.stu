@@ -1,4 +1,3 @@
-* 0.4: $[V="list.dir/V=A"] # when specifying a name, the file can contain slash and equal
 * 2.7.70-1* tests: check all whether they should be moved to another version number
 * Like 0.4-1015, but in a dynamic dependency
 * A dependency "./aaa" in a %cd rule (same as "aaa")

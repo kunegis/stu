@@ -1,0 +1,17 @@
+#!/bin/sh
+# TOPIC: $[v="a/b=c"]
+. ../../sh/test.sh
+
+{
+	printf '>A: $[stu_VAR="list.dir/V=A"]\n'
+	printf '{ echo $stu_VAR ; }\n'
+} >list.stu
+
+mkdir list.dir
+echo '1234' >list.dir/"V=A"
+
+../../bin/stu.debug -f list.stu
+
+[ -e A ]
+grep -q -F -x -e 1234 A
+

@@ -1,5 +1,3 @@
-* 2.7.70-1* tests: check all whether they should be moved to another version number
-* Like 0.4-1015, but in a dynamic dependency
 * A dependency "./aaa" in a %cd rule (same as "aaa")
 * When a name does not match a rule, Name::match() is called twice.  It should not.
 A = %cd # Error
@@ -30,6 +28,10 @@ A: d/B  %cd d/././  ./B {...}
 * Check that $(PWD) is always the base dir of the rule
 * main.stu: %cd directory %include main.stu   directory/main.stu:  %include main.stu # Error (directory/main.stu included twice)
 * main.stu: %cd directory  %cd -  %include main.stu # Recursive include
+
+#
+# 2.7.70-1* tests: check all whether they should be moved to another version number.
+#
 
 #
 # %include -d

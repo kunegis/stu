@@ -1,4 +1,3 @@
-A=B; %cd . %cd . $dir/B {...} # Works
 A=B; %cd . %cd . %cd . $dir/B {...} # Works
 %cd $dir/aaa # Error (no parameters allowed)
 %cd aaa//bbb # Check that the directory is canonicalized

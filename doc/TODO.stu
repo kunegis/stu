@@ -1,5 +1,3 @@
-* A: B  %cd /  $dir/  # Matches with dir='/'
-
 %cd dir  /bin/jshfkshfksjfkjshfd { pwd ; ...} # Check that pwd outputs something ending in "/dir" (even though the target is absolute and not rebased)
 A: dir/B  %cd dir//  B {...}
 A: dir/B  %cd dir///  B {...}

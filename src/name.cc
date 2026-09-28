@@ -114,7 +114,7 @@ bool Name::match(
 		if (special_b_second_pass && i == 0) {
 			ret[parameters[i]]= ".";
 			--p; /* Parse the '/' twice */
-			assert(p > p_begin);
+//			assert(p > p_begin);
 			continue;
 		}
 		if (special_c_second_pass && i == 0) {

@@ -1,5 +1,3 @@
-%cd aaa//bbb # Check that the directory is canonicalized
-
 * A: B  %cd /  $dir/B  # Matches with dir='/'
 * A: B  %cd directory  $dir  # Matches with dir='directory' ?
 * A: B  %cd directory  $dir/  # Matches with dir='directory' ?

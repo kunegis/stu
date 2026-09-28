@@ -1,6 +1,6 @@
 * Check that we are not performing double-canonicalization, i.e., run canonicalize()
   multiple times on same input, or on output of canonicalize().
-* Check that $(PWD) is always the base dir of the rule
+* Check that $(PWD) is always the base dir of the rule (as expression in a stu script)
 * main.stu: %cd directory %include main.stu   directory/main.stu:  %include main.stu # Error (directory/main.stu included twice)
 * main.stu: %cd directory  %cd -  %include main.stu # Recursive include
 

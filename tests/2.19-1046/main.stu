@@ -1,0 +1,16 @@
+# TOPIC: %cd - # In dynamic dependency
+
+A: list.dir list.dir/B;
+
+-p list.dir
+{
+	mkdir -p list.dir
+}
+
+%cd list.dir
+
+B: [C]
+{
+}
+
+C = { %cd - }

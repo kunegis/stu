@@ -1,0 +1,10 @@
+A: B
+{
+}
+
+%cd list.directory
+
+$name
+{
+	echo "name='$name'"
+}

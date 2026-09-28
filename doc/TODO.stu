@@ -1,4 +1,3 @@
-%cd $dir/aaa # Error (no parameters allowed)
 %cd aaa//bbb # Check that the directory is canonicalized
 
 * A: B  %cd /  $dir/B  # Matches with dir='/'

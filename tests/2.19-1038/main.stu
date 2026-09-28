@@ -1,0 +1,12 @@
+# TOPIC: a: b  %cd /  $c/b
+
+A: /nonexistingfile
+{
+}
+
+%cd /
+
+$dir/nonexistingfile
+{
+	echo DIR=-${dir}-
+}

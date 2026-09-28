@@ -1,4 +1,3 @@
-%cd -- # Error: reserved for future extension (cd all the way up) (create entry in TODO/UNIMPLEMENTED)
 %cd - # In a dynamic dependency (error)
 * Check that we are not performing double-canonicalization, i.e., run canonicalize()
   multiple times on same input, or on output of canonicalize().

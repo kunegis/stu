@@ -58,7 +58,6 @@ void Tokenizer::parse_tokens_file(
 			fd= 0;
 		} else {
 			if (use_base) {
-//			if (base_stack) {
 				filename= Base_Stack::base_stack.rebase(filename);
 				TRACE("Rebased filename='%s'", filename);
 			}
@@ -163,9 +162,7 @@ void Tokenizer::parse_tokens_file(
 				tokens, backtraces, filenames, includes,
 				Place(Place::Type::INPUT_FILE, (Place::Bits)0,
 					filename, 1, 0),
-				use_base,
-//				base_stack,
-				in, in_size);
+				use_base, in, in_size);
 			tokenizer.parse_tokens(context, place_diagnostic);
 			place_end= tokenizer.current_place();
 
@@ -1611,8 +1608,14 @@ void Tokenizer::parse_cd_directive(
 				show(Operator_View("%cd")));
 			throw ERR_LOGICAL;
 		}
+		if (p < p_end && *p == '-') {
+			/* "%cd --" is reserved for future extension */
+			place_percent << fmt("%s must not be followed by %s",
+				show(Operator_View("%cd")),
+				show(Operator_View("--")));
+			throw ERR_LOGICAL;
+		}
 		if (!use_base || Base_Stack::base_stack.empty()) {
-//		if (base_stack->empty()) {
 			place_percent << fmt(
 				"no previous directory to %s into",
 				show(Operator_View("%cd -")));

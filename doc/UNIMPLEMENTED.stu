@@ -532,3 +532,9 @@ $(PWD)/x {...}
 #
 
 A: B --silent { ... }
+
+#
+# %cd --:  Pop all directories from the base stack.
+#
+
+% cd --

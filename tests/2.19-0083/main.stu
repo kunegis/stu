@@ -1,0 +1,10 @@
+# TOPIC: %cd <newline> -
+
+A = B;
+
+%cd list.directory
+
+%cd
+-
+
+B = {content}

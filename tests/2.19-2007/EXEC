@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+
+pwd_dir=$(pwd)
+pwd_re=$(printf '%s' "$pwd_dir" | sed -E -e 's,([][(){}.$*+?|^\]),\\\1,g')
+
+grep -q -E -x -e 'main.stu:5:4: no rule to build "d/X'"$pwd_re"'/d", needed by "d/B"' list.err

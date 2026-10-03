@@ -348,6 +348,7 @@ void Name::render(Parts &parts, Rendering rendering) const
 
 void Name::canonicalize()
 {
+	TRACE_FUNCTION();
 	for (size_t i= 0; i <= get_n(); ++i) {
                 char *const p= (char *) texts[i].c_str();
 		Canonicalize_Flags canonicalize_flags= 0;

@@ -100,8 +100,6 @@ public:
 	 * parameters with the two unseparated parameters. */
 
 	void canonicalize();
-	/* In-place canonicalization */
-
 	bool equals_same_length(const Name &that) const;
 
 	bool operator<(const Name &) const; /* Compares only texts */

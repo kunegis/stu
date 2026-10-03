@@ -92,7 +92,7 @@ public:
 		return Object(flags, name);
 	}
 
-	void canonicalize();  /* In-place */
+	void canonicalize();
 };
 
 void render(const Placed_Object &, Parts &, Rendering= 0);

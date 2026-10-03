@@ -27,6 +27,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 
 void Hash_Dep::canonicalize()
 {
+	TRACE_FUNCTION();
 	char *b= (char *)text.c_str(), *p= b;
 	while ((*(word_t *)p) & F_DYNAMIC)
 		p += sizeof(word_t);
@@ -46,6 +47,7 @@ size_t Hash_Dep::get_dynamic_depth() const
 
 void Hash_Dep::canonicalize_plain()
 {
+	TRACE_FUNCTION();
 	char *b= (char *)text.c_str(), *p= b;
 	assert(! ((*(word_t *)p) & F_DYNAMIC));
 	p += sizeof(word_t);

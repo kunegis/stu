@@ -1,9 +1,16 @@
 #include "canonicalize.hh"
 
+#include <assert.h>
 #include <string.h>
+
+#include "trace.hh"
 
 char *canonicalize_string(char *p, Canonicalize_Flags canonicalize_flags)
 {
+	TRACE_FUNCTION();
+	TRACE("p= '%s'", p);
+	TRACE("canonicalize_flags= %s", frmt("%u", (unsigned)canonicalize_flags));
+	
 	/*
 	 * Fold '/'
 	 */

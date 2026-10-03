@@ -538,3 +538,9 @@ A: B --silent { ... }
 #
 
 % cd --
+
+#
+# Flag to not execute jobs in parallel.
+#
+
+@all-sequencial: --sequential @all;

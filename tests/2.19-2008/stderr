@@ -1,0 +1,2 @@
+list.directory/main.stu:1:10: recursive inclusion of "list.directory/main.stu" using %include
+list.stu:1:29: "list.directory/main.stu" is included from here

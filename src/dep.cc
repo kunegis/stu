@@ -197,15 +197,15 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 
 	assert(ret_object->name.get_n() == 0);
 
-	string this_name= ret_object->name.unparametrized();
-	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
-		assert((ret_object->flags & F_PHONY) == 0);
-		place << fmt(
-			"dynamic variable %s cannot be instantiated with parameter value that contains %s",
-			show(Dynamic_Variable_View(this_name)),
-			show(Operator_View('=')));
-		throw ERR_LOGICAL;
-	}
+//	string this_name= ret_object->name.unparametrized();
+//	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
+//		assert((ret_object->flags & F_PHONY) == 0);
+//		place << fmt(
+//			"dynamic variable %s cannot be instantiated with parameter value that contains %s",
+//			show(Dynamic_Variable_View(this_name)),
+//			show(Operator_View('=')));
+//		throw ERR_LOGICAL;
+//	}
 
 	return ret;
 }

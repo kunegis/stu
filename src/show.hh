@@ -40,7 +40,9 @@
 typedef unsigned Style;
 
 constexpr Style S_CHANNEL=         (1 << CH_BITS) - 1;
+#if 0 /* unused, but we keep the code */
 constexpr Style S_ALWAYS_QUOTE=    1 << (CH_BITS + 0);
+#endif /* 0 */
 constexpr Style S_QUOTE_MINIMUM=   1 << (CH_BITS + 1);
 constexpr Style S_QUOTE_SOURCE=    1 << (CH_BITS + 2);
 constexpr Style S_NO_COLOR=        1 << (CH_BITS + 3);

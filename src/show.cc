@@ -122,8 +122,10 @@ string show(const Parts &parts, Style style)
 				}
 				size_t l;
 				Quote_Safeness quotable= QS_MAX;
+#if 0 /* unused, but we keep the code */
 				if (style == S_ALWAYS_QUOTE)
 					quotable= QS_ALWAYS_QUOTE;
+#endif /* 0 */
 				for (l= i; l < k && parts[l].is_quotable(); ++l) {
 					if (quotable > QS_MIN)
 						quotable= std::min(quotable,

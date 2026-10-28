@@ -58,7 +58,7 @@ void Tokenizer::parse_tokens_file(
 			fd= 0;
 		} else {
 			if (use_base) {
-				filename= Base_Stack::base_stack.rebase(filename);
+				filename= Base_Stack::rebase(filename);
 				TRACE("Rebased filename='%s'", filename);
 			}
 		}
@@ -951,7 +951,7 @@ void Tokenizer::parse_environment_variable(Placed_Name &name)
 		TRACE("PWD= '%s'", buf.c_str());
 		string pwd= buf.c_str();
 		if (use_base) {
-			string base_dir= Base_Stack::base_stack.get_base();
+			string base_dir= Base_Stack::get_base();
 			if (! base_dir.empty()) {
 				if (base_dir[0] == '/') {
 					pwd= base_dir;
@@ -1442,7 +1442,7 @@ void Tokenizer::parse_include_directive(
 	if (use_base) {
 		// TODO we rebase the name here, but also inside parse_tokens_file().  As
 		// a result, the name is rebased twice.  Make rebase() only be called once.
-		filename_include_based= Base_Stack::base_stack.rebase(filename_include_based);
+		filename_include_based= Base_Stack::rebase(filename_include_based);
 	}
 	Backtrace backtrace_stack(name->place,
 		fmt("%s is included from here", show(filename_include_based)));
@@ -1616,15 +1616,15 @@ void Tokenizer::parse_cd_directive(
 				show(Operator_View("--")));
 			throw ERR_LOGICAL;
 		}
-		if (!use_base || Base_Stack::base_stack.empty()) {
+		if (!use_base || Base_Stack::empty()) {
 			place_percent << fmt(
 				"no previous directory to %s into",
 				show(Operator_View("%cd -")));
 			throw ERR_LOGICAL;
 		}
-		Base_Stack::base_stack.pop();
+		Base_Stack::pop();
 		tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-			Base_Stack::base_stack.get_base()));
+			Base_Stack::get_base()));
 		return;
 	}
 
@@ -1649,9 +1649,9 @@ void Tokenizer::parse_cd_directive(
 	}
 	string name_string= name->unparametrized();
 
-	Base_Stack::base_stack.push(name_string);
+	Base_Stack::push(name_string);
 	tokens.push_back(std::make_shared <CD_Token> (environment_, place_percent,
-		Base_Stack::base_stack.get_base()));
+		Base_Stack::get_base()));
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

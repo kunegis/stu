@@ -5,7 +5,8 @@
 #include "show_dep.hh"
 #include "trace.hh"
 
-Base_Stack Base_Stack::base_stack;
+std::vector <string> Base_Stack::dirs;
+string Base_Stack::base;
 
 void Base_Stack::build_base()
 // TODO it may be unnecessary to call canonicalize_string(), if the directories are
@@ -65,7 +66,7 @@ void Base_Stack::pop()
 	build_base();
 }
 
-string Base_Stack::rebase(string filename) const
+string Base_Stack::rebase(string filename)
 {
 	TRACE_FUNCTION();
 	TRACE("filename= '%s'", filename);

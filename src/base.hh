@@ -12,23 +12,20 @@
 class Base_Stack
 {
 public:
-	bool empty() const { return dirs.empty(); }
-	void push(string dir);
-	void pop();
-	string get_base() const { return base; }
-	string rebase(string filename) const;
-
-	// TODO since there is just a single object, may as well make all functions static.
-	static Base_Stack base_stack;
+	static bool empty() { return dirs.empty(); }
+	static void push(string dir);
+	static void pop();
+	static string get_base() { return base; }
+	static string rebase(string filename);
 
 private:
-	std::vector <string> dirs;
+	static std::vector <string> dirs;
 	/* - Components are not ""
 	 * - Components only end in slash if they consist only of slashes */
 
-	string base;
+	static string base;
 
-	void build_base();
+	static void build_base();
 };
 
 bool is_absolute_for_base(const Name &);

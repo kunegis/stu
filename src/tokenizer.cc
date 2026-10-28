@@ -944,6 +944,7 @@ void Tokenizer::parse_environment_variable(Placed_Name &name)
 		TRACE("Try size= %s", frmt("%zu", buf.size()));
 		char *r= getcwd(buf.data(), buf.size());
 		if (!r && errno == ERANGE) {
+			TRACE("Resize getcwd buffer");
 			buf.resize(4 * buf.size());
 			goto retry;
 		}

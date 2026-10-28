@@ -155,8 +155,6 @@ shared_ptr <const Dep> rebase_inner(shared_ptr <const Dep> d, string base_dir)
 		return f;
 	} else if (shared_ptr <const Concat_Dep> e3= to <const Concat_Dep> (d)) {
 		shared_ptr <Concat_Dep> f= to <Concat_Dep> (e3->clone());
-//		if (f->deps.size() != 0)
-//			f->deps[0]= rebase(f->deps[0], base_dir);
 		for (size_t i= 0; i < f->deps.size(); ++i)
 			f->deps[i]= rebase_inner(f->deps[i], base_dir);
 		TRACE("return %s", show_trace(f));

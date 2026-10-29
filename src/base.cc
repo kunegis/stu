@@ -9,8 +9,6 @@ std::vector <string> Base_Stack::dirs;
 string Base_Stack::base;
 
 void Base_Stack::build_base()
-// TODO it may be unnecessary to call canonicalize_string(), if the directories are
-// already canonicalized.  In that case, it's enough to ignore the '.' entries.
 {
 	TRACE_FUNCTION();
 	TRACE("dirs.size()= %s", frmt("%zu", dirs.size()));

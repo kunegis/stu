@@ -145,12 +145,10 @@ shared_ptr <const Rule> Rule::rebase() const
 	for (size_t i= 0; i < deps.size(); ++i)
 		new_deps.push_back(rebase(deps[i]));
 
-	shared_ptr <Rule> ret= std::make_shared <Rule> (
+	return std::make_shared <Rule> (
 		std::move(new_targets), std::move(new_deps),
 		place, command, base, name_input, name_output, is_content,
 		copy_src, copy_dst);
-
-	return ret;
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const

@@ -1,8 +1,4 @@
 #
-# 2.7.70-1* tests: check all whether they should be moved to another version number.
-#
-
-#
 # Check that we are not performing double-canonicalization, i.e., run canonicalize()
 # multiple times on same input, or on output of canonicalize().
 #

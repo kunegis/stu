@@ -1,12 +1,8 @@
 # Check that we are not performing double-canonicalization, i.e., run canonicalize()
 # multiple times on same input, or on output of canonicalize().
 
-$ make bin/stu.debug && sh/rm_tmps && touch B && STU_TRACE='canonicalize hash_dep name object rule file_executor' bin/stu.debug -F 'A: B ./B;'
-# * Make a test out of it (mock stat() to check that we don't check the exitence of the file too often) [2.6-0001]
-
 $ make bin/stu.debug && sh/rm_tmps && STU_TRACE='canonicalize hash_dep name object rule' bin/stu.debug -F 'A={x}'
-# * Need to keep track which dependency types are canonicalized or not.
-# * If necessary, keep track of which Name/Hash_Dep is already canonicalized using a new flag (not used for hashing)
+# * Update diagram
 
 Rule_Set::add()
 |
@@ -16,7 +12,7 @@ Placed_Object::canonicalize()
 |
 Name::canonicalize() *
 
-Rule_Set::get() # target only
+Rule_Set::get() [target]
 |
 Hash_Dep::canonicalize_object() *
 

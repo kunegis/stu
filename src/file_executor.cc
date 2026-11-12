@@ -512,7 +512,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * compare each TIMESTAMP_OLD with the previous value of TIMESTAMP. */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
 			if (timestamps_old[i].defined() &&
-			    (! timestamp.defined() || timestamp < timestamps_old[i])) {
+				(! timestamp.defined() || timestamp < timestamps_old[i])) {
 				timestamp= timestamps_old[i];
 			}
 		}
@@ -703,8 +703,7 @@ bool File_Executor::check_file_target(
 
 	if (ret_stat == 0) {
 		assert(timestamps_old[index].defined());
-		if (timestamp.defined() &&
-			timestamps_old[index] < timestamp && no_execution)
+		if (timestamp.defined() && timestamps_old[index] < timestamp && no_execution)
 		{
 			print_warning(rule->targets[index]->place,
 				fmt("file target %s which has no command is older than its dependency",
@@ -1005,14 +1004,13 @@ void File_Executor::check_file_target_without_rule(
 	if (flags & (F_OPTIONAL | F_TRIVIAL)) return;
 	struct stat buf;
 
-	// TODO invert order of if/else blocks
 	if (!stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
-		state |= State::CHECKED | State::EXISTING;
-		state &= ~State::MISSING;
-		if (! (flags & F_PERSISTENT))
-			warn_future_file(&buf,
-				hash_dep.get_name_c_str_nondynamic(),
-				dep->get_place());
+//		state |= State::CHECKED | State::EXISTING;
+//		state &= ~State::MISSING;
+//		if (! (flags & F_PERSISTENT))
+//			warn_future_file(&buf,
+//				hash_dep.get_name_c_str_nondynamic(),
+//				dep->get_place());
 		if (dynamic_cast <Root_Executor *> (parent)) {
 			/* Output this only for top-level targets, and therefore we don't
 			 * need traces */
@@ -1022,8 +1020,8 @@ void File_Executor::check_file_target_without_rule(
 			hide_out_message= true;
 		}
 	} else {
-		state |= State::CHECKED | State::MISSING;
-		state &= ~State::EXISTING;
+//		state |= State::CHECKED | State::MISSING;
+//		state &= ~State::EXISTING;
 		if (errno != ENOENT) {
 			string text= show(hash_dep);
 			dep->get_place() << format_errno(

@@ -17,8 +17,8 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 0 ] || Error 'exit status'
-grep -q -F -e "warning: file target \"A\" which has no command is older than its dependency" list.err ||
-	Error 'warning is missing'
+## RM
+cat list.err
 
-rm -f A B
+[ "$exitstatus" = 0 ]
+grep -q -F -e "warning: file target \"A\" which has no command is older than its dependency" list.err

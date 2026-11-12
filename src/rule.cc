@@ -249,7 +249,7 @@ const std::vector <string> &Rule::get_parameters() const
 	return targets.front()->object.name.get_parameters();
 }
 
-void Rule::canonicalize()
+void Rule::canonicalize_targets()
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show_trace(targets[0]));
@@ -257,7 +257,7 @@ void Rule::canonicalize()
 		shared_ptr <Dep> d= targets[i]->clone();
 		shared_ptr <Object_Dep> e= to <Object_Dep> (d);
 		assert(e);
-		e->object.canonicalize();
+		e->object.name.canonicalize();
 		targets[i]= e;
 	}
 }
@@ -272,7 +272,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 	TRACE_FUNCTION();
 	for (auto &rule: rules_) {
 		TRACE("rule->targets[0]= %s", show_trace(rule->targets[0]));
-		rule->canonicalize();
+		rule->canonicalize_targets();
 		rule->check_duplicate_target();
 		if (! rule->is_parametrized()) {
 			add_unparametrized_rule(rule);
@@ -288,16 +288,19 @@ shared_ptr <const Rule> Rule_Set::get(
 	std::map <string, string> &mapping_parameter,
 	const Place &place,
 	shared_ptr <const Object_Dep> &target_object_dep,
-	Target_Index &target_index)
+	Target_Index &target_index,
+	bool hash_dep_is_canonicalized)
 {
 	TRACE_FUNCTION();
 	TRACE("hash_dep= %s", show(hash_dep));
+	TRACE("hash_dep_is_canonicalized= %s", frmt("%d", hash_dep_is_canonicalized));
 	assert(hash_dep.is_file() || hash_dep.is_phony());
 	assert((hash_dep.get_front_word() & ~F_PHONY) == 0);
 	assert(mapping_parameter.size() == 0);
 	assert(!target_object_dep);
 
-	hash_dep.canonicalize_object();
+	if (! hash_dep_is_canonicalized)
+		hash_dep.canonicalize_object();
 
 	/* Check for an unparametrized rule.  Since we keep them in a map by target
 	 * filename(s), there can only be a single matching rule to begin with.  I.e., if

@@ -123,12 +123,8 @@ public:
 
 	bool operator==(const Hash_Dep &target) const { return text == target.text; }
 	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
-	void canonicalize_object(); /* In-place, knowing it is an object */
-
-#ifndef NEBUG
 	void canonicalize(); /* In-place */
-	size_t get_dynamic_depth() const;
-#endif /* ! NDEBUG */
+	void canonicalize_object(); /* In-place, knowing it is an object */
 
 private:
 	string text;
@@ -277,7 +273,6 @@ public:
 
 #ifndef NDEBUG
 	void render(Parts &, Rendering= 0) const;
-	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
 

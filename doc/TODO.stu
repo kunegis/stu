@@ -1,12 +1,4 @@
 #
-# Check that we are not performing double-canonicalization, i.e., run canonicalize()
-# multiple times on same input, or on output of canonicalize().
-#
-
-$ make bin/stu.debug && sh/rm_tmps && STU_TRACE='canonicalize hash_dep name object rule' bin/stu.debug -F 'A={x}'
-# * Need to keep track which dependency types are canonicalized or not.
-
-#
 # %include -d
 #
 
@@ -530,4 +522,12 @@ B: ../A { ... }
 # "make -k" interrupts the full build when a single process ends by SIGINT.  Stu doesn't.
 # Have an option that emulates that behavior.  There are a few more signals that have the
 # same behavior (at least in GNU Make).
+
+#
+# * add canonicalized bit to hash_dep/flags
+# ** in Hash_Dep, add asserts that canonicalized bit is set in: hash(), operator==, !=.
+#
+
+#
+# Rename 'variant' to 'profile'.
 #

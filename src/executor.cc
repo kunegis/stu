@@ -174,8 +174,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 	}
 
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
-	if (to <const Dynamic_Dep> (dep)
-	    && ! to <const Object_Dep> (dep->strip_dynamic())) {
+	if (to <const Dynamic_Dep> (dep) && ! to <const Object_Dep> (dep->strip_dynamic())) {
 		TRACE("Create Dynamic_Executor with concatenation inside");
 		int error_additional= 0;
 		Dynamic_Executor *executor= new Dynamic_Executor(
@@ -202,10 +201,10 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 	 * Cached executors
 	 */
 
-	const Hash_Dep hash_dep= dep->get_target();
+	Hash_Dep hash_dep= dep->get_target();
+	hash_dep.canonicalize();
 	Executor *executor= nullptr;
-	const Based_Hash_Dep target_for_cache=
-		get_target_for_cache(hash_dep, dynamic_base_dir);
+	const Based_Hash_Dep target_for_cache= get_target_for_cache(hash_dep, dynamic_base_dir);
 	auto it= executors_by_dep.find(target_for_cache);
 
 	if (it != executors_by_dep.end()) {
@@ -263,7 +262,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 			rule_child= all_rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
-				dep->get_place(), target_object_dep, target_index);
+				dep->get_place(), target_object_dep, target_index,
+				true);
 		} catch (int e) {
 			assert(e);
 			error_additional= e;
@@ -617,10 +617,9 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 
 	/* Don't propagate the NEED_BUILD flag via F_RESULT_NOTIFY links: It just means the
 	 * list of depenencies have changed, not the dependencies themselves. */
-	if (child->state & State::NEED_BUILD &&
-		! (dep_child->flags.get_flags() & F_RESULT_NOTIFY))
+	if (child->state.need_build() && ! (dep_child->flags.get_flags() & F_RESULT_NOTIFY))
 	{
-		state |= State::NEED_BUILD;
+		state.set_need_build();
 	}
 
 	/* Remove the links between them */

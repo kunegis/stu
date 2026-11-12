@@ -163,6 +163,7 @@ char *canonicalize_string(char *p, Canonicalize_Flags canonicalize_flags)
 	}
 #endif /* 0 */
 
+	TRACE("p= '%s'", p);
 	assert(*s == '\0');
 	assert(*d == '\0');
 	return d;

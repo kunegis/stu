@@ -34,7 +34,7 @@ Dynamic_Executor::Dynamic_Executor(
 			shared_ptr <const Object_Dep> target_object_dep;
 			shared_ptr <const Rule> r=
 				all_rule_set.get(hash_dep_2, param_rule, mapping_parameter,
-					dep->get_place(), target_object_dep, target_index);
+					dep->get_place(), target_object_dep, target_index, false);
 		} catch (int e) {
 			assert(e);
 			*this << "";
@@ -65,7 +65,8 @@ Dynamic_Executor::Dynamic_Executor(
 	dep_child->flags.add_unplaced_flags(F_RESULT_NOTIFY);
 	push(dep_child);
 
-	if (dep->flags.get_flags() & F_PHASE_B) state |= State::NEED_BUILD;
+	if (dep->flags.get_flags() & F_PHASE_B)
+		state.set_need_build();
 }
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
@@ -90,8 +91,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 		return 0;
 	}
 
-	need_build= (state & State::NEED_BUILD) != 0 ||
-		dep_link->flags.get_flags() & F_PHASE_B;
+	need_build= state.need_build() || dep_link->flags.get_flags() & F_PHASE_B;
 	TRACE("need_build= %s", frmt("%d", need_build));
 	if (! need_build) {
 		done |= Done::from_flags(dep_link->flags.get_flags());

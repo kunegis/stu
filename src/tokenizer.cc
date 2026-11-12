@@ -299,7 +299,7 @@ void Tokenizer::parse_tokens_arg(
 		} else if (allow_dash && *p == '-') {
 			++p;
 			if (*p == '\0') {
-				place << fmt("expected a flag character after %s",
+				place << fmt("expected a flag character after dash %s",
 					show(Operator_View('-')));
 				throw ERR_LOGICAL;
 			}

@@ -12,7 +12,7 @@ void render(State state, Parts &parts, Rendering)
 
 	bool first= true;
 	for (int i= 0; i < State::COUNT; ++i) {
-		if (state & State(1 << i)) {
+		if (state.bits & State(1 << i).bits) {
 			if (! first)
 				parts.append_operator("|");
 			first= false;

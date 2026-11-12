@@ -7,12 +7,6 @@ void Placed_Object::render(Parts &parts, Rendering rendering) const
 	name.render(parts, rendering);
 }
 
-void Placed_Object::canonicalize()
-{
-	TRACE_FUNCTION();
-	name.canonicalize();
-}
-
 void render(
 	const Placed_Object &object,
 	Parts &parts,

@@ -91,8 +91,6 @@ public:
 	Object get_Object() const {
 		return Object(flags, name);
 	}
-
-	void canonicalize();
 };
 
 void render(const Placed_Object &, Parts &, Rendering= 0);

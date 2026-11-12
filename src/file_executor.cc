@@ -207,12 +207,10 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	}
 
 	/* The file(s) may have been built, so forget that it was known to not exist */
-	state &= ~State::MISSING;
+	state.reset_missing();
 
 	if (job.waited(status, pid)) {
-		state |=  State::EXISTING;
-		state &= ~State::MISSING;
-		/* Later set to State::MISSING if at least one target file is missing */
+		state.set_existing();
 
 		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
@@ -494,9 +492,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy();
 	TRACE("no_execution= %s", frmt("%d", no_execution));
 
-	if (! (state & State::CHECKED)) {
-		state |= State::CHECKED | State::EXISTING;
-		state &= ~State::MISSING;
+	if (! state.checked()) {
+		state.set_checked();
 		/* Now, set to State::MISSING when a file is found not to exist */
 
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
@@ -512,13 +509,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * compare each TIMESTAMP_OLD with the previous value of TIMESTAMP. */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
 			if (timestamps_old[i].defined() &&
-			    (! timestamp.defined() || timestamp < timestamps_old[i])) {
+				(! timestamp.defined() || timestamp < timestamps_old[i])) {
 				timestamp= timestamps_old[i];
 			}
 		}
 	}
 
-	if (! (state & State::NEED_BUILD)) {
+	if (! state.need_build()) {
 		TRACE("Check whether target is phony of not-yet executed command");
 		bool has_file= false; /* One of the targets is a file */
 		for (const Hash_Dep &hash_dep: hash_deps) {
@@ -533,14 +530,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			if (phonies.count(hash_dep.get_name_nondynamic()) == 0) {
 				/* Phony was not yet executed */
 				if (! no_execution && ! has_file) {
-					state |= State::NEED_BUILD;
+					state.set_need_build();
 				}
 				break;
 			}
 		}
 	}
 
-	if (! (state & State::NEED_BUILD)) {
+	if (! state.need_build()) {
 		TRACE("No need to build");
 		done |= Done::from_flags_trivial_and_nontrivial(
 			dep_link->flags.get_flags());
@@ -680,8 +677,7 @@ bool File_Executor::check_file_target(
 	int errno_stat= errno;
 
 	/* Warn when file has timestamp in the future */
-	if (ret_stat == 0) {
-		/* File exists */
+	if (!ret_stat) {
 		timestamps_old[index]= Timestamp(&buf);
 		if (! (flags & F_PERSISTENT))
 			warn_future_file(&buf,
@@ -689,24 +685,22 @@ bool File_Executor::check_file_target(
 				rule == nullptr
 				? parents.begin()->second->get_place()
 				: rule->targets[index]->place);
-		/* EXISTS is not changed */
 	} else {
-		state |= State::MISSING;
-		state &= ~State::EXISTING;
+		state.set_missing();
 	}
 
-	if (! (state & State::NEED_BUILD) && ret_stat == 0
+	if (! state.need_build()
+		&& ret_stat == 0
 		&& timestamp.defined() && timestamps_old[index] < timestamp
 		&& ! no_execution)
 	{
 		TRACE("Need build due to timestamp");
-		state |= State::NEED_BUILD;
+		state.set_need_build();
 	}
 
 	if (ret_stat == 0) {
 		assert(timestamps_old[index].defined());
-		if (timestamp.defined() &&
-			timestamps_old[index] < timestamp && no_execution)
+		if (timestamp.defined() && timestamps_old[index] < timestamp && no_execution)
 		{
 			print_warning(rule->targets[index]->place,
 				fmt("file target %s which has no command is older than its dependency",
@@ -714,11 +708,11 @@ bool File_Executor::check_file_target(
 		}
 	}
 
-	if (! (state & State::NEED_BUILD) && ret_stat != 0 && errno_stat == ENOENT) {
+	if (! state.need_build() && ret_stat != 0 && errno_stat == ENOENT) {
 		TRACE("File does not exist");
 		if (! (flags & F_OPTIONAL)) {
 			TRACE("Non-optional dependency");
-			state |= State::NEED_BUILD;
+			state.set_need_build();
 		}
 	}
 
@@ -788,8 +782,7 @@ void File_Executor::write_content(
 		goto remove;
 	}
 
-	state |= State::EXISTING;
-	state &= ~State::MISSING;
+	state.set_existing();
 	return;
 
  remove:
@@ -799,8 +792,7 @@ void File_Executor::write_content(
 	}
  error:
 	raise(ERR_BUILD);
-	state &= ~State::EXISTING;
-	state |= State::MISSING;
+	state.set_missing();
 }
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)
@@ -900,7 +892,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	{
 		TRACE("Is optional file target");
 
-		if (state & State::MISSING) {
+		if (state.missing()) {
 			TRACE("We already know a file to be missing");
 			done |= Done::from_flags(dep_link->flags.get_flags());
 			return true;
@@ -919,8 +911,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		TRACE("ret_stat= %s", frmt("%d", ret_stat));
 		if (ret_stat < 0) {
 			TRACE("Stat failed");
-			state |= State::MISSING;
-			state &= ~State::EXISTING;
+			state.set_missing();
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
 				to <Object_Dep> (dep_link)->object.place <<
@@ -935,8 +926,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		} else {
 			TRACE("File exists");
 			assert(ret_stat == 0);
-			state |= State::EXISTING;
-			state &= ~State::MISSING;
+			state.set_existing();
 		}
 	}
 
@@ -953,14 +943,13 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	struct stat buf;
 	if (stat_file(filename, &buf, flags)) {
 		if (errno == ENOENT) {
-			state |= State::MISSING;
-			state &= ~State::EXISTING;
 			place << fmt("file %s was not built by command", show(hash_dep));
+			state.set_missing();
 		} else {
-			state &= ~(State::MISSING | State::EXISTING);
 			place << fmt(
 				"cannot determine whether file %s was built by command",
 				show(hash_dep));
+			state.set_unknown();
 		}
 		*this << "";
 		raise(ERR_BUILD);
@@ -1002,20 +991,12 @@ void File_Executor::check_file_target_without_rule(
 	Executor *parent,
 	bool &rule_not_found)
 {
+	TRACE_FUNCTION(show(dep));
 	Flags flags= dep->flags.get_flags();
 	if (flags & (F_OPTIONAL | F_TRIVIAL)) return;
 	struct stat buf;
-	if (stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
-		if (errno != ENOENT) {
-			string text= show(hash_dep);
-			dep->get_place() << format_errno(
-				"fstatat", hash_dep.get_name_c_str_nondynamic());
-			raise(ERR_BUILD);
-		}
-		/* File does not exist and there is no rule for it */
-		rule_not_found= true;
-	} else {
-		/* File exists:  Do nothing, and there are no dependencies to build */
+
+	if (!stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
 		if (dynamic_cast <Root_Executor *> (parent)) {
 			/* Output this only for top-level targets, and therefore we don't
 			 * need traces */
@@ -1024,6 +1005,15 @@ void File_Executor::check_file_target_without_rule(
 					show(hash_dep, style)));
 			hide_out_message= true;
 		}
+	} else {
+		if (errno != ENOENT) {
+			string text= show(hash_dep);
+			dep->get_place() << format_errno(
+				"fstatat", hash_dep.get_name_c_str_nondynamic());
+			raise(ERR_BUILD);
+		}
+		/* File does not exist and there is no rule for it */
+		rule_not_found= true;
 	}
 }
 
@@ -1046,7 +1036,7 @@ bool File_Executor::start(
 			File_Executor *executor_source
 				= dynamic_cast <File_Executor *> (executor_source_base);
 			assert(executor_source);
-			if (executor_source->state & State::MISSING) {
+			if (executor_source->state.missing()) {
 				/* Neither the source file nor the target file exist:  an
 				 * error. */
 				rule->deps.at(0)->get_place() << fmt(
@@ -1130,7 +1120,6 @@ int File_Executor::stat_file(const char *filename, struct stat *buf, Flags flags
 	bool no_follow= flags & F_NO_FOLLOW;
 	TRACE("filename= '%s'", filename);
 	TRACE("no_follow= %s", frmt("%d", no_follow));
-
 	int r= fstatat(AT_FDCWD, filename, buf,
 		no_follow ? AT_SYMLINK_NOFOLLOW : 0);
 	TRACE("r= %s", frmt("%d", r));

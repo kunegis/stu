@@ -12,18 +12,20 @@
 class State
 {
 public:
-	static const State NEED_BUILD;
+	using Type = unsigned;
+
+	static constexpr Type NEED_BUILD = 1 << 0;
 	/* Whether this target needs to be built.  When a target is finished, this value
 	 * is propagated to the parent executors. */
 
-	static const State CHECKED;
-	/* Whether a certain check has been performed.  Only used by File_Executor. */
+	static constexpr Type CHECKED = 1 << 1;
+	/* Whether file targets have been checked. */
 
-	static const State EXISTING;
+	static constexpr Type EXISTING = 1 << 2;
 	/* All file targets are known to exist.  Only in File_Executor.  May be set when
 	 * there are no file targets. */
 
-	static const State MISSING;
+	static constexpr Type MISSING = 1 << 3;
 	/* At least one file target is known not to exist (only possible if there is at
 	 * least one file target in File_Executor). */
 
@@ -31,24 +33,24 @@ public:
 
 	State(): bits(0) {}
 
-	State operator&(State b) const { return State(bits & b.bits); }
-	State operator|(State b) const { return State(bits | b.bits); }
-	State operator~() const { return State(~bits); }
-	State &operator&=(State b) { bits &= b.bits; return *this; }
-	State &operator|=(State b) { bits |= b.bits; return *this; }
-	operator bool() const { return bits != 0; }
+	bool need_build() const { return bits & NEED_BUILD; }
+	void set_need_build() { bits |= NEED_BUILD; }
+	void reset_missing() { bits &= ~MISSING; }
+	void set_existing() { bits |= EXISTING; bits &= ~MISSING; }
+	bool missing() const { return bits & MISSING; }
+	void set_missing() { bits |= MISSING; bits &= ~EXISTING; }
+	void set_unknown() { bits &= ~(MISSING | EXISTING); }
+	bool checked() const { return bits & CHECKED; }
+	void set_checked() { bits |= CHECKED | EXISTING; bits &= ~MISSING; }
 
 private:
-	using Type = unsigned;
 	Type bits;
 	constexpr State(Type b): bits(b) {}
-	friend void render(State, Parts &, Rendering);
-};
 
-inline constexpr State State::NEED_BUILD(1 << 0);
-inline constexpr State State::CHECKED   (1 << 1);
-inline constexpr State State::EXISTING  (1 << 2);
-inline constexpr State State::MISSING   (1 << 4);
+#ifndef NDEBUG
+	friend void render(State, Parts &, Rendering);
+#endif /* ! NDEBUG */
+};
 
 #ifndef NDEBUG
 void render(State, Parts &, Rendering= 0);

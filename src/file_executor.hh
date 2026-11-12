@@ -140,8 +140,7 @@ private:
 	 * targets are never inserted in this map.  */
 
 	static int stat_file(const char *filename, struct stat *buf, Flags flags);
-	/* Calls stat()/lstat() depending on F_NO_DEREFERENCE.  Returns 0/-1, and sets
-	 * errno on error. */
+	/* Flags are needed for F_NO_DEREFERENCE.  Returns 0/-1, and sets errno on error. */
 };
 
 #endif /* ! FILE_EXECUTOR_HH */

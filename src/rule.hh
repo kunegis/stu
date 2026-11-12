@@ -117,11 +117,7 @@ public:
 
 	void check_duplicate_target() const;
 	const std::vector <string> &get_parameters() const;
-
-	void canonicalize();
-	/* In-place canonicalization of the rule.  This applies to the targets of the
-	 * rule. */
-
+	void canonicalize_targets();
 	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
 	shared_ptr <const Rule> rebase() const;
 	shared_ptr <const Dep> rebase(shared_ptr <const Dep> d) const {
@@ -146,7 +142,8 @@ public:
 		std::map <string, string> &mapping_parameter,
 		const Place &place,
 		shared_ptr <const Object_Dep> &target_object_dep,
-		Target_Index &target_index);
+		Target_Index &target_index,
+		bool hash_dep_is_canonicalized);
 	/* Match HASH_DEP to a rule, and return the instantiated (non-parametrized)
 	 * corresponding rule.  TARGET must be non-dynamic and not have flags (except
 	 * F_TARGET_PHONY).  MAPPING_PARAMETER must be empty.  Return null when no

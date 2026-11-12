@@ -680,8 +680,7 @@ bool File_Executor::check_file_target(
 	int errno_stat= errno;
 
 	/* Warn when file has timestamp in the future */
-	if (ret_stat == 0) {
-		/* File exists */
+	if (!ret_stat) {
 		timestamps_old[index]= Timestamp(&buf);
 		if (! (flags & F_PERSISTENT))
 			warn_future_file(&buf,
@@ -689,7 +688,6 @@ bool File_Executor::check_file_target(
 				rule == nullptr
 				? parents.begin()->second->get_place()
 				: rule->targets[index]->place);
-		/* EXISTS is not changed */
 	} else {
 		state |= State::MISSING;
 		state &= ~State::EXISTING;
@@ -1002,20 +1000,19 @@ void File_Executor::check_file_target_without_rule(
 	Executor *parent,
 	bool &rule_not_found)
 {
+	TRACE_FUNCTION(show(dep));
 	Flags flags= dep->flags.get_flags();
 	if (flags & (F_OPTIONAL | F_TRIVIAL)) return;
 	struct stat buf;
-	if (stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
-		if (errno != ENOENT) {
-			string text= show(hash_dep);
-			dep->get_place() << format_errno(
-				"fstatat", hash_dep.get_name_c_str_nondynamic());
-			raise(ERR_BUILD);
-		}
-		/* File does not exist and there is no rule for it */
-		rule_not_found= true;
-	} else {
-		/* File exists:  Do nothing, and there are no dependencies to build */
+
+	// TODO invert order of if/else blocks
+	if (!stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
+		state |= State::CHECKED | State::EXISTING;
+		state &= ~State::MISSING;
+		if (! (flags & F_PERSISTENT))
+			warn_future_file(&buf,
+				hash_dep.get_name_c_str_nondynamic(),
+				dep->get_place());
 		if (dynamic_cast <Root_Executor *> (parent)) {
 			/* Output this only for top-level targets, and therefore we don't
 			 * need traces */
@@ -1024,6 +1021,17 @@ void File_Executor::check_file_target_without_rule(
 					show(hash_dep, style)));
 			hide_out_message= true;
 		}
+	} else {
+		state |= State::CHECKED | State::MISSING;
+		state &= ~State::EXISTING;
+		if (errno != ENOENT) {
+			string text= show(hash_dep);
+			dep->get_place() << format_errno(
+				"fstatat", hash_dep.get_name_c_str_nondynamic());
+			raise(ERR_BUILD);
+		}
+		/* File does not exist and there is no rule for it */
+		rule_not_found= true;
 	}
 }
 
@@ -1130,7 +1138,6 @@ int File_Executor::stat_file(const char *filename, struct stat *buf, Flags flags
 	bool no_follow= flags & F_NO_FOLLOW;
 	TRACE("filename= '%s'", filename);
 	TRACE("no_follow= %s", frmt("%d", no_follow));
-
 	int r= fstatat(AT_FDCWD, filename, buf,
 		no_follow ? AT_SYMLINK_NOFOLLOW : 0);
 	TRACE("r= %s", frmt("%d", r));

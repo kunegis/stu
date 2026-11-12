@@ -1,8 +1,6 @@
 #!/bin/sh
 . ../../sh/test.sh
 
-rm -f A B
-
 now=$(LC_ALL=C date)
 year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
 year_future=$(expr 2 + $year)
@@ -15,12 +13,10 @@ set +e
 exitstatus=$?
 set -e
 
+cat list.err ## rm
+
 [ "$exitstatus" = 0 ] || Error 'exit status'
-grep -q -F -e "warning: file \"B\" has modification time in the future" list.err ||
-	Error 'warning'
+grep -q -F -e "warning: file \"B\" has modification time in the future" list.err
 
 # Check that the warning is given just once
-[ "$(grep -c -F -e "warning: file \"B\" has modification time in the future" list.err)" = 1 ] ||
-	Error 'warning must not be output multiple times'
-
-rm -f A B
+[ "$(grep -c -F -e "warning: file \"B\" has modification time in the future" list.err)" = 1 ]

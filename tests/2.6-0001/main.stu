@@ -1,0 +1,9 @@
+A: @pre B ./B
+{
+	touch A
+}
+
+@pre
+{
+	touch B
+}

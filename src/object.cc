@@ -8,6 +8,7 @@ void Placed_Object::render(Parts &parts, Rendering rendering) const
 }
 
 void Placed_Object::canonicalize()
+// TODO remove function. Callers can call name.canonicalize() directly.
 {
 	TRACE_FUNCTION();
 	name.canonicalize();

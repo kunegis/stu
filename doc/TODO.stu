@@ -1,8 +1,4 @@
-# Check that we are not performing double-canonicalization, i.e., run canonicalize()
-# multiple times on same input, or on output of canonicalize().
-
-$ make bin/stu.debug && sh/rm_tmps && STU_TRACE='canonicalize hash_dep name object rule' bin/stu.debug -F 'A={x}'
-# * Update diagram
+# * Write tests
 
 Rule_Set::add()
 |
@@ -10,17 +6,34 @@ Rule::canonicalize_targets()
 |
 Placed_Object::canonicalize()
 |
-Name::canonicalize() *
+Name::canonicalize()
+|
+canonicalize_string()	
+
 
 Rule_Set::get() [target]
 |
-Hash_Dep::canonicalize_object() *
+Hash_Dep::canonicalize_object()
+|
+canonicalize_string()	
 
-Base_Stack::build_base() *
+
+Executor::get_target_for_cache()
+|
+Hash_Dep::canonicalize()
+|
+canonicalize_string()	
+
+
+Base_Stack::build_base()
+|
+canonicalize_string()	
 
 rebase()
 |
-Name::canonicalize() *
+Name::canonicalize()
+|
+canonicalize_string()	
 
 #
 # %include -d

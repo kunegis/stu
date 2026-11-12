@@ -277,7 +277,6 @@ public:
 
 #ifndef NDEBUG
 	void render(Parts &, Rendering= 0) const;
-//	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
 

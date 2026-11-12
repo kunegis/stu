@@ -174,8 +174,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 	}
 
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
-	if (to <const Dynamic_Dep> (dep)
-	    && ! to <const Object_Dep> (dep->strip_dynamic())) {
+	if (to <const Dynamic_Dep> (dep) && ! to <const Object_Dep> (dep->strip_dynamic())) {
 		TRACE("Create Dynamic_Executor with concatenation inside");
 		int error_additional= 0;
 		Dynamic_Executor *executor= new Dynamic_Executor(
@@ -204,8 +203,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep, string dynamic_base
 
 	const Hash_Dep hash_dep= dep->get_target();
 	Executor *executor= nullptr;
-	const Based_Hash_Dep target_for_cache=
-		get_target_for_cache(hash_dep, dynamic_base_dir);
+	const Based_Hash_Dep target_for_cache= get_target_for_cache(hash_dep, dynamic_base_dir);
 	auto it= executors_by_dep.find(target_for_cache);
 
 	if (it != executors_by_dep.end()) {
@@ -800,6 +798,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 
 Based_Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep, string dynamic_base)
 {
+	hash_dep.canonicalize();
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
 		 * Zero is the word for file targets. */

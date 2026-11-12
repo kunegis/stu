@@ -249,7 +249,7 @@ const std::vector <string> &Rule::get_parameters() const
 	return targets.front()->object.name.get_parameters();
 }
 
-void Rule::canonicalize()
+void Rule::canonicalize_targets()
 {
 	TRACE_FUNCTION();
 	TRACE("targets[0]= %s", show_trace(targets[0]));
@@ -272,7 +272,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 	TRACE_FUNCTION();
 	for (auto &rule: rules_) {
 		TRACE("rule->targets[0]= %s", show_trace(rule->targets[0]));
-		rule->canonicalize();
+		rule->canonicalize_targets();
 		rule->check_duplicate_target();
 		if (! rule->is_parametrized()) {
 			add_unparametrized_rule(rule);

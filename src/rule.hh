@@ -118,9 +118,7 @@ public:
 	void check_duplicate_target() const;
 	const std::vector <string> &get_parameters() const;
 
-	void canonicalize();
-	/* In-place canonicalization of the rule.  This applies to the targets of the
-	 * rule. */
+	void canonicalize_targets();
 
 	shared_ptr <const Rule> instantiate(const std::map <string, string> &mapping) const;
 	shared_ptr <const Rule> rebase() const;

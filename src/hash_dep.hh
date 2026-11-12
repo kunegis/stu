@@ -125,7 +125,7 @@ public:
 	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
 	void canonicalize_object(); /* In-place, knowing it is an object */
 
-#ifndef NEBUG
+#ifndef NDEBUG // TODO 'NDEBUG' -- check whether function is even used
 	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
@@ -277,7 +277,7 @@ public:
 
 #ifndef NDEBUG
 	void render(Parts &, Rendering= 0) const;
-	void canonicalize(); /* In-place */
+//	void canonicalize(); /* In-place */
 	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
 

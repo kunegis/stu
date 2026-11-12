@@ -1,10 +1,26 @@
-#
 # Check that we are not performing double-canonicalization, i.e., run canonicalize()
 # multiple times on same input, or on output of canonicalize().
-#
 
 $ make bin/stu.debug && sh/rm_tmps && STU_TRACE='canonicalize hash_dep name object rule' bin/stu.debug -F 'A={x}'
 # * Need to keep track which dependency types are canonicalized or not.
+
+Rule_Set::add()
+|
+Rule::canonicalize_targets()
+|
+Placed_Object::canonicalize()
+|
+Name::canonicalize() *
+
+Rule_Set::get()
+|
+Hash_Dep::canonicalize_object() *
+
+Base_Stack::build_base() *
+
+rebase()
+|
+Name::canonicalize() *
 
 #
 # %include -d

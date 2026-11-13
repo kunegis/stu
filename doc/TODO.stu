@@ -1,3 +1,5 @@
+# * Aggrate functionality into a class File_Status.
+
 # * Write tests
 
 Rule_Set::add()

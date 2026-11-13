@@ -998,6 +998,7 @@ void File_Executor::check_file_target_without_rule(
 	Hash_Dep &hash_dep,
 	Executor *parent,
 	bool &rule_not_found)
+// TODO Uses of this should be replaced by check_file_target().  The "No rule for building..." error should be output by the caller.
 {
 	TRACE_FUNCTION(show(dep));
 	Flags flags= dep->flags.get_flags();

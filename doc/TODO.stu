@@ -4,7 +4,16 @@
 * %include --cd list.dir/
 * %include --cd list.dir/bbb.stu
 
-$ stu -d dir/main.stu # Like first cd'ing to dir/
+$ stu -<X> dir/main.stu # Like first cd'ing to dir/ # maybe use -d
+
+* %include -X # invalid flag
+* %include - # error
+* %include -- # error
+* %include "-X.stu"
+* %include '-X.stu'
+* %include \-X.stu
+
+* manpage
 
 #
 # When doing %include or %import, allow to pass environment variables.  (Discuss.)

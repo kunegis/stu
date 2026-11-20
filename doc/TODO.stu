@@ -1,44 +1,10 @@
-#
-# %include -d
-#
+* %include -<X> list.dir
+* %include -<X> list.dir/
+* %include -<X> list.dir/bbb.stu
+* %include --cd list.dir/
+* %include --cd list.dir/bbb.stu
 
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Rules from there will be executed from within the
-# directory as current directory.  If using 'import', the meaning of
-# all these are equivalent:
-%include -d src
-%include --directory src/main.stu
-
-# Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
-# $STU_{,LIB_}PATH.
-%include --library c++.stu
-%include -l c++/simple.stu
-%include -l /usr/stulib/c++.stu
-* Need to determine in which cases we use $STU_LIB_PATH and in which not.
-
-* Need to determine whether ".stu" is automatically appended to names (No)
-* Need to determine whether we want different filenames for "normal" Stu
-  files (applying to the current directory) and Stu
-  libraries (that should only be imported via '%import -l' (e.g. *.stl).  That also means
-  that '%include' will by default apply to Stu libraries, and that is not good.
-
-# - What about phony targets imported in that way.  Do we
-#   prepend a directory to them?
-%import dir   # contains:   @all:  ...;
-# gets converted to:       @dir/all:  ...;
-# or to:                   dir/@all:  ...;  # ???
-
-# File import should also work in the command line
 $ stu -d dir/main.stu # Like first cd'ing to dir/
-
-# Can we even use '%', because '%' directives are token-based, and 'import' should be at
-# rule level.  Maybe use '*' instead.  (No).
-*import dir/
-*import -d dir/
-
-# And theoretically also braces for blocks
-
-# * Check that $(PWD) is always the base dir of the rule
 
 #
 # When doing %include or %import, allow to pass environment variables.  (Discuss.)
@@ -531,3 +497,14 @@ B: ../A { ... }
 #
 # Rename 'variant' to 'profile'.
 #
+
+#
+# $STU_PATH / $STU_LIB_PATH
+#
+
+# Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
+# $STU_{,LIB_}PATH.
+%include --library c++.stu
+%include -l c++/simple.stu
+%include -l /usr/stulib/c++.stu
+* Need to determine in which cases we use $STU_LIB_PATH and in which not.
